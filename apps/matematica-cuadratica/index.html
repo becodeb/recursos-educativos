@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deconstructor de la Función Cuadrática</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 24 Q16 4 28 24' stroke='%23A78BFA' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        display: ['"Space Grotesk"', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'monospace'],
+      },
+    },
+  },
+};
+</script>
+<style>
+:root{
+  --bg:#0B1120;
+  --panel:#121B30;
+  --panel2:#0E1626;
+  --line:#1F2A47;
+  --chalk:#E6EAF5;
+  --dim:#8E9AB8;
+  --grid:#1A2440;
+  --axis:#55648A;
+  --violet:#A78BFA;
+  --cyan:#22D3EE;
+  --rose:#FB7185;
+  --emerald:#34D399;
+  --amber:#FBBF24;
+  --axis-sym:#94A3B8;
+}
+html{color-scheme:dark}
+body{background:var(--bg);color:var(--chalk);font-family:"Space Grotesk",sans-serif;overflow-x:hidden}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:1.25rem}
+.c-v{color:var(--violet)}
+.c-c{color:var(--cyan)}
+.c-r{color:var(--rose)}
+.c-e{color:var(--emerald)}
+.c-a{color:var(--amber)}
+.dim{color:var(--dim)}
+.mono{font-family:"IBM Plex Mono",monospace}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.22em;color:var(--dim);text-transform:uppercase}
+.seg{
+  font-size:13px;font-weight:600;color:var(--dim);
+  border:1px solid var(--line);background:var(--panel2);
+  padding:.5rem .75rem;border-radius:.75rem;cursor:pointer;
+  transition:background .15s,color .15s,border-color .15s;
+  width:100%;
+}
+.seg:hover{color:var(--chalk);border-color:#33426B}
+.seg.on{background:var(--violet);color:#0B1120;border-color:var(--violet)}
+.seg:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.opt{
+  font-size:13px;font-weight:600;color:var(--dim);
+  border:1px solid var(--line);background:var(--panel2);
+  padding:.55rem .6rem;border-radius:.75rem;cursor:pointer;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.opt:hover{color:var(--chalk);border-color:#33426B}
+.opt.on{background:rgba(167,139,250,.14);color:var(--violet);border-color:var(--violet)}
+.opt:disabled{opacity:.4;pointer-events:none}
+.opt:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;
+  width:100%;height:6px;border-radius:9999px;outline:none;
+  background:#232E4D;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:18px;height:18px;border-radius:50%;
+  background:var(--chalk);border:3px solid var(--violet);
+  cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.5);
+}
+input[type=range]::-moz-range-thumb{
+  width:18px;height:18px;border-radius:50%;
+  background:var(--chalk);border:3px solid var(--violet);
+  cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.5);
+}
+input[type=range]:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}
+input[type=range]:disabled{opacity:.35}
+input[type=number]{
+  background:var(--panel2);border:1px solid var(--line);
+  border-radius:.75rem;padding:.5rem .75rem;
+  font-family:"IBM Plex Mono",monospace;color:var(--chalk);
+  font-size:15px;width:100%;
+}
+input[type=number]:focus{outline:2px solid var(--cyan);outline-offset:2px;border-color:transparent}
+.toggle-row{display:flex;align-items:center;gap:.65rem;padding:.55rem .6rem;border-radius:.75rem;cursor:pointer;transition:background .15s}
+.toggle-row:hover{background:rgba(255,255,255,.03)}
+.toggle-row:has(input:focus-visible){outline:2px solid var(--cyan);outline-offset:2px}
+.toggle-row input{position:absolute;opacity:0;pointer-events:none}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--tc,#fff);flex:none}
+.switch{
+  position:relative;width:34px;height:20px;border-radius:9999px;
+  background:#232E4D;transition:background .15s;flex:none;
+}
+.switch::after{
+  content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;
+  border-radius:50%;background:var(--chalk);transition:left .15s;
+}
+input:checked + .switch{background:var(--violet)}
+input:checked + .switch::after{left:16px}
+.btn-primary{
+  background:var(--violet);color:#0B1120;font-weight:700;font-size:14px;
+  padding:.7rem 1rem;border-radius:.9rem;width:100%;
+  transition:transform .1s,opacity .15s;
+}
+.btn-primary:hover{transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.35;transform:none;cursor:not-allowed}
+.btn-primary:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.btn-ghost{
+  border:1px solid var(--line);color:var(--dim);font-weight:600;font-size:14px;
+  padding:.7rem 1rem;border-radius:.9rem;width:100%;transition:color .15s,border-color .15s;
+}
+.btn-ghost:hover{color:var(--chalk);border-color:#33426B}
+.btn-ghost:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.f-chip{
+  display:inline-flex;align-items:center;gap:.4rem;
+  font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;
+  padding:.3rem .65rem;border-radius:.6rem;border:1px solid;
+}
+.answer-row{display:flex;align-items:center;gap:.7rem;padding:.55rem .7rem;border-radius:.75rem;background:var(--panel2);border:1px solid var(--line)}
+.hairline{height:1px;background:var(--line)}
+.tab{
+  display:flex;align-items:center;gap:.5rem;
+  border:1px solid var(--line);background:var(--panel2);
+  padding:.55rem 1rem;border-radius:.9rem;color:var(--dim);
+  font-weight:600;font-size:13px;cursor:pointer;transition:all .15s;
+}
+.tab:hover{color:var(--chalk);border-color:#33426B}
+.tab.on{background:rgba(167,139,250,.12);color:var(--violet);border-color:rgba(167,139,250,.45)}
+.tab:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.mini{width:34px;height:34px;border-radius:.5rem;background:var(--panel2);border:1px solid var(--line);position:relative;flex:none}
+.mini::before,.mini::after{content:"";position:absolute;background:var(--axis);opacity:.6}
+.mini::before{left:50%;top:0;bottom:0;width:1px}
+.mini::after{top:50%;left:0;right:0;height:1px}
+.mini i{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--violet)}
+@media (prefers-reduced-motion: reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-10">
+
+  <header class="mb-6">
+    <p class="eyebrow mb-2">Laboratorio interactivo &middot; álgebra</p>
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">
+          Deconstructor de la <span class="bg-gradient-to-r from-violet-400 to-cyan-300 bg-clip-text text-transparent">Función Cuadrática</span>
+        </h1>
+        <p class="dim text-sm mt-1">Mueve los controles y observa cómo responde la parábola. Cada término de la fórmula tiene su color.</p>
+      </div>
+      <nav class="flex gap-2" aria-label="Modos">
+        <button id="tabLab" class="tab on" aria-pressed="true">Laboratorio y formas</button>
+        <button id="tabChallenge" class="tab" aria-pressed="false">Desafío inverso</button>
+      </nav>
+    </div>
+  </header>
+
+  <p id="liveDesc" class="sr-only" aria-live="polite"></p>
+
+  <main id="labView">
+    <div class="grid lg:grid-cols-[minmax(0,1fr)_330px] gap-6 items-start">
+
+      <section class="space-y-6">
+        <div class="card p-3 sm:p-4">
+          <canvas id="plot" role="img" aria-label="Gráfico de la parábola en el plano cartesiano" class="w-full h-[46vh] min-h-[320px] max-h-[540px]"></canvas>
+          <div class="flex flex-wrap gap-2 px-1 pt-3">
+            <span class="f-chip" style="color:var(--violet);border-color:rgba(167,139,250,.4)"><span class="dot" style="--tc:var(--violet)"></span>término ax²</span>
+            <span class="f-chip" style="color:var(--cyan);border-color:rgba(34,211,238,.4)"><span class="dot" style="--tc:var(--cyan)"></span>b</span>
+            <span class="f-chip" style="color:var(--rose);border-color:rgba(251,113,133,.4)"><span class="dot" style="--tc:var(--rose)"></span>c</span>
+            <span class="f-chip" style="color:var(--amber);border-color:rgba(251,191,36,.4)"><span class="dot" style="--tc:var(--amber)"></span>vértice</span>
+            <span class="f-chip" style="color:var(--emerald);border-color:rgba(52,211,153,.4)"><span class="dot" style="--tc:var(--emerald)"></span>raíces</span>
+          </div>
+        </div>
+
+        <div class="card p-4 sm:p-5">
+          <p class="eyebrow mb-3">Las tres formas</p>
+          <div class="grid md:grid-cols-3 gap-3">
+            <div class="rounded-xl border border-[var(--line)] bg-[var(--panel2)] p-3">
+              <p class="mono text-[11px] dim mb-2 uppercase tracking-wider">Polinómica</p>
+              <p id="fPoly" class="mono text-[13px] sm:text-sm leading-6">—</p>
+            </div>
+            <div class="rounded-xl border border-[var(--line)] bg-[var(--panel2)] p-3">
+              <p class="mono text-[11px] dim mb-2 uppercase tracking-wider">Canónica</p>
+              <p id="fCanon" class="mono text-[13px] sm:text-sm leading-6">—</p>
+            </div>
+            <div class="rounded-xl border border-[var(--line)] bg-[var(--panel2)] p-3">
+              <p class="mono text-[11px] dim mb-2 uppercase tracking-wider">Factorizada</p>
+              <p id="fFact" class="mono text-[13px] sm:text-sm leading-6">—</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card p-4 sm:p-5">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <p class="eyebrow">Fórmula resolvente (Bhaskara)</p>
+            <span id="dChip" class="f-chip">—</span>
+          </div>
+          <div id="bhaskara" class="mono text-[13px] sm:text-sm space-y-2 leading-7">—</div>
+        </div>
+      </section>
+
+      <aside class="space-y-6">
+        <div class="card p-4 sm:p-5">
+          <p class="eyebrow mb-3">Forma activa</p>
+          <div class="grid grid-cols-3 gap-2" role="group" aria-label="Selector de forma">
+            <button class="seg on" data-form="poly">Polinómica</button>
+            <button class="seg" data-form="canon">Canónica</button>
+            <button class="seg" data-form="fact">Factorizada</button>
+          </div>
+          <p id="formNote" class="mono text-[11px] dim mt-3"></p>
+          <div id="sliderPanel" class="mt-4 space-y-4"></div>
+        </div>
+
+        <div class="card p-4 sm:p-5">
+          <p class="eyebrow mb-3">Capas visuales</p>
+          <div class="space-y-1">
+            <label class="toggle-row">
+              <span class="dot" style="--tc:var(--violet)"></span>
+              <span class="text-[13px] font-medium flex-1">Traza de a·x²</span>
+              <input type="checkbox" data-layer="ax2"><span class="switch"></span>
+            </label>
+            <label class="toggle-row">
+              <span class="dot" style="--tc:var(--axis-sym)"></span>
+              <span class="text-[13px] font-medium flex-1">Eje de simetría</span>
+              <input type="checkbox" data-layer="axis" checked><span class="switch"></span>
+            </label>
+            <label class="toggle-row">
+              <span class="dot" style="--tc:var(--amber)"></span>
+              <span class="text-[13px] font-medium flex-1">Coordenadas del vértice</span>
+              <input type="checkbox" data-layer="vertex" checked><span class="switch"></span>
+            </label>
+            <label class="toggle-row">
+              <span class="dot" style="--tc:var(--emerald)"></span>
+              <span class="text-[13px] font-medium flex-1">Raíces x₁ · x₂</span>
+              <input type="checkbox" data-layer="roots" checked><span class="switch"></span>
+            </label>
+            <label class="toggle-row">
+              <span class="dot" style="--tc:var(--rose)"></span>
+              <span class="text-[13px] font-medium flex-1">Ordenada al origen (0, c)</span>
+              <input type="checkbox" data-layer="yint" checked><span class="switch"></span>
+            </label>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <main id="challengeView" class="hidden">
+    <div class="grid lg:grid-cols-[minmax(0,1fr)_330px] gap-6 items-start">
+
+      <section class="space-y-6">
+        <div class="card p-3 sm:p-4">
+          <div class="flex items-center justify-between px-1 pt-1 pb-2">
+            <p class="eyebrow">Parábola misteriosa <span id="challengeNo" class="text-[var(--violet)]">1</span></p>
+            <p class="mono text-[11px] dim">pistas ocultas hasta verificar</p>
+          </div>
+          <canvas id="plotChallenge" role="img" aria-label="Parábola misteriosa para deducir" class="w-full h-[46vh] min-h-[320px] max-h-[540px]"></canvas>
+        </div>
+
+        <div id="revealBlock" class="card p-4 sm:p-5 hidden">
+          <p class="eyebrow mb-3">La parábola revelada</p>
+          <div class="grid md:grid-cols-2 gap-3">
+            <div class="rounded-xl border border-[var(--line)] bg-[var(--panel2)] p-3">
+              <p class="mono text-[11px] dim mb-2 uppercase tracking-wider">Forma polinómica</p>
+              <p id="chF" class="mono text-[13px] sm:text-sm leading-6">—</p>
+            </div>
+            <div class="rounded-xl border border-[var(--line)] bg-[var(--panel2)] p-3">
+              <p class="mono text-[11px] dim mb-2 uppercase tracking-wider">Clasificación de Δ</p>
+              <div id="chD" class="space-y-2">—</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="space-y-6">
+        <div class="card p-4 sm:p-5">
+          <p class="eyebrow mb-1">Deducción</p>
+          <p class="dim text-[12px] mb-4">Observa la parábola y responde antes de verificar. No se puede adivinar al azar todo el tiempo.</p>
+
+          <div class="space-y-5">
+            <div>
+              <p class="text-[13px] font-semibold mb-2">1 · ¿Hacia dónde abre?</p>
+              <div class="grid grid-cols-2 gap-2" id="qConcavity">
+                <button class="opt" data-c="up">∪ Arriba</button>
+                <button class="opt" data-c="down">∩ Abajo</button>
+              </div>
+            </div>
+
+            <div>
+              <p class="text-[13px] font-semibold mb-2">2 · ¿Cuántas raíces reales?</p>
+              <div class="grid grid-cols-3 gap-2" id="qRoots">
+                <button class="opt" data-r="0">0</button>
+                <button class="opt" data-r="1">1</button>
+                <button class="opt" data-r="2">2</button>
+              </div>
+            </div>
+
+            <div>
+              <p class="text-[13px] font-semibold mb-2">3 · ¿En qué cuadrante está el vértice?</p>
+              <div class="grid grid-cols-2 gap-2" id="qQuadrant">
+                <button class="opt flex items-center gap-2" data-q="Q1"><span class="mini"><i style="top:4px;right:4px"></i></span>Q1</button>
+                <button class="opt flex items-center gap-2" data-q="Q2"><span class="mini"><i style="top:4px;left:4px"></i></span>Q2</button>
+                <button class="opt flex items-center gap-2" data-q="Q3"><span class="mini"><i style="bottom:4px;left:4px"></i></span>Q3</button>
+                <button class="opt flex items-center gap-2" data-q="Q4"><span class="mini"><i style="bottom:4px;right:4px"></i></span>Q4</button>
+                <button class="opt col-span-2 flex items-center justify-center gap-2" data-q="axis"><span class="mini"><i style="top:50%;left:50%;transform:translate(-50%,-50%)"></i></span>Sobre un eje</button>
+              </div>
+            </div>
+
+            <div>
+              <p class="text-[13px] font-semibold mb-2">4 · Ordenada al origen: ¿cuánto vale c?</p>
+              <input id="qC" type="number" step="0.5" min="-10" max="10" placeholder="Tu estimación" aria-label="Estimación del valor de c">
+              <p class="mono text-[11px] dim mt-2">Tolerancia ±1.5 · léela en el cruce del eje Y.</p>
+            </div>
+          </div>
+
+          <div class="mt-5 space-y-2">
+            <button id="btnVerify" class="btn-primary" disabled>Verificar deducción</button>
+            <button id="btnNew" class="btn-ghost">Nueva parábola</button>
+          </div>
+        </div>
+
+        <div id="resultPanel" class="card p-4 sm:p-5 hidden">
+          <div class="flex items-center justify-between mb-3">
+            <p class="eyebrow">Resultado</p>
+            <span id="scoreChip" class="f-chip">—</span>
+          </div>
+          <p id="scoreMsg" class="text-sm mb-4"></p>
+          <div id="answerList" class="space-y-2"></div>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <footer class="mt-10 hairline pt-5 flex flex-wrap justify-between gap-2">
+    <p class="mono text-[11px] dim">f(x) = ax² + bx + c</p>
+    <p class="mono text-[11px] dim">Hecho para explorar, no para memorizar.</p>
+  </footer>
+</div>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const COLORS = {
+  bg:'#0B1120', grid:'#1A2440', axis:'#55648A', dim:'#8E9AB8',
+  violet:'#A78BFA', cyan:'#22D3EE', rose:'#FB7185', emerald:'#34D399',
+  amber:'#FBBF24', axisSym:'#94A3B8', chalk:'#E6EAF5',
+};
+
+const round2 = v => Math.round(v * 100) / 100;
+const snap = v => Math.round(v * 10) / 10;
+const fmt = v => {
+  const r = round2(v);
+  if (Object.is(r, -0)) return '0';
+  return String(r);
+};
+const signOf = v => (v < 0 ? '−' : '+');
+
+const f = (a, b, c, x) => a * x * x + b * x + c;
+const disc = (a, b, c) => b * b - 4 * a * c;
+
+function toCanonical(a, b, c) {
+  return { a, h: snap(-b / (2 * a)), k: snap(c - (b * b) / (4 * a)) };
+}
+function toFactored(a, b, c) {
+  const d = disc(a, b, c);
+  if (d < 0) return null;
+  const s = Math.sqrt(d);
+  let x1 = (-b - s) / (2 * a);
+  let x2 = (-b + s) / (2 * a);
+  if (x1 > x2) [x1, x2] = [x2, x1];
+  return { a, x1: snap(x1), x2: snap(x2) };
+}
+function toPolyCanon(a, h, k) {
+  return { a, b: -2 * a * h, c: a * h * h + k };
+}
+function toPolyFact(a, x1, x2) {
+  return { a, b: -a * (x1 + x2), c: a * x1 * x2 };
+}
+
+const state = {
+  mode: 'lab',
+  form: 'poly',
+  poly: { a: 0.5, b: 2, c: -3 },
+  canon: { a: 0.5, h: -2, k: -5 },
+  fact: { a: 0.5, x1: -3, x2: 1 },
+  factValid: true,
+  show: { ax2: false, axis: true, vertex: true, roots: true, yint: true },
+  challenge: {
+    no: 1,
+    a: 0, b: 0, c: 0,
+    guesses: { concavity: null, roots: null, quadrant: null, c: '' },
+    revealed: false,
+    score: null,
+  },
+};
+
+function currentPoly() {
+  if (state.mode === 'challenge') return { a: state.challenge.a, b: state.challenge.b, c: state.challenge.c };
+  return state.poly;
+}
+
+function syncDerived() {
+  const { a, b, c } = state.poly;
+  Object.assign(state.canon, toCanonical(a, b, c));
+  const fac = toFactored(a, b, c);
+  if (fac) {
+    state.factValid = true;
+    state.fact = fac;
+  } else {
+    state.factValid = false;
+    state.fact.a = a;
+  }
+}
+
+function renderSliders() {
+  const defs = {
+    poly: [
+      { key: 'a', min: -4, max: 4, step: 0.1, label: 'a', note: 'curvatura' },
+      { key: 'b', min: -10, max: 10, step: 0.1, label: 'b', note: 'simetría' },
+      { key: 'c', min: -10, max: 10, step: 0.1, label: 'c', note: 'corte con Y' },
+    ],
+    canon: [
+      { key: 'a', min: -4, max: 4, step: 0.1, label: 'a', note: 'curvatura' },
+      { key: 'h', min: -8, max: 8, step: 0.1, label: 'h', note: 'vértice x' },
+      { key: 'k', min: -12, max: 12, step: 0.1, label: 'k', note: 'vértice y' },
+    ],
+    fact: [
+      { key: 'a', min: -4, max: 4, step: 0.1, label: 'a', note: 'curvatura' },
+      { key: 'x1', min: -10, max: 10, step: 0.1, label: 'x₁', note: 'primera raíz' },
+      { key: 'x2', min: -10, max: 10, step: 0.1, label: 'x₂', note: 'segunda raíz' },
+    ],
+  }[state.form];
+
+  const src = state[state.form];
+  const panel = $('sliderPanel');
+  panel.innerHTML = '';
+
+  defs.forEach(def => {
+    const val = src[def.key];
+    const disabled = state.form === 'fact' && !state.factValid && def.key !== 'a';
+    const pct = ((val - def.min) / (def.max - def.min)) * 100;
+
+    const row = document.createElement('div');
+    row.className = disabled ? 'opacity-40 pointer-events-none' : '';
+    row.innerHTML = `
+      <div class="flex items-baseline justify-between mb-1.5">
+        <span class="mono text-[13px] font-semibold c-v">${def.label}</span>
+        <span class="mono text-[12px] c-a">${disabled ? '—' : fmt(val)}</span>
+      </div>
+      <input type="range" min="${def.min}" max="${def.max}" step="${def.step}"
+             value="${val}" ${disabled ? 'disabled' : ''}
+             data-key="${def.key}" data-min="${def.min}" data-max="${def.max}"
+             style="background:linear-gradient(90deg, var(--violet) ${pct}%, #232E4D ${pct}%)"
+             aria-label="Coeficiente ${def.label}">
+      <p class="mono text-[10px] dim mt-1">${def.note}</p>`;
+
+    const input = row.querySelector('input');
+    input.addEventListener('input', () => {
+      let v = parseFloat(input.value);
+      if (def.key === 'a' && Math.abs(v) < 0.05) {
+        v = v >= 0 ? 0.1 : -0.1;
+        input.value = v;
+      }
+      src[def.key] = v;
+      const p = ((v - def.min) / (def.max - def.min)) * 100;
+      input.style.background = `linear-gradient(90deg, var(--violet) ${p}%, #232E4D ${p}%)`;
+      if (state.form === 'poly') {
+        state.poly = { ...state.poly };
+      } else if (state.form === 'canon') {
+        state.poly = toPolyCanon(state.canon.a, state.canon.h, state.canon.k);
+      } else if (state.factValid) {
+        state.poly = toPolyFact(state.fact.a, state.fact.x1, state.fact.x2);
+      }
+      syncDerived();
+      renderAll();
+    });
+
+    panel.appendChild(row);
+  });
+
+  $('formNote').textContent =
+    state.form === 'poly' ? 'f(x) = ax² + bx + c' :
+    state.form === 'canon' ? 'f(x) = a(x − h)² + k · vértice en (h, k)' :
+    'f(x) = a(x − x₁)(x − x₂)';
+}
+
+const sp = (v, cls) => `<span class="${cls}">${v}</span>`;
+
+function renderFormulaStrip(poly, fEl, canonEl, factEl) {
+  const { a, b, c } = poly;
+  const { h, k } = toCanonical(a, b, c);
+  const fac = toFactored(a, b, c);
+
+  fEl.innerHTML =
+    `f(x) = ${sp(fmt(a), 'c-v')}x² ${sp(signOf(b) + ' ' + fmt(Math.abs(b)) + 'x', 'c-c')} ${sp(signOf(c) + ' ' + fmt(Math.abs(c)), 'c-r')}`;
+
+  canonEl.innerHTML =
+    `f(x) = ${sp(fmt(a), 'c-v')}(x ${sp(h < 0 ? '+' : '−', 'c-c')} ${sp(fmt(Math.abs(h)), 'c-c')})² ${sp(signOf(k) + ' ' + fmt(Math.abs(k)), 'c-r')}`;
+
+  if (fac) {
+    factEl.innerHTML =
+      `f(x) = ${sp(fmt(a), 'c-v')}(x ${sp(fac.x1 < 0 ? '+' : '−', 'c-c')} ${sp(fmt(Math.abs(fac.x1)), 'c-c')})` +
+      `(x ${sp(fac.x2 < 0 ? '+' : '−', 'c-r')} ${sp(fmt(Math.abs(fac.x2)), 'c-r')})`;
+  } else {
+    factEl.innerHTML = `<span class="dim">no factoriza en ℝ &middot; Δ &lt; 0</span>`;
+  }
+}
+
+function renderBhaskara(poly, chipEl, bodyEl) {
+  const { a, b, c } = poly;
+  const d = disc(a, b, c);
+  const eps = 1e-9;
+
+  const cls = d > eps ? 'c-e' : Math.abs(d) <= eps ? 'c-a' : 'c-r';
+  const label = d > eps ? 'Δ > 0 · 2 raíces reales' : Math.abs(d) <= eps ? 'Δ = 0 · 1 raíz doble' : 'Δ < 0 · sin raíces reales';
+  chipEl.className = 'f-chip ' + cls;
+  chipEl.style.borderColor = 'currentColor';
+  chipEl.style.opacity = '';
+  chipEl.innerHTML = label;
+
+  const fourAC = 4 * a * c;
+  let rows = '';
+  rows += `<div>Δ = ${sp(fmt(b), 'c-c')}² − 4·${sp(fmt(a), 'c-v')}·${sp('(' + fmt(c) + ')', 'c-r')} = ${sp(fmt(b * b), 'c-c')} − ${sp('(' + fmt(fourAC) + ')', 'c-r')} = ${sp(fmt(d), cls)}</div>`;
+
+  if (d > eps) {
+    const s = Math.sqrt(d);
+    const x1 = (-b - s) / (2 * a);
+    const x2 = (-b + s) / (2 * a);
+    rows += `<div>x = ${sp(fmt(-b), 'c-c')} ± √${sp(fmt(d), cls)} / ${sp(fmt(2 * a), 'c-v')}</div>`;
+    rows += `<div class="flex flex-wrap gap-x-5"><span>${sp('x₁', 'c-e')} = ${sp(fmt(x1), 'c-e')}</span><span>${sp('x₂', 'c-e')} = ${sp(fmt(x2), 'c-e')}</span></div>`;
+  } else if (Math.abs(d) <= eps) {
+    rows += `<div>x = ${sp('−b / 2a', 'dim')} = ${sp(fmt(-b), 'c-c')} / ${sp(fmt(2 * a), 'c-v')} = ${sp(fmt(-b / (2 * a)), 'c-a')}</div>`;
+    rows += `<div class="dim text-[12px]">Una sola raíz doble: la parábola toca el eje X sin cruzarlo.</div>`;
+  } else {
+    rows += `<div>x = ${sp(fmt(-b), 'c-c')} ± √${sp('(' + fmt(d) + ')', 'c-r')} / ${sp(fmt(2 * a), 'c-v')}</div>`;
+    rows += `<div class="dim text-[12px]">La raíz de un número negativo no existe en ℝ: la parábola nunca cruza el eje X.</div>`;
+  }
+  bodyEl.innerHTML = rows;
+}
+
+function renderLab() {
+  $('fPoly').textContent = '—';
+  renderFormulaStrip(state.poly, $('fPoly'), $('fCanon'), $('fFact'));
+  renderBhaskara(state.poly, $('dChip'), $('bhaskara'));
+
+  const { a, b, c } = state.poly;
+  const { h, k } = state.canon;
+  const d = disc(a, b, c);
+  const eps = 1e-9;
+  const rootTxt = d > eps
+    ? `raíces ${fmt(state.fact.x1)} y ${fmt(state.fact.x2)}`
+    : Math.abs(d) <= eps ? `raíz doble ${fmt(-b / (2 * a))}` : 'sin raíces reales';
+
+  $('liveDesc').textContent =
+    `Función ${fmt(a)} x² ${signOf(b)} ${fmt(Math.abs(b))} x ${signOf(c)} ${fmt(Math.abs(c))}. ` +
+    `Vértice en ${fmt(h)} coma ${fmt(k)}. Discriminante ${fmt(d)}: ${rootTxt}.`;
+}
+
+function renderChallengeUI() {
+  const ch = state.challenge;
+  $('challengeNo').textContent = ch.no;
+
+  document.querySelectorAll('#qConcavity .opt').forEach(b =>
+    b.classList.toggle('on', ch.guesses.concavity === b.dataset.c));
+  document.querySelectorAll('#qRoots .opt').forEach(b =>
+    b.classList.toggle('on', ch.guesses.roots === b.dataset.r));
+  document.querySelectorAll('#qQuadrant .opt').forEach(b =>
+    b.classList.toggle('on', ch.guesses.quadrant === b.dataset.q));
+
+  const ready = ch.guesses.concavity !== null && ch.guesses.roots !== null &&
+                ch.guesses.quadrant !== null && ch.guesses.c !== '';
+  $('btnVerify').disabled = !ready || ch.revealed;
+
+  if (ch.revealed) {
+    $('revealBlock').classList.remove('hidden');
+    $('resultPanel').classList.remove('hidden');
+    renderChallengeReveal();
+    const p = currentPoly();
+    $('liveDesc').textContent =
+      `Parábola revelada: ${fmt(p.a)} x² ${signOf(p.b)} ${fmt(Math.abs(p.b))} x ${signOf(p.c)} ${fmt(Math.abs(p.c))}.`;
+  }
+}
+
+function quadrantOf(h, k) {
+  if (Math.abs(h) < 1e-9 || Math.abs(k) < 1e-9) return 'axis';
+  if (h > 0 && k > 0) return 'Q1';
+  if (h < 0 && k > 0) return 'Q2';
+  if (h < 0 && k < 0) return 'Q3';
+  return 'Q4';
+}
+
+function renderChallengeReveal() {
+  const ch = state.challenge;
+  const p = currentPoly();
+  const d = disc(p.a, p.b, p.c);
+  const { h, k } = toCanonical(p.a, p.b, p.c);
+  const fac = toFactored(p.a, p.b, p.c);
+
+  renderFormulaStrip(p, $('chF'), $('chF'), $('chF'));
+
+  const cls = d > 1e-9 ? 'c-e' : Math.abs(d) <= 1e-9 ? 'c-a' : 'c-r';
+  const label = d > 1e-9 ? `Δ = ${fmt(d)} > 0 · 2 raíces reales` : Math.abs(d) <= 1e-9 ? `Δ = 0 · raíz doble` : `Δ = ${fmt(d)} < 0 · sin raíces reales`;
+  const { a: pa, b: pb, c: pc } = p;
+  $('chF').innerHTML =
+    `f(x) = ${sp(fmt(pa), 'c-v')}x² ${sp(signOf(pb) + ' ' + fmt(Math.abs(pb)) + 'x', 'c-c')} ${sp(signOf(pc) + ' ' + fmt(Math.abs(pc)), 'c-r')}`;
+  $('chD').innerHTML = `
+    <span class="f-chip ${cls}" style="border-color:currentColor">${label}</span>
+    <div class="mono text-[13px]">Vértice V(${fmt(h)}, ${fmt(k)})</div>
+    <div class="mono text-[13px]">${fac ? `Raíces x₁ = ${fmt(fac.x1)} · x₂ = ${fmt(fac.x2)}` : 'Sin raíces reales'}</div>
+    <div class="mono text-[13px]">Ordenada al origen c = ${fmt(p.c)}</div>`;
+
+  const truth = {
+    concavity: p.a > 0 ? 'up' : 'down',
+    roots: d > 1e-9 ? '2' : Math.abs(d) <= 1e-9 ? '1' : '0',
+    quadrant: quadrantOf(h, k),
+  };
+  const ok = {
+    concavity: ch.guesses.concavity === truth.concavity,
+    roots: ch.guesses.roots === truth.roots,
+    quadrant: ch.guesses.quadrant === truth.quadrant,
+    c: Math.abs(parseFloat(ch.guesses.c) - p.c) <= 1.5,
+  };
+
+  const score = Object.values(ok).filter(Boolean).length;
+  ch.score = score;
+  $('scoreChip').className = 'f-chip ' + (score === 4 ? 'c-e' : score >= 2 ? 'c-a' : 'c-r');
+  $('scoreChip').style.borderColor = 'currentColor';
+  $('scoreChip').textContent = `Deducción ${score}/4`;
+  $('scoreMsg').textContent =
+    score === 4 ? '¡Deducción perfecta! Leíste la parábola como un libro.' :
+    score === 3 ? 'Muy cerca. Un detalle se te escapó.' :
+    score === 2 ? 'Buen intento: la mitad de la estructura quedó clara.' :
+    'Sigue practicando: compará cada marca con tu respuesta.';
+
+  const rows = [
+    ['Concavidad', ch.guesses.concavity === 'up' ? 'arriba' : 'abajo', truth.concavity === 'up' ? `arriba (a = ${fmt(p.a)})` : `abajo (a = ${fmt(p.a)})`, ok.concavity],
+    ['Raíces reales', ch.guesses.roots, truth.roots, ok.roots],
+    ['Cuadrante del vértice', ch.guesses.quadrant === 'axis' ? 'sobre un eje' : ch.guesses.quadrant, truth.quadrant === 'axis' ? 'sobre un eje' : truth.quadrant, ok.quadrant],
+    ['Ordenada al origen', ch.guesses.c || '—', `c = ${fmt(p.c)}`, ok.c],
+  ];
+
+  $('answerList').innerHTML = rows.map(([label, yours, correct, good]) => `
+    <div class="answer-row">
+      <span class="mono text-[13px] ${good ? 'c-e' : 'c-r'}">${good ? '✓' : '✗'}</span>
+      <span class="text-[12px] font-medium flex-1">${label}</span>
+      <span class="mono text-[11px] dim">tú: ${yours}</span>
+      <span class="mono text-[11px] ${good ? 'c-e' : 'c-c'}">${correct}</span>
+    </div>`).join('');
+}
+
+function renderAll() {
+  if (state.mode === 'lab') {
+    renderLab();
+  } else {
+    renderChallengeUI();
+  }
+}
+
+function genChallenge() {
+  const ch = state.challenge;
+  const sign = Math.random() < 0.5 ? -1 : 1;
+  const a = sign * (Math.round((0.5 + Math.random() * 2.5) * 4) / 4);
+  const rnd = (lo, hi, step) => {
+    const n = Math.round((lo + Math.random() * (hi - lo)) / step);
+    return Math.max(lo, Math.min(hi, n * step));
+  };
+  const caseN = Math.floor(Math.random() * 3);
+
+  if (caseN === 2) {
+    const x1 = rnd(-7, 7, 0.5);
+    let x2 = x1 + (Math.random() < 0.5 ? -1 : 1) * rnd(0.5, 4, 0.5);
+    x2 = Math.max(-7, Math.min(7, x2));
+    Object.assign(ch, toPolyFact(a, x1, x2));
+  } else if (caseN === 1) {
+    const x0 = rnd(-6, 6, 0.5);
+    Object.assign(ch, toPolyCanon(a, x0, 0));
+  } else {
+    const h = rnd(-5, 5, 0.5);
+    const k = sign * rnd(1, 6, 0.5);
+    Object.assign(ch, toPolyCanon(a, h, k));
+  }
+
+  ch.no += 1;
+  ch.guesses = { concavity: null, roots: null, quadrant: null, c: '' };
+  ch.revealed = false;
+  ch.score = null;
+  $('qC').value = '';
+  $('revealBlock').classList.add('hidden');
+  $('resultPanel').classList.add('hidden');
+  $('liveDesc').textContent = 'Nueva parábola misteriosa generada. Deduce sus propiedades.';
+  renderChallengeUI();
+}
+
+const XMIN = -10;
+const XMAX = 10;
+
+function calcView(poly) {
+  const { a, b, c } = poly;
+  const h = -b / (2 * a);
+  const k = c - (b * b) / (4 * a);
+  const yL = f(a, b, c, XMIN);
+  const yR = f(a, b, c, XMAX);
+  let half = Math.max(8, Math.abs(yL - k), Math.abs(yR - k)) + 1;
+  let yMin = k - half;
+  let yMax = k + half;
+  yMin = Math.min(yMin, -1.5);
+  yMax = Math.max(yMax, 1.5);
+  return { xMin: XMIN, xMax: XMAX, yMin, yMax };
+}
+
+function niceStep(pxPerUnit) {
+  const cands = [0.5, 1, 2, 5, 10, 20];
+  for (const s of cands) if (s * pxPerUnit >= 48) return s;
+  return 50;
+}
+
+const plot = $('plot');
+const plotCh = $('plotChallenge');
+const ctx = plot.getContext('2d');
+const ctxCh = plotCh.getContext('2d');
+
+function setupCanvas(cv) {
+  const dpr = window.devicePixelRatio || 1;
+  const r = cv.getBoundingClientRect();
+  cv.width = Math.max(1, Math.round(r.width * dpr));
+  cv.height = Math.max(1, Math.round(r.height * dpr));
+  const c = cv.getContext('2d');
+  c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { c, w: r.width, h: r.height };
+}
+
+function roundRectPath(c, x, y, w, h, r) {
+  c.beginPath();
+  c.moveTo(x + r, y);
+  c.arcTo(x + w, y, x + w, y + h, r);
+  c.arcTo(x + w, y + h, x, y + h, r);
+  c.arcTo(x, y + h, x, y, r);
+  c.arcTo(x, y, x + w, y, r);
+  c.closePath();
+}
+
+function drawPlot(c, w, h, poly, markers) {
+  c.clearRect(0, 0, w, h);
+  c.fillStyle = COLORS.bg;
+  c.fillRect(0, 0, w, h);
+
+  const v = calcView(poly);
+  const sx = x => ((x - v.xMin) / (v.xMax - v.xMin)) * w;
+  const sy = y => h - ((y - v.yMin) / (v.yMax - v.yMin)) * h;
+
+  const stepX = niceStep(w / (v.xMax - v.xMin));
+  const stepY = niceStep(h / (v.yMax - v.yMin));
+  const x0 = sx(0);
+  const y0 = sy(0);
+
+  c.strokeStyle = COLORS.grid;
+  c.lineWidth = 1;
+  c.font = '10px "IBM Plex Mono", monospace';
+
+  for (let x = Math.ceil(v.xMin / stepX) * stepX; x <= v.xMax + 1e-9; x += stepX) {
+    const px = sx(x);
+    c.beginPath();
+    c.moveTo(px, 0);
+    c.lineTo(px, h);
+    c.stroke();
+  }
+  for (let y = Math.ceil(v.yMin / stepY) * stepY; y <= v.yMax + 1e-9; y += stepY) {
+    const py = sy(y);
+    c.beginPath();
+    c.moveTo(0, py);
+    c.lineTo(w, py);
+    c.stroke();
+  }
+
+  c.strokeStyle = COLORS.axis;
+  c.lineWidth = 1.25;
+  c.beginPath();
+  c.moveTo(x0, 0);
+  c.lineTo(x0, h);
+  c.stroke();
+  c.beginPath();
+  c.moveTo(0, y0);
+  c.lineTo(w, y0);
+  c.stroke();
+
+  c.fillStyle = COLORS.dim;
+  c.textBaseline = 'top';
+  for (let x = Math.ceil(v.xMin / stepX) * stepX; x <= v.xMax + 1e-9; x += stepX) {
+    if (Math.abs(x) < stepX / 2) continue;
+    const t = fmt(x);
+    c.fillText(t, sx(x) - c.measureText(t).width / 2, Math.min(h - 14, Math.max(2, y0 + 6)));
+  }
+  c.textBaseline = 'middle';
+  for (let y = Math.ceil(v.yMin / stepY) * stepY; y <= v.yMax + 1e-9; y += stepY) {
+    if (Math.abs(y) < stepY / 2) continue;
+    const t = fmt(y);
+    c.fillText(t, Math.min(w - c.measureText(t).width - 3, Math.max(3, x0 + 5)), sy(y));
+  }
+  c.fillStyle = COLORS.axis;
+  c.fillText('0', Math.max(3, x0 + 5), Math.min(h - 16, y0 + 6));
+
+  c.textBaseline = 'middle';
+  c.fillStyle = COLORS.dim;
+  c.fillText('x', w - 12, Math.min(h - 4, Math.max(12, y0 + 14)));
+  c.fillText('y', Math.min(w - 12, Math.max(12, x0 - 14)), 10);
+
+  const { a, b, c: cc } = poly;
+  const N = 240;
+
+  if (markers.ax2) {
+    c.strokeStyle = COLORS.violet;
+    c.globalAlpha = 0.45;
+    c.lineWidth = 1.4;
+    c.setLineDash([5, 5]);
+    c.beginPath();
+    for (let i = 0; i <= N; i++) {
+      const x = v.xMin + ((v.xMax - v.xMin) * i) / N;
+      const y = a * x * x;
+      const px = sx(x), py = Math.max(-200, Math.min(h + 200, sy(y)));
+      if (i === 0) c.moveTo(px, py); else c.lineTo(px, py);
+    }
+    c.stroke();
+    c.setLineDash([]);
+    c.globalAlpha = 1;
+  }
+
+  const showSym = markers.symmetry;
+  if (showSym) {
+    const hx = -b / (2 * a);
+    const px = sx(hx);
+    c.strokeStyle = COLORS.axisSym;
+    c.lineWidth = 1.4;
+    c.setLineDash([4, 6]);
+    c.beginPath();
+    c.moveTo(px, 0);
+    c.lineTo(px, h);
+    c.stroke();
+    c.setLineDash([]);
+    const t = `x = ${fmt(hx)}`;
+    c.font = '10px "IBM Plex Mono", monospace';
+    const tw = c.measureText(t).width;
+    roundRectPath(c, Math.max(2, Math.min(w - tw - 10, px - tw / 2 - 5)), 6, tw + 10, 17, 5);
+    c.fillStyle = 'rgba(14,22,38,0.85)';
+    c.fill();
+    c.strokeStyle = 'rgba(148,163,184,0.35)';
+    c.stroke();
+    c.fillStyle = COLORS.axisSym;
+    c.fillText(t, Math.max(7, Math.min(w - tw - 7, px - tw / 2)), 14.5);
+  }
+
+  const grad = c.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, COLORS.violet);
+  grad.addColorStop(1, COLORS.cyan);
+
+  const path = new Path2D();
+  for (let i = 0; i <= N; i++) {
+    const x = v.xMin + ((v.xMax - v.xMin) * i) / N;
+    const y = f(a, b, cc, x);
+    const px = sx(x), py = sy(y);
+    if (i === 0) path.moveTo(px, py);
+    else path.lineTo(px, py);
+  }
+  c.strokeStyle = 'rgba(167,139,250,0.10)';
+  c.lineWidth = 8;
+  c.lineJoin = 'round';
+  c.lineCap = 'round';
+  c.stroke(path);
+  c.strokeStyle = grad;
+  c.lineWidth = 2.4;
+  c.stroke(path);
+
+  const pulse = REDUCED ? 0 : Math.max(0, Math.sin(performance.now() / 450));
+  const rr = 4.5 + pulse * 1.6;
+
+  if (!markers.visible) return;
+
+  const hh = -b / (2 * a);
+  const kk = cc - (b * b) / (4 * a);
+  const dd = disc(a, b, cc);
+
+  const inView = (x, y) => x >= -10 && x <= w + 10 && y >= -10 && y <= h + 10;
+
+  if (markers.vertex) {
+    const px = sx(hh), py = sy(kk);
+    if (inView(px, py)) {
+      c.beginPath();
+      c.arc(px, py, rr, 0, Math.PI * 2);
+      c.fillStyle = COLORS.amber;
+      c.fill();
+      c.strokeStyle = COLORS.bg;
+      c.lineWidth = 2;
+      c.stroke();
+      const t = `V(${fmt(hh)}, ${fmt(kk)})`;
+      c.font = '11px "IBM Plex Mono", monospace';
+      const tw = c.measureText(t).width;
+      const bx = Math.max(2, Math.min(w - tw - 10, px - tw / 2 - 5));
+      const by = Math.max(2, py - rr - 26);
+      roundRectPath(c, bx, by, tw + 10, 18, 5);
+      c.fillStyle = 'rgba(14,22,38,0.9)';
+      c.fill();
+      c.strokeStyle = 'rgba(251,191,36,0.4)';
+      c.stroke();
+      c.fillStyle = COLORS.amber;
+      c.textBaseline = 'middle';
+      c.fillText(t, bx + 5, by + 9);
+    }
+  }
+
+  if (markers.yint) {
+    const px = sx(0), py = sy(cc);
+    if (inView(px, py)) {
+      c.beginPath();
+      c.arc(px, py, rr, 0, Math.PI * 2);
+      c.fillStyle = COLORS.rose;
+      c.fill();
+      c.strokeStyle = COLORS.bg;
+      c.lineWidth = 2;
+      c.stroke();
+      const t = `(0, ${fmt(cc)})`;
+      c.font = '11px "IBM Plex Mono", monospace';
+      const tw = c.measureText(t).width;
+      const bx = Math.max(2, Math.min(w - tw - 10, px - tw / 2 - 5));
+      const by = Math.max(2, py - rr - 26);
+      roundRectPath(c, bx, by, tw + 10, 18, 5);
+      c.fillStyle = 'rgba(14,22,38,0.9)';
+      c.fill();
+      c.strokeStyle = 'rgba(251,113,133,0.4)';
+      c.stroke();
+      c.fillStyle = COLORS.rose;
+      c.textBaseline = 'middle';
+      c.fillText(t, bx + 5, by + 9);
+    }
+  }
+
+  if (markers.roots && dd > 1e-9) {
+    const s = Math.sqrt(dd);
+    const roots = [(-b - s) / (2 * a), (-b + s) / (2 * a)];
+    const labels = ['x₁', 'x₂'];
+    roots.forEach((rx, i) => {
+      const px = sx(rx), py = sy(0);
+      if (!inView(px, py)) return;
+      c.beginPath();
+      c.arc(px, py, rr, 0, Math.PI * 2);
+      c.fillStyle = COLORS.emerald;
+      c.fill();
+      c.strokeStyle = COLORS.bg;
+      c.lineWidth = 2;
+      c.stroke();
+      const t = `${labels[i]} = ${fmt(rx)}`;
+      c.font = '11px "IBM Plex Mono", monospace';
+      const tw = c.measureText(t).width;
+      const bx = Math.max(2, Math.min(w - tw - 10, px - tw / 2 - 5));
+      const by = Math.max(2, Math.min(h - 20, py + rr + 4));
+      roundRectPath(c, bx, by, tw + 10, 18, 5);
+      c.fillStyle = 'rgba(14,22,38,0.9)';
+      c.fill();
+      c.strokeStyle = 'rgba(52,211,153,0.4)';
+      c.stroke();
+      c.fillStyle = COLORS.emerald;
+      c.textBaseline = 'middle';
+      c.fillText(t, bx + 5, by + 9);
+    });
+  }
+}
+
+let lastMode = null;
+let lastPoly = null;
+let lastShow = null;
+
+function renderLoop() {
+  const isLab = state.mode === 'lab';
+  const cv = isLab ? plot : plotCh;
+  const { c, w, h } = setupCanvas(cv);
+
+  if (isLab) {
+    const changed = lastPoly !== state.poly || lastShow !== state.show;
+    lastPoly = state.poly;
+    lastShow = state.show;
+    if (changed || lastMode !== 'lab') {
+      drawPlot(c, w, h, state.poly, {
+        ax2: state.show.ax2,
+        symmetry: state.show.axis,
+        vertex: state.show.vertex,
+        roots: state.show.roots,
+        yint: state.show.yint,
+        visible: true,
+      });
+      lastMode = 'lab';
+    }
+  } else {
+    const reveal = state.challenge.revealed;
+    drawPlot(c, w, h, currentPoly(), {
+      ax2: false,
+      symmetry: reveal,
+      vertex: reveal,
+      roots: reveal,
+      yint: reveal,
+      visible: reveal,
+    });
+    lastMode = 'challenge';
+  }
+  requestAnimationFrame(renderLoop);
+}
+
+new ResizeObserver(() => {}).observe(plot);
+new ResizeObserver(() => {}).observe(plotCh);
+
+$('tabLab').addEventListener('click', () => {
+  state.mode = 'lab';
+  $('tabLab').classList.add('on');
+  $('tabLab').setAttribute('aria-pressed', 'true');
+  $('tabChallenge').classList.remove('on');
+  $('tabChallenge').setAttribute('aria-pressed', 'false');
+  $('labView').classList.remove('hidden');
+  $('challengeView').classList.add('hidden');
+  lastPoly = null;
+  renderAll();
+});
+
+$('tabChallenge').addEventListener('click', () => {
+  state.mode = 'challenge';
+  $('tabChallenge').classList.add('on');
+  $('tabChallenge').setAttribute('aria-pressed', 'true');
+  $('tabLab').classList.remove('on');
+  $('tabLab').setAttribute('aria-pressed', 'false');
+  $('challengeView').classList.remove('hidden');
+  $('labView').classList.add('hidden');
+  if (!state.challenge.revealed && state.challenge.no === 1 && state.challenge.a === 0) {
+    genChallenge();
+  }
+  renderAll();
+});
+
+document.querySelectorAll('.seg').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (state.mode !== 'lab') return;
+    state.form = btn.dataset.form;
+    document.querySelectorAll('.seg').forEach(b => b.classList.toggle('on', b === btn));
+    renderSliders();
+    renderAll();
+  });
+});
+
+document.querySelectorAll('input[data-layer]').forEach(input => {
+  input.addEventListener('change', () => {
+    state.show[input.dataset.layer] = input.checked;
+    lastShow = null;
+  });
+});
+
+const ch = state.challenge;
+document.querySelectorAll('#qConcavity .opt').forEach(b => {
+  b.addEventListener('click', () => { ch.guesses.concavity = b.dataset.c; renderChallengeUI(); });
+});
+document.querySelectorAll('#qRoots .opt').forEach(b => {
+  b.addEventListener('click', () => { ch.guesses.roots = b.dataset.r; renderChallengeUI(); });
+});
+document.querySelectorAll('#qQuadrant .opt').forEach(b => {
+  b.addEventListener('click', () => { ch.guesses.quadrant = b.dataset.q; renderChallengeUI(); });
+});
+$('qC').addEventListener('input', e => {
+  ch.guesses.c = e.target.value;
+  renderChallengeUI();
+});
+$('btnVerify').addEventListener('click', () => {
+  ch.revealed = true;
+  renderAll();
+});
+$('btnNew').addEventListener('click', genChallenge);
+
+syncDerived();
+renderSliders();
+renderAll();
+requestAnimationFrame(renderLoop);
+</script>
+</body>
+</html>
