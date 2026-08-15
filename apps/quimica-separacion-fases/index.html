@@ -170,6 +170,46 @@ body { font-family: var(--font-body); }
 
 .progreso { transition: width 0.5s ease; }
 
+.superficie {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 100%;
+  height: 14px;
+  pointer-events: none;
+  z-index: 3;
+}
+.superficie svg { width: 100%; height: 100%; display: block; }
+
+.burbuja {
+  position: absolute;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  animation: subir 4s linear infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+@keyframes subir {
+  0% { transform: translateY(0); opacity: 0; }
+  12% { opacity: 0.85; }
+  85% { opacity: 0.7; }
+  100% { transform: translateY(-160%); opacity: 0; }
+}
+
+.dibujar { animation: dibujar 0.55s ease forwards; }
+.dibujar-lento { animation-delay: 0.3s; }
+@keyframes dibujar { to { stroke-dashoffset: 0; } }
+
+.exito-ring { animation: anillo 0.9s ease-out; }
+@keyframes anillo {
+  from { box-shadow: 0 0 0 0 rgba(46,125,82,0.55); }
+  to { box-shadow: 0 0 0 20px rgba(46,125,82,0); }
+}
+
+.tool .icono-herramienta { transition: transform 0.2s ease; }
+.tool:hover .icono-herramienta { transform: scale(1.12) rotate(-3deg); }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation: none !important;
@@ -224,14 +264,19 @@ body { font-family: var(--font-body); }
           <p id="txtMezclaActual" class="font-mono text-xs text-steel text-right"></p>
         </div>
         <div id="zonaVaso" class="mt-4 py-2 rounded-2xl" aria-label="Vaso de precipitados: soltá aquí una herramienta para aplicarla">
-          <div id="vaso" class="beaker">
-            <div class="beaker-scale">
-              <span style="top:8px">400</span>
-              <span style="top:92px">300</span>
-              <span style="top:176px">200</span>
-              <span style="top:260px">100</span>
+          <div class="flex items-stretch justify-center">
+            <div class="flex-1 flex justify-center">
+              <div id="vaso" class="beaker">
+                <div class="beaker-scale">
+                  <span style="top:8px">400</span>
+                  <span style="top:92px">300</span>
+                  <span style="top:176px">200</span>
+                  <span style="top:260px">100</span>
+                </div>
+                <div id="capas"></div>
+              </div>
             </div>
-            <div id="capas"></div>
+            <div id="escena" class="hidden sm:block w-24 shrink-0 pointer-events-none" aria-hidden="true"></div>
           </div>
           <p id="txtArrastre" class="text-center text-sm text-steel mt-4">
             Arrastrá una herramienta desde la estantería hasta el vaso
@@ -319,6 +364,194 @@ const HERRAMIENTAS = {
     icono: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="w-7 h-7"><path d="M20 6h8M22 6v8h4V6M26 14l4 6 4 12a10 10 0 0 1-20 0l4-12z"/><path d="M26 36l8 6M22 38l-6 4" opacity=".55"/><path d="M24 46h6M22 42l2 4M28 42l2 4" stroke-width="4"/></svg>'
   }
 };
+
+const ESCENAS = {
+  imantacion(exito) {
+    const limaduras = exito
+      ? [0.75, 0.87, 0.99, 1.11, 1.23, 1.35].map((t, i) =>
+          '<circle r="3.2" fill="#3D4550">' +
+            '<animate attributeName="cx" values="' + [-95, -80, -65, -100, -85, -70][i] + ";-30\" dur=\"0.5s\" begin=\"" + t + 's" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+            '<animate attributeName="cy" values="310;105" dur="0.5s" begin="' + t + 's" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+          "</circle>").join("")
+      : "";
+    return '<svg viewBox="0 0 96 372" preserveAspectRatio="xMidYMid meet" style="overflow:visible" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">' +
+      '<g>' +
+        '<animateTransform attributeName="transform" type="translate" from="0 -35" to="0 12" dur="0.6s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+        (exito
+          ? '<animateTransform attributeName="transform" type="translate" from="0 12" to="0 -55" dur="0.5s" begin="1.9s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+            '<animate attributeName="opacity" from="1" to="0" dur="0.5s" begin="1.9s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>'
+          : '<animateTransform attributeName="transform" type="translate" from="0 12" to="0 -55" dur="0.5s" begin="1.1s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+            '<animate attributeName="opacity" from="1" to="0" dur="0.5s" begin="1.1s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>') +
+        '<g transform="translate(-52,50) scale(1.5)" fill="none" stroke="#1E62B8" stroke-width="3" stroke-linecap="round">' +
+          '<path d="M10 14v14a8 8 0 0 0 16 0V14"/><path d="M26 14v14a8 8 0 0 0 16 0V14"/><path d="M10 10v4M26 10v4M42 10v4" stroke-width="5"/>' +
+          '<path d="M14 32h4v10h-4zM26 32h4v10h-4z" fill="#B23A26" stroke="none"/>' +
+        "</g>" +
+      "</g>" +
+      (exito ? '<g>' + limaduras + "</g>" : "") +
+    "</svg>";
+  },
+
+  tamizacion(exito) {
+    const malla = exito
+      ? [0, 1, 2, 3, 4].map((k) => '<line x1="-193" y1="' + (68 + k * 16) + '" x2="-127" y2="' + (68 + k * 16) + '" stroke="#55677C" stroke-width="1.4" opacity="0.55"/>').join("") +
+        [0, 1, 2, 3, 4].map((k) => '<line x1="' + (-190 + k * 16) + '" y1="64" x2="' + (-190 + k * 16) + '" y2="132" stroke="#55677C" stroke-width="1.4" opacity="0.55"/>').join("")
+      : "";
+    const piedras = exito
+      ? [-190, -160, -130].map((cx, i) =>
+          '<circle cx="' + cx + '" cy="320" r="' + [13, 12, 11][i] + '" fill="#8d97a5" stroke="#6e7887" stroke-width="2">' +
+            '<animate attributeName="cy" values="320;100" dur="0.55s" begin="' + (0.6 + i * 0.18) + 's" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+          "</circle>").join("")
+      : "";
+    return '<svg viewBox="0 0 96 372" preserveAspectRatio="xMidYMid meet" style="overflow:visible" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">' +
+      '<g>' +
+        '<animateTransform attributeName="transform" type="translate" from="0 -45" to="0 12" dur="0.55s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+        (exito
+          ? '<animateTransform attributeName="transform" type="translate" from="0 12" to="0 -60" dur="0.5s" begin="1.75s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+            '<animate attributeName="opacity" from="1" to="0" dur="0.5s" begin="1.75s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>'
+          : '<animateTransform attributeName="transform" type="translate" from="0 12" to="0 -60" dur="0.5s" begin="1.05s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+            '<animate attributeName="opacity" from="1" to="0" dur="0.5s" begin="1.05s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>') +
+        '<g transform="translate(-160,82)">' +
+          '<circle cx="0" cy="0" r="60" fill="none" stroke="#55677C" stroke-width="4"/>' +
+          '<circle r="46" fill="none" stroke="#55677C" stroke-width="2" opacity="0.6"/>' +
+          malla +
+          '<path d="M-64 0 h128" stroke="#55677C" stroke-width="4"/>' +
+          '<path d="M-78 -14 L-64 0 M78 -14 L64 0" stroke="#55677C" stroke-width="3" stroke-linecap="round"/>' +
+        "</g>" +
+      "</g>" +
+      (exito ? '<g>' + piedras + "</g>" : "") +
+    "</svg>";
+  },
+
+  filtracion(exito) {
+    const arena = exito
+      ? [-172, -158, -146].map((cx, i) =>
+          '<circle cx="' + cx + '" cy="310" r="4" fill="#C9A566">' +
+            '<animate attributeName="cy" values="310;24" dur="0.5s" begin="' + (0.65 + i * 0.14) + 's" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+          "</circle>").join("")
+      : "";
+    const gotas = [0, 1, 2, 3].map((k) =>
+      '<circle cx="' + [-166, -158, -150, -162][k] + '" cy="52" r="3" fill="#6FA8DC" opacity="0.85">' +
+        '<animate attributeName="cy" values="52;300" dur="0.45s" begin="' + (0.85 + k * 0.12) + 's" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+      "</circle>").join("");
+    return '<svg viewBox="0 0 96 372" preserveAspectRatio="xMidYMid meet" style="overflow:visible" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">' +
+      '<g>' +
+        '<animateTransform attributeName="transform" type="translate" from="0 -35" to="0 18" dur="0.5s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+        (exito
+          ? '<animateTransform attributeName="transform" type="translate" from="0 18" to="0 -45" dur="0.5s" begin="2s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+            '<animate attributeName="opacity" from="1" to="0" dur="0.5s" begin="2s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>'
+          : '<animateTransform attributeName="transform" type="translate" from="0 18" to="0 -45" dur="0.5s" begin="1s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+            '<animate attributeName="opacity" from="1" to="0" dur="0.5s" begin="1s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>') +
+        '<g transform="translate(-160,24)" fill="none" stroke="#55677C" stroke-width="3" stroke-linecap="round">' +
+          '<path d="M-18 -22 h36 l12 50 h-60 z"/>' +
+          '<path d="M-15 -17 v11 M-10 -17 v12 M-5 -17 v11 M0 -17 v12 M5 -17 v11 M10 -17 v12" stroke-width="1.6" opacity="0.55"/>' +
+          '<path d="M0 28 v16" stroke-width="4"/>' +
+        "</g>" +
+      "</g>" +
+      (exito ? '<g>' + arena + "</g>" : "") +
+      '<g>' + gotas + "</g>" +
+    "</svg>";
+  },
+
+  decantacion(exito) {
+    const blobs = exito
+      ? '<g>' +
+          '<circle r="14" fill="#4A86C8" opacity="0.9">' +
+            '<animate attributeName="cy" values="250;52" dur="0.55s" begin="0.6s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+            '<animate attributeName="cy" values="52;315" dur="0.45s" begin="1.75s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+            '<animate attributeName="opacity" values="0.9;0.9;0" keyTimes="0;0.9;1" dur="2.2s" begin="0.6s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+          "</circle>" +
+          '<circle r="11" fill="#E8A33D" opacity="0.9">' +
+            '<animate attributeName="cy" values="250;52" dur="0.55s" begin="0.75s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+            '<animate attributeName="cy" values="52;12" dur="0.4s" begin="1.55s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+            '<animate attributeName="opacity" values="0.9;0.9;0" keyTimes="0;0.9;1" dur="1.95s" begin="0.75s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+          "</circle>" +
+        "</g>"
+      : "";
+    return '<svg viewBox="0 0 96 372" preserveAspectRatio="xMidYMid meet" style="overflow:visible" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">' +
+      '<g>' +
+        '<animateTransform attributeName="transform" type="translate" from="0 -40" to="0 16" dur="0.55s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+        (exito
+          ? '<animate attributeName="opacity" from="1" to="0" dur="0.35s" begin="2.25s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>'
+          : '<animate attributeName="opacity" from="1" to="0" dur="0.35s" begin="1.05s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>') +
+        '<g transform="translate(-160,66)" fill="none" stroke="#55677C" stroke-width="3" stroke-linecap="round">' +
+          '<ellipse cy="0" rx="18" ry="26"/>' +
+          '<path d="M0 -26 v-14"/>' +
+          '<rect x="-12" y="26" width="24" height="4" fill="#55677C" stroke="none"/>' +
+          '<path d="M0 30 v12" stroke-width="4"/>' +
+        "</g>" +
+      "</g>" +
+      blobs +
+    "</svg>";
+  },
+
+  destilacion(exito) {
+    const vapor = exito
+      ? '<circle fill="#DCEBF8">' +
+          '<animate attributeName="cy" values="150;15" dur="1.1s" begin="1.15s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+          '<animate attributeName="r" values="5;12" dur="1.1s" begin="1.15s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+          '<animate attributeName="opacity" values="0;0.85;0" keyTimes="0;0.4;1" dur="1.1s" begin="1.15s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+        "</circle>" +
+        '<circle fill="#DCEBF8">' +
+          '<animate attributeName="cy" values="150;15" dur="1.1s" begin="1.4s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+          '<animate attributeName="r" values="5;12" dur="1.1s" begin="1.4s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+          '<animate attributeName="opacity" values="0;0.85;0" keyTimes="0;0.4;1" dur="1.1s" begin="1.4s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+        "</circle>"
+      : '<circle fill="#4A525E">' +
+          '<animate attributeName="cy" values="150;15" dur="1.1s" begin="0.8s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+          '<animate attributeName="r" values="7;15" dur="1.1s" begin="0.8s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+          '<animate attributeName="opacity" values="0;0.75;0" keyTimes="0;0.4;1" dur="1.1s" begin="0.8s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+        "</circle>" +
+        '<circle fill="#4A525E">' +
+          '<animate attributeName="cy" values="150;15" dur="1.1s" begin="1s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+          '<animate attributeName="r" values="7;15" dur="1.1s" begin="1s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+          '<animate attributeName="opacity" values="0;0.75;0" keyTimes="0;0.4;1" dur="1.1s" begin="1s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+        "</circle>" +
+        '<circle fill="#4A525E">' +
+          '<animate attributeName="cy" values="150;15" dur="1.1s" begin="1.2s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+          '<animate attributeName="r" values="7;15" dur="1.1s" begin="1.2s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+          '<animate attributeName="opacity" values="0;0.75;0" keyTimes="0;0.4;1" dur="1.1s" begin="1.2s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+        "</circle>";
+    const burbujas = [-170, -152, -138].map((cx, i) =>
+      '<circle cx="' + cx + '" cy="330" r="3" fill="#FFFFFF">' +
+        '<animate attributeName="cy" values="330;185" dur="0.8s" begin="' + (0.35 + i * 0.18) + 's" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+        '<animate attributeName="opacity" values="0;0.55;0" keyTimes="0;0.5;1" dur="0.8s" begin="' + (0.35 + i * 0.18) + 's" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+      "</circle>").join("");
+    return '<svg viewBox="0 0 96 372" preserveAspectRatio="xMidYMid meet" style="overflow:visible" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">' +
+      '<g transform="translate(-160,0)">' + burbujas + "</g>" +
+      '<g>' +
+        '<animate attributeName="opacity" from="1" to="0" dur="0.3s" begin="2.5s" fill="freeze" media="(prefers-reduced-motion: no-preference)"/>' +
+        '<rect x="-50" y="336" width="18" height="22" rx="2" fill="#55677C"/>' +
+        '<path fill="#C77800">' +
+          '<animate attributeName="d" dur="0.35s" repeatCount="indefinite" media="(prefers-reduced-motion: no-preference)" values="M-41,336 C-49,325 -39,318 -41,308 C-43,318 -33,325 -41,336 Z;M-41,336 C-50,327 -38,320 -41,306 C-44,320 -32,327 -41,336 Z;M-41,336 C-49,325 -39,318 -41,308 C-43,318 -33,325 -41,336 Z"/>' +
+        "</path>" +
+      "</g>" +
+      '<g transform="translate(-160,0)">' + vapor + "</g>" +
+    "</svg>";
+  }
+};
+
+let timerEscena = null;
+
+function mostrarEscena(id, exito) {
+  const escena = document.getElementById("escena");
+  if (!escena) return;
+  if (timerEscena) clearTimeout(timerEscena);
+  escena.innerHTML = ESCENAS[id](exito);
+  escena.classList.remove("hidden");
+  timerEscena = setTimeout(() => {
+    escena.classList.add("hidden");
+    escena.innerHTML = "";
+  }, 3000);
+}
+
+function limpiarEscena() {
+  const escena = document.getElementById("escena");
+  if (timerEscena) clearTimeout(timerEscena);
+  if (escena) {
+    escena.classList.add("hidden");
+    escena.innerHTML = "";
+  }
+}
 
 const MEZCLAS = [
   {
@@ -528,6 +761,7 @@ function cargarMezcla(id) {
   };
   document.getElementById("informe").classList.add("hidden");
   document.getElementById("informe").innerHTML = "";
+  limpiarEscena();
   renderSelector();
   renderVaso();
   renderFichas();
@@ -576,6 +810,35 @@ function renderVaso() {
         " bg-ink/15 rounded px-1.5 py-1 backdrop-blur-[1px]";
       etiqueta.textContent = f.capa.label;
       div.appendChild(etiqueta);
+    }
+    if (activa && f.capa.esLiquido) {
+      const superficie = document.createElement("div");
+      superficie.className = "superficie";
+      superficie.innerHTML =
+        '<svg viewBox="0 0 72 14" preserveAspectRatio="none" aria-hidden="true">' +
+          '<path fill="rgba(255,255,255,0.35)" d="M0,9 C12,5 24,11 36,9 C48,7 60,11 72,9 L72,14 L0,14 Z">' +
+            '<animate attributeName="d" dur="3.5s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" media="(prefers-reduced-motion: no-preference)" values="M0,9 C12,5 24,11 36,9 C48,7 60,11 72,9 L72,14 L0,14 Z;M0,9 C12,12 24,6 36,9 C48,12 60,6 72,9 L72,14 L0,14 Z;M0,9 C12,5 24,11 36,9 C48,7 60,11 72,9 L72,14 L0,14 Z" />' +
+          "</path>" +
+        "</svg>";
+      div.appendChild(superficie);
+      if (["tex-agua", "tex-salmuera", "tex-destilada"].includes(f.capa.clase)) {
+        const burbujas = [
+          { left: "22%", size: 6, delay: "0s", dur: "4.2s" },
+          { left: "48%", size: 9, delay: "1.4s", dur: "5.1s" },
+          { left: "74%", size: 5, delay: "2.6s", dur: "3.9s" }
+        ];
+        burbujas.forEach((b) => {
+          const burbuja = document.createElement("span");
+          burbuja.className = "burbuja";
+          burbuja.style.left = b.left;
+          burbuja.style.width = b.size + "px";
+          burbuja.style.height = b.size + "px";
+          burbuja.style.bottom = "12%";
+          burbuja.style.animationDelay = b.delay;
+          burbuja.style.animationDuration = b.dur;
+          div.appendChild(burbuja);
+        });
+      }
     }
     cont.appendChild(div);
   });
@@ -634,7 +897,7 @@ function renderHerramientas() {
     btn.className = "tool seleccionable flex items-start gap-3 rounded-xl border-2 border-ink/10 bg-paper p-3 text-left cursor-grab";
     btn.setAttribute("aria-label", h.herramienta + ": " + h.descripcion);
     btn.innerHTML =
-      '<span class="shrink-0 mt-0.5 text-cobalt">' + h.icono + "</span>" +
+      '<span class="icono-herramienta shrink-0 mt-0.5 text-cobalt">' + h.icono + "</span>" +
       '<span>' +
         '<span class="block font-display font-semibold text-sm leading-snug">' + h.nombre + "</span>" +
         '<span class="block font-mono text-[11px] text-steel mt-1">' + h.herramienta + " · " + h.descripcion + "</span>" +
@@ -680,6 +943,8 @@ function aplicar(id) {
     renderVaso();
     renderFichas();
     renderEstado();
+    anilloExito();
+    mostrarEscena(id, true);
     renderFeedback({
       tipo: "ok",
       titulo: exito.titulo + " → " + fase.nombre + " aislada",
@@ -699,6 +964,7 @@ function aplicar(id) {
   estado.fallos++;
   renderEstado();
   sacudirVaso();
+  mostrarEscena(id, false);
   renderFeedback({
     tipo: "err",
     titulo: HERRAMIENTAS[id].herramienta + ": método incorrecto en este punto",
@@ -727,6 +993,24 @@ function sacudirVaso() {
   vaso.classList.add("sacudir");
 }
 
+function anilloExito() {
+  const vaso = document.getElementById("vaso");
+  vaso.classList.remove("exito-ring");
+  void vaso.offsetWidth;
+  vaso.classList.add("exito-ring");
+}
+
+const ICONO_CHECK =
+  '<svg viewBox="0 0 52 52" class="w-5 h-5 inline-block align-[-3px] mr-1" aria-hidden="true">' +
+    '<circle cx="26" cy="26" r="22" fill="none" stroke="#2E7D52" stroke-width="3" class="dibujar" style="stroke-dasharray:140;stroke-dashoffset:140"/>' +
+    '<path d="M14 27l7 7 16-16" fill="none" stroke="#2E7D52" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="dibujar dibujar-lento" style="stroke-dasharray:36;stroke-dashoffset:36"/>' +
+  "</svg>";
+const ICONO_CRUZ =
+  '<svg viewBox="0 0 52 52" class="w-5 h-5 inline-block align-[-3px] mr-1" aria-hidden="true">' +
+    '<circle cx="26" cy="26" r="22" fill="none" stroke="#B23A26" stroke-width="3" class="dibujar" style="stroke-dasharray:140;stroke-dashoffset:140"/>' +
+    '<path d="M18 18l16 16M34 18L18 34" fill="none" stroke="#B23A26" stroke-width="4" stroke-linecap="round" class="dibujar dibujar-lento" style="stroke-dasharray:46;stroke-dashoffset:46"/>' +
+  "</svg>";
+
 function renderFeedback(msg) {
   const cont = document.getElementById("feedback");
   if (!msg) {
@@ -737,7 +1021,7 @@ function renderFeedback(msg) {
   cont.innerHTML =
     '<div class="entrada rounded-xl border-2 p-4 ' + (esOk ? "border-lab-green/40 bg-lab-green/5" : "border-lab-red/40 bg-lab-red/5") + '">' +
       '<p class="font-display font-semibold ' + (esOk ? "text-lab-green" : "text-lab-red") + '">' +
-        (esOk ? "✓ " : "✗ ") + msg.titulo +
+        (esOk ? ICONO_CHECK : ICONO_CRUZ) + msg.titulo +
       "</p>" +
       '<p class="mt-2 text-sm leading-relaxed">' + msg.texto + "</p>" +
       (msg.equipo ? '<p class="mt-2 font-mono text-xs text-safety">Equipo: ' + msg.equipo + "</p>" : "") +
