@@ -462,7 +462,7 @@ function renderSliders() {
     row.innerHTML = `
       <div class="flex items-baseline justify-between mb-1.5">
         <span class="mono text-[13px] font-semibold c-v">${def.label}</span>
-        <span class="mono text-[12px] c-a">${disabled ? '—' : fmt(val)}</span>
+        <span class="mono text-[12px] c-a readout">${disabled ? '—' : fmt(val)}</span>
       </div>
       <input type="range" min="${def.min}" max="${def.max}" step="${def.step}"
              value="${val}" ${disabled ? 'disabled' : ''}
@@ -472,6 +472,7 @@ function renderSliders() {
       <p class="mono text-[10px] dim mt-1">${def.note}</p>`;
 
     const input = row.querySelector('input');
+    const readout = row.querySelector('.readout');
     input.addEventListener('input', () => {
       let v = parseFloat(input.value);
       if (def.key === 'a' && Math.abs(v) < 0.05) {
@@ -479,13 +480,12 @@ function renderSliders() {
         input.value = v;
       }
       src[def.key] = v;
+      readout.textContent = fmt(v);
       const p = ((v - def.min) / (def.max - def.min)) * 100;
       input.style.background = `linear-gradient(90deg, var(--violet) ${p}%, #232E4D ${p}%)`;
-      if (state.form === 'poly') {
-        state.poly = { ...state.poly };
-      } else if (state.form === 'canon') {
+      if (state.form === 'canon') {
         state.poly = toPolyCanon(state.canon.a, state.canon.h, state.canon.k);
-      } else if (state.factValid) {
+      } else if (state.form === 'fact' && state.factValid) {
         state.poly = toPolyFact(state.fact.a, state.fact.x1, state.fact.x2);
       }
       syncDerived();
