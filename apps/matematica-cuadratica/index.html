@@ -175,6 +175,18 @@ input:checked + .switch::after{left:16px}
 
       <section class="space-y-6">
         <div class="card p-3 sm:p-4">
+          <div class="flex items-center justify-between px-1 pt-1 pb-2">
+            <p class="eyebrow">Plano fijo · x ±10</p>
+            <label class="flex items-center gap-2 text-[12px] dim">
+              Escala Y
+              <select id="scaleY" class="bg-[var(--panel2)] border border-[var(--line)] rounded-lg text-[12px] px-2 py-1 mono text-[var(--chalk)] focus:outline-2 focus:outline-cyan-400" aria-label="Escala del eje Y">
+                <option value="10">±10</option>
+                <option value="20">±20</option>
+                <option value="50">±50</option>
+                <option value="100">±100</option>
+              </select>
+            </label>
+          </div>
           <canvas id="plot" role="img" aria-label="Gráfico de la parábola en el plano cartesiano" class="w-full h-[46vh] min-h-[320px] max-h-[540px]"></canvas>
           <div class="flex flex-wrap gap-2 px-1 pt-3">
             <span class="f-chip" style="color:var(--violet);border-color:rgba(167,139,250,.4)"><span class="dot" style="--tc:var(--violet)"></span>término ax²</span>
@@ -402,6 +414,7 @@ const state = {
   fact: { a: 0.5, x1: -3, x2: 1 },
   factValid: true,
   show: { ax2: false, axis: true, vertex: true, roots: true, yint: true },
+  scaleY: 10,
   challenge: {
     no: 1,
     a: 0, b: 0, c: 0,
@@ -675,27 +688,32 @@ function renderAll() {
 
 function genChallenge() {
   const ch = state.challenge;
-  const sign = Math.random() < 0.5 ? -1 : 1;
-  const a = sign * (Math.round((0.5 + Math.random() * 2.5) * 4) / 4);
   const rnd = (lo, hi, step) => {
     const n = Math.round((lo + Math.random() * (hi - lo)) / step);
     return Math.max(lo, Math.min(hi, n * step));
   };
-  const caseN = Math.floor(Math.random() * 3);
 
-  if (caseN === 2) {
-    const x1 = rnd(-7, 7, 0.5);
-    let x2 = x1 + (Math.random() < 0.5 ? -1 : 1) * rnd(0.5, 4, 0.5);
-    x2 = Math.max(-7, Math.min(7, x2));
-    Object.assign(ch, toPolyFact(a, x1, x2));
-  } else if (caseN === 1) {
-    const x0 = rnd(-6, 6, 0.5);
-    Object.assign(ch, toPolyCanon(a, x0, 0));
-  } else {
-    const h = rnd(-5, 5, 0.5);
-    const k = sign * rnd(1, 6, 0.5);
-    Object.assign(ch, toPolyCanon(a, h, k));
+  let p = null;
+  for (let t = 0; t < 300 && !p; t++) {
+    const sign = Math.random() < 0.5 ? -1 : 1;
+    const a = sign * (Math.round((0.25 + Math.random() * 2.75) * 4) / 4);
+    const caseN = Math.floor(Math.random() * 3);
+    let cand;
+    if (caseN === 2) {
+      const x1 = rnd(-7, 7, 0.5);
+      let x2 = x1 + (Math.random() < 0.5 ? -1 : 1) * rnd(0.5, 4, 0.5);
+      x2 = Math.max(-7, Math.min(7, x2));
+      cand = toPolyFact(a, x1, x2);
+    } else if (caseN === 1) {
+      cand = toPolyCanon(a, rnd(-6, 6, 0.5), 0);
+    } else {
+      cand = toPolyCanon(a, rnd(-4, 4, 0.5), sign * rnd(1, 6, 0.5));
+    }
+    const k = cand.c - (cand.b * cand.b) / (4 * cand.a);
+    if (Math.abs(cand.c) <= 9 && Math.abs(k) <= 5) p = cand;
   }
+  if (!p) p = { a: 1, b: 0, c: 2 };
+  Object.assign(ch, p);
 
   ch.no += 1;
   ch.guesses = { concavity: null, roots: null, quadrant: null, c: '' };
@@ -711,18 +729,14 @@ function genChallenge() {
 const XMIN = -10;
 const XMAX = 10;
 
-function calcView(poly) {
-  const { a, b, c } = poly;
-  const h = -b / (2 * a);
+function currentView() {
+  if (state.mode === 'lab') {
+    const y = state.scaleY;
+    return { xMin: XMIN, xMax: XMAX, yMin: -y, yMax: y };
+  }
+  const { a, b, c } = state.challenge;
   const k = c - (b * b) / (4 * a);
-  const yL = f(a, b, c, XMIN);
-  const yR = f(a, b, c, XMAX);
-  let half = Math.max(8, Math.abs(yL - k), Math.abs(yR - k)) + 1;
-  let yMin = k - half;
-  let yMax = k + half;
-  yMin = Math.min(yMin, -1.5);
-  yMax = Math.max(yMax, 1.5);
-  return { xMin: XMIN, xMax: XMAX, yMin, yMax };
+  return { xMin: XMIN, xMax: XMAX, yMin: k - 10, yMax: k + 10 };
 }
 
 function niceStep(pxPerUnit) {
@@ -760,12 +774,11 @@ function roundRectPath(c, x, y, w, h, r) {
   c.closePath();
 }
 
-function drawPlot(c, w, h, poly, markers) {
+function drawPlot(c, w, h, v, poly, markers) {
   c.clearRect(0, 0, w, h);
   c.fillStyle = COLORS.bg;
   c.fillRect(0, 0, w, h);
 
-  const v = calcView(poly);
   const sx = x => ((x - v.xMin) / (v.xMax - v.xMin)) * w;
   const sy = y => h - ((y - v.yMin) / (v.yMax - v.yMin)) * h;
 
@@ -990,7 +1003,7 @@ function renderLoop() {
   const { c, w, h } = setupCanvas(cv);
 
   if (isLab) {
-    drawPlot(c, w, h, state.poly, {
+    drawPlot(c, w, h, currentView(), state.poly, {
       ax2: state.show.ax2,
       symmetry: state.show.axis,
       vertex: state.show.vertex,
@@ -1000,7 +1013,7 @@ function renderLoop() {
     });
   } else {
     const reveal = state.challenge.revealed;
-    drawPlot(c, w, h, currentPoly(), {
+    drawPlot(c, w, h, currentView(), currentPoly(), {
       ax2: false,
       symmetry: reveal,
       vertex: reveal,
@@ -1051,6 +1064,10 @@ document.querySelectorAll('input[data-layer]').forEach(input => {
   input.addEventListener('change', () => {
     state.show[input.dataset.layer] = input.checked;
   });
+});
+
+$('scaleY').addEventListener('change', e => {
+  state.scaleY = parseFloat(e.target.value);
 });
 
 const ch = state.challenge;
