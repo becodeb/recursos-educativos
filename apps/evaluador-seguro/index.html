@@ -1,0 +1,1040 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Evaluador Seguro: examen en línea de nivel secundario con temporizador, modo pantalla completa y auditoría de foco para el docente.">
+  <title>Evaluador Seguro · Auditoría de Foco</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%232F5BD9' d='M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z'/%3E%3Ccircle cx='12' cy='11' r='3' fill='%23F6F8FD'/%3E%3Ccircle cx='12' cy='11' r='1.3' fill='%232F5BD9'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#0D1428',
+            panel: '#111A36',
+            paper: '#F6F8FD',
+            line: '#E2E8F4',
+            muted: '#5B6786',
+            brand: { DEFAULT: '#2F5BD9', deep: '#1D3E8F', soft: '#E8EEFC' },
+            alert: { DEFAULT: '#D64545', soft: '#FBEBEB' },
+            ok: { DEFAULT: '#1F9D6B', soft: '#E4F5EE' },
+            amber: { DEFAULT: '#C77F16', soft: '#FCF1DC' },
+          },
+          fontFamily: {
+            display: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            body: ['"Instrument Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body {
+      background-color: #0D1428;
+      background-image:
+        linear-gradient(rgba(148, 163, 216, 0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 216, 0.055) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+    :focus-visible {
+      outline: 3px solid #2F5BD9;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+    .vigil {
+      width: 12px;
+      height: 12px;
+      border-radius: 9999px;
+      background: #5B6786;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    .vigil.ok {
+      background: #1F9D6B;
+      box-shadow: 0 0 0 4px rgba(31, 157, 107, 0.18), 0 0 14px rgba(31, 157, 107, 0.55);
+    }
+    .vigil.alert {
+      background: #D64545;
+      animation: vigil-pulse 1s ease-in-out 3;
+    }
+    @keyframes vigil-pulse {
+      0%, 100% { box-shadow: 0 0 0 4px rgba(214, 69, 69, 0.2), 0 0 10px rgba(214, 69, 69, 0.4); }
+      50% { box-shadow: 0 0 0 9px rgba(214, 69, 69, 0.08), 0 0 22px rgba(214, 69, 69, 0.75); }
+    }
+    @keyframes shake {
+      10%, 90% { transform: translateX(-2px); }
+      20%, 80% { transform: translateX(4px); }
+      30%, 50%, 70% { transform: translateX(-7px); }
+      40%, 60% { transform: translateX(7px); }
+    }
+    .shake { animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+    @keyframes modal-in {
+      from { opacity: 0; transform: translateY(14px) scale(0.98); }
+      to { opacity: 1; transform: none; }
+    }
+    .modal-in { animation: modal-in 0.22s ease-out both; }
+    .timer-urgent {
+      color: #D64545;
+      animation: blink 1s steps(2, start) infinite;
+    }
+    @keyframes blink { to { opacity: 0.5; } }
+    .ruler-seg {
+      flex: 1;
+      height: 6px;
+      border-radius: 9999px;
+      background: #E2E8F4;
+      transition: background 0.3s;
+    }
+    .ruler-seg.filled { background: #2F5BD9; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="font-body text-ink antialiased min-h-screen">
+
+  <main id="app" class="min-h-screen">
+
+    <!-- ============ HOME ============ -->
+    <section id="view-home" class="max-w-2xl mx-auto px-4 py-10 md:py-16">
+      <header class="flex items-center gap-3 mb-8">
+        <svg viewBox="0 0 24 24" class="w-11 h-11 shrink-0" aria-hidden="true">
+          <path fill="#2F5BD9" d="M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z"/>
+          <path fill="#0D1428" d="M12 7.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm0 1.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4z"/>
+        </svg>
+        <div>
+          <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-brand">Modo vigilado · Nivel secundario</p>
+          <h1 class="font-display font-bold text-2xl md:text-3xl text-paper">Evaluador Seguro</h1>
+        </div>
+      </header>
+
+      <div class="bg-paper rounded-2xl shadow-2xl ring-1 ring-white/10 border-t-4 border-t-brand overflow-hidden">
+        <div class="px-6 py-8 md:px-10">
+          <p class="font-display text-xl md:text-2xl font-semibold leading-snug">
+            Tu evaluación, con el foco donde corresponde.
+          </p>
+          <p class="text-muted mt-2 text-sm md:text-base leading-relaxed">
+            Completá la ficha y comenzá. El sistema registra cada pérdida de foco
+            de la ventana y deja el historial disponible para tu docente.
+          </p>
+
+          <form id="form-inicio" class="mt-7 space-y-5" novalidate>
+            <div>
+              <label for="campo-nombre" class="block text-sm font-semibold mb-1.5">Nombre completo</label>
+              <input id="campo-nombre" type="text" autocomplete="name" placeholder="Ej.: Lucía Fernández"
+                class="w-full rounded-lg border border-line bg-white px-3.5 py-2.5 placeholder-muted/60 focus:border-brand focus:ring-2 focus:ring-brand/30 outline-none">
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label for="campo-curso" class="block text-sm font-semibold mb-1.5">Curso y división</label>
+                <input id="campo-curso" type="text" autocomplete="off" placeholder="Ej.: 4° A"
+                  class="w-full rounded-lg border border-line bg-white px-3.5 py-2.5 placeholder-muted/60 focus:border-brand focus:ring-2 focus:ring-brand/30 outline-none">
+              </div>
+              <div>
+                <label for="campo-tema" class="block text-sm font-semibold mb-1.5">Tema de evaluación</label>
+                <input id="campo-tema" type="text" autocomplete="off" placeholder="Ej.: Ecuaciones lineales"
+                  class="w-full rounded-lg border border-line bg-white px-3.5 py-2.5 placeholder-muted/60 focus:border-brand focus:ring-2 focus:ring-brand/30 outline-none">
+              </div>
+            </div>
+            <p id="error-ficha" class="hidden text-sm font-medium text-alert" role="alert"></p>
+            <button id="btn-comenzar" type="submit"
+              class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-brand hover:bg-brand-deep active:scale-[0.99] transition text-white font-semibold px-4 py-3">
+              <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+              </svg>
+              Comenzar evaluación
+            </button>
+          </form>
+
+          <div class="mt-8 border-t border-line pt-6">
+            <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-muted mb-3">Cómo funciona</p>
+            <ol class="space-y-3">
+              <li class="flex gap-3">
+                <span class="font-mono text-sm font-bold text-brand pt-0.5">01</span>
+                <p class="text-sm text-muted"><strong class="text-ink font-semibold">Completá la ficha.</strong> Tus datos identifican el examen.</p>
+              </li>
+              <li class="flex gap-3">
+                <span class="font-mono text-sm font-bold text-brand pt-0.5">02</span>
+                <p class="text-sm text-muted"><strong class="text-ink font-semibold">Resolvé en modo vigilado.</strong> Pantalla completa, 10 minutos y monitoreo de foco.</p>
+              </li>
+              <li class="flex gap-3">
+                <span class="font-mono text-sm font-bold text-brand pt-0.5">03</span>
+                <p class="text-sm text-muted"><strong class="text-ink font-semibold">Entregá y verificá.</strong> El docente revisa tus respuestas y el registro de foco.</p>
+              </li>
+            </ol>
+          </div>
+        </div>
+        <div class="bg-panel px-6 py-4 md:px-10 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+          <p class="text-[13px] text-paper/60 leading-snug">
+            El registro se guarda en este navegador y queda disponible para tu docente.
+            No se envía información a servidores externos.
+          </p>
+          <button id="btn-acceso-docente" class="text-[13px] font-semibold text-brand hover:text-paper transition shrink-0 inline-flex items-center gap-1.5">
+            <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Acceso docente
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ EXAM ============ -->
+    <section id="view-exam" class="hidden">
+      <div class="sticky top-0 z-30 bg-panel/95 backdrop-blur border-b border-white/10">
+        <div class="max-w-3xl mx-auto px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-2 justify-between">
+          <div class="flex items-center gap-2.5">
+            <svg viewBox="0 0 24 24" class="w-6 h-6" aria-hidden="true">
+              <path fill="#2F5BD9" d="M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z"/>
+              <circle cx="12" cy="11" r="3" fill="#F6F8FD"/><circle cx="12" cy="11" r="1.3" fill="#2F5BD9"/>
+            </svg>
+            <div class="hidden sm:block leading-tight">
+              <p class="font-display font-semibold text-paper text-sm">Evaluador Seguro</p>
+              <p class="font-mono text-[10px] uppercase tracking-[0.18em] text-paper/50">Modo vigilado</p>
+            </div>
+          </div>
+          <div class="text-center">
+            <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-paper/50">Tiempo restante</p>
+            <p id="reloj" class="font-mono font-bold text-2xl text-paper leading-none mt-0.5" aria-live="off">10:00</p>
+          </div>
+          <div class="flex items-center gap-2.5">
+            <div class="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5 ring-1 ring-white/10">
+              <span id="vigil" class="vigil ok" aria-hidden="true"></span>
+              <span id="chip-incidentes" class="font-mono text-[12px] font-medium text-paper/80">0 incidentes</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="max-w-3xl mx-auto px-4 py-6">
+        <div class="mb-5 flex items-end justify-between gap-4">
+          <div>
+            <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-brand mb-1">Progreso</p>
+            <p id="progreso-texto" class="font-display font-semibold text-paper text-lg">Pregunta 1 de 4</p>
+          </div>
+          <div class="flex-1 max-w-[220px] flex gap-1.5 items-center" id="barra-progreso" aria-hidden="true"></div>
+        </div>
+        <div id="contenedor-preguntas" class="space-y-5"></div>
+
+        <div class="sticky bottom-0 mt-8 -mx-4 px-4 py-4 bg-panel/95 backdrop-blur border-t border-white/10 flex items-center justify-between gap-4">
+          <p class="hidden md:block text-[13px] text-paper/60">Podés cambiar tus respuestas hasta entregar.</p>
+          <button id="btn-entregar"
+            class="ml-auto inline-flex items-center gap-2 rounded-lg bg-ok hover:bg-[#178a5c] active:scale-[0.99] transition text-white font-semibold px-5 py-2.5">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/>
+            </svg>
+            Entregar examen
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DONE ============ -->
+    <section id="view-done" class="hidden max-w-2xl mx-auto px-4 py-10 md:py-16">
+      <div class="bg-paper rounded-2xl shadow-2xl ring-1 ring-white/10 border-t-4 border-t-ok overflow-hidden">
+        <div class="px-6 py-10 md:px-10 text-center">
+          <div class="mx-auto w-16 h-16 rounded-full bg-ok-soft flex items-center justify-center mb-5">
+            <svg viewBox="0 0 24 24" class="w-8 h-8 text-ok" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20 6 9 17l-5-5"/>
+            </svg>
+          </div>
+          <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-ok mb-2">Entrega registrada</p>
+          <h2 class="font-display text-2xl md:text-3xl font-bold">Examen entregado</h2>
+          <p class="text-muted mt-2 text-sm md:text-base leading-relaxed">
+            Tus respuestas y el registro de foco quedaron guardados.
+            Tu docente revisará las respuestas de desarrollo antes de la nota final.
+          </p>
+          <dl id="resumen-entrega" class="mt-7 grid grid-cols-2 gap-3 text-left"></dl>
+          <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+            <button id="btn-ir-docente"
+              class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand hover:bg-brand-deep transition text-white font-semibold px-5 py-2.5">
+              <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              Ver panel docente
+            </button>
+            <button id="btn-nueva"
+              class="inline-flex items-center justify-center gap-2 rounded-lg border border-line bg-white hover:border-brand hover:text-brand transition font-semibold px-5 py-2.5">
+              Nueva evaluación
+            </button>
+          </div>
+          <p class="text-[13px] text-muted mt-6">
+            Guardaste tu examen a las <span id="hora-entrega" class="font-mono font-medium"></span>.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TEACHER ============ -->
+    <section id="view-teacher" class="hidden">
+      <div class="max-w-3xl mx-auto px-4 py-10 md:py-14">
+        <header class="flex flex-wrap items-center justify-between gap-4 mb-8">
+          <div>
+            <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-brand mb-1">Panel docente · Auditoría de foco</p>
+            <h2 class="font-display text-2xl md:text-3xl font-bold text-paper">Informe de sesión</h2>
+          </div>
+          <label class="flex items-center gap-2 text-sm text-paper/70">
+            <span class="hidden sm:inline">Sesión:</span>
+            <select id="selector-sesiones" class="bg-panel border border-white/15 text-paper rounded-lg px-3 py-2 font-mono text-sm outline-none focus:border-brand"></select>
+          </label>
+        </header>
+
+        <div class="space-y-5">
+          <div class="bg-paper rounded-2xl ring-1 ring-white/10 border-t-4 border-t-brand overflow-hidden">
+            <div class="px-6 py-6 md:px-8 grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4" id="datos-alumno"></div>
+          </div>
+
+          <div class="bg-paper rounded-2xl ring-1 ring-white/10 overflow-hidden">
+            <div class="px-6 py-5 md:px-8 flex flex-wrap items-center justify-between gap-4 border-b border-line">
+              <div>
+                <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-muted mb-1">Nota</p>
+                <p class="font-display font-bold text-4xl">
+                  <span id="nota-valor" class="text-ink">0,0</span>
+                  <span class="text-muted text-2xl font-semibold">/10</span>
+                </p>
+              </div>
+              <span id="chip-nota" class="font-semibold text-sm rounded-full px-3.5 py-1.5"></span>
+            </div>
+            <div class="px-6 py-5 md:px-8">
+              <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-muted mb-3">Desglose por pregunta</p>
+              <div id="desglose" class="space-y-3"></div>
+            </div>
+          </div>
+
+          <div class="bg-paper rounded-2xl ring-1 ring-white/10 overflow-hidden">
+            <div class="px-6 py-5 md:px-8 flex items-center justify-between border-b border-line">
+              <div>
+                <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-muted mb-0.5">Historial de incidentes de foco</p>
+                <p class="text-[13px] text-muted">Registro cronológico con hora exacta y duración fuera de la ventana.</p>
+              </div>
+              <span id="chip-total-incidentes" class="font-mono text-xs font-bold rounded-full px-3 py-1"></span>
+            </div>
+            <div class="px-6 py-5 md:px-8">
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm min-w-[460px]">
+                  <thead>
+                    <tr class="font-mono text-[11px] uppercase tracking-[0.18em] text-muted text-left border-b border-line">
+                      <th class="py-2 pr-4 font-medium">Hora</th>
+                      <th class="py-2 pr-4 font-medium">Duración fuera</th>
+                      <th class="py-2 font-medium">Evento</th>
+                    </tr>
+                  </thead>
+                  <tbody id="log-incidentes" class="font-mono text-[13px]"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-3">
+            <button id="btn-copiar"
+              class="inline-flex items-center justify-center gap-2 rounded-lg bg-panel border border-white/15 text-paper hover:border-brand transition font-semibold px-5 py-2.5">
+              <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Copiar informe
+            </button>
+            <button id="btn-salir-panel"
+              class="inline-flex items-center justify-center gap-2 rounded-lg border border-line bg-white text-ink hover:border-alert hover:text-alert transition font-semibold px-5 py-2.5">
+              Salir del panel
+            </button>
+          </div>
+
+          <p class="text-[13px] text-paper/50 leading-relaxed">
+            El bloqueo de atajos y el registro de foco funcionan dentro de las limitaciones del navegador.
+            Los datos viven únicamente en este equipo. Copiar el informe respalda la revisión.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ MODAL: AVISO DE FOCO ============ -->
+  <div id="modal-aviso" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-ink/70 backdrop-blur-sm" aria-hidden="true"></div>
+    <div id="caja-aviso" class="relative bg-paper rounded-2xl shadow-2xl ring-1 ring-alert/40 max-w-md w-full p-6 md:p-8 modal-in" role="alertdialog" aria-modal="true" aria-labelledby="aviso-titulo">
+      <div class="flex items-start gap-4">
+        <div class="shrink-0 w-11 h-11 rounded-full bg-alert-soft flex items-center justify-center">
+          <svg viewBox="0 0 24 24" class="w-6 h-6 text-alert" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>
+            <path d="M12 9v4"/><path d="M12 17h.01"/>
+          </svg>
+        </div>
+        <div>
+          <h3 id="aviso-titulo" class="font-display font-bold text-lg">Se registró una pérdida de foco</h3>
+          <p id="aviso-texto" class="text-sm text-muted mt-1.5 leading-relaxed"></p>
+        </div>
+      </div>
+      <div id="aviso-detalle" class="mt-4 flex items-center gap-3 bg-panel rounded-xl px-4 py-3"></div>
+      <p id="aviso-conteo" class="font-mono text-[12px] text-alert font-medium mt-4"></p>
+      <button id="btn-continuar-aviso" class="mt-5 w-full rounded-lg bg-alert hover:bg-[#bd3a3a] active:scale-[0.99] transition text-white font-semibold px-4 py-2.5">
+        Continuar
+      </button>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: CONFIRMAR ENTREGA ============ -->
+  <div id="modal-entregar" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-ink/70 backdrop-blur-sm" aria-hidden="true"></div>
+    <div class="relative bg-paper rounded-2xl shadow-2xl max-w-md w-full p-6 md:p-8 modal-in" role="dialog" aria-modal="true" aria-labelledby="entregar-titulo">
+      <h3 id="entregar-titulo" class="font-display font-bold text-lg">¿Entregar el examen?</h3>
+      <p id="entregar-texto" class="text-sm text-muted mt-1.5 leading-relaxed">Quedan <span id="entregar-tiempo" class="font-mono font-semibold text-ink"></span>. Las respuestas se envían una sola vez.</p>
+      <div class="mt-6 flex flex-col-reverse sm:flex-row gap-3 justify-end">
+        <button id="btn-seguir" class="rounded-lg border border-line bg-white hover:border-brand hover:text-brand transition font-semibold px-4 py-2.5">Seguir resolviendo</button>
+        <button id="btn-confirmar-entrega" class="rounded-lg bg-ok hover:bg-[#178a5c] active:scale-[0.99] transition text-white font-semibold px-4 py-2.5">Entregar examen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: CLAVE DOCENTE ============ -->
+  <div id="modal-clave" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-ink/70 backdrop-blur-sm" aria-hidden="true"></div>
+    <div id="caja-clave" class="relative bg-paper rounded-2xl shadow-2xl max-w-sm w-full p-6 md:p-8 modal-in" role="dialog" aria-modal="true" aria-labelledby="clave-titulo">
+      <div class="w-11 h-11 rounded-full bg-brand-soft flex items-center justify-center mb-4">
+        <svg viewBox="0 0 24 24" class="w-6 h-6 text-brand" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h3 id="clave-titulo" class="font-display font-bold text-lg">Acceso docente</h3>
+      <p class="text-sm text-muted mt-1">Ingresá la clave institucional para abrir la auditoría.</p>
+      <input id="campo-clave" type="password" autocomplete="current-password" placeholder="Clave"
+        class="mt-4 w-full rounded-lg border border-line bg-white px-3.5 py-2.5 focus:border-brand focus:ring-2 focus:ring-brand/30 outline-none">
+      <p id="error-clave" class="hidden text-sm font-medium text-alert mt-2" role="alert">Clave incorrecta. Probá de nuevo.</p>
+      <div class="mt-5 flex gap-3 justify-end">
+        <button id="btn-cancelar-clave" class="rounded-lg border border-line bg-white hover:border-brand hover:text-brand transition font-semibold px-4 py-2.5">Cancelar</button>
+        <button id="btn-confirmar-clave" class="rounded-lg bg-brand hover:bg-brand-deep transition text-white font-semibold px-4 py-2.5">Entrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] bg-ink text-paper text-sm font-medium rounded-lg px-4 py-2.5 shadow-2xl ring-1 ring-white/15" role="status" aria-live="polite"></div>
+
+  <noscript>
+    <div class="fixed inset-0 z-[70] bg-ink flex items-center justify-center p-6">
+      <p class="text-paper font-semibold text-center">Esta aplicación requiere JavaScript para funcionar.</p>
+    </div>
+  </noscript>
+
+  <script>
+    const CLAVE_DOCENTE = 'profe123';
+    const SESSION_KEY = 'evaluador_seguro_sesiones';
+    const TIEMPO_LIMITE = 600;
+
+    const QUESTIONS = [
+      { id: 1, type: 'mc', topic: 'Matemática', points: 2.5,
+        text: 'Si 3x + 6 = 18, ¿cuál es el valor de x?',
+        options: ['2', '4', '6', '8'], correct: 1 },
+      { id: 2, type: 'mc', topic: 'Ciencias Naturales', points: 2.5,
+        text: '¿Cuál de las siguientes opciones NO es un estado de la materia?',
+        options: ['Sólido', 'Líquido', 'Plasma', 'Calor'], correct: 3 },
+      { id: 3, type: 'sa', topic: 'Ciencias Naturales', points: 2.5,
+        text: 'Las plantas convierten la luz solar en energía química. ¿Cómo se llama ese proceso?' },
+      { id: 4, type: 'sa', topic: 'Lengua', points: 2.5,
+        text: 'Escribe dos palabras agudas con tilde, separadas por coma. Ejemplo: "corazón".' },
+    ];
+
+    const TIPOS_EVENTO = {
+      'cambio-de-pestana': { label: 'Cambio de pestaña / ventana oculta', tone: 'alert' },
+      'ventana-sin-foco': { label: 'Ventana sin foco', tone: 'alert' },
+      'atajo-f12': { label: 'Atajo detectado (F12)', tone: 'alert' },
+      'atajo-copiar-pegar': { label: 'Atajo detectado (Ctrl+C / Ctrl+V)', tone: 'alert' },
+      'salida-pantalla-completa': { label: 'Salida de pantalla completa', tone: 'alert' },
+      'cierre-pestana': { label: 'Cierre de pestaña · sesión interrumpida', tone: 'amber' },
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const two = (n) => String(n).padStart(2, '0');
+    const hms = (ts) => { const d = new Date(ts); return two(d.getHours()) + ':' + two(d.getMinutes()) + ':' + two(d.getSeconds()); };
+    const dec = (n) => n.toFixed(1).replace('.', ',');
+    const norm = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const duracion = (ms) => ms < 1000 ? '—' : dec(ms / 1000) + ' s';
+
+    const exam = {
+      student: null, startedAt: null, endedAt: null, answers: {}, incidents: [],
+      secondsLeft: TIEMPO_LIMITE, running: false, finished: false, timerId: null,
+    };
+    let lostAt = null;
+    let toastTimeout = null;
+    let sesionActual = null;
+
+    function show(view) {
+      ['home', 'exam', 'done', 'teacher'].forEach((v) => $('view-' + v).classList.toggle('hidden', v !== view));
+      window.scrollTo(0, 0);
+    }
+    function toast(msg) {
+      const t = $('toast');
+      t.textContent = msg;
+      t.classList.remove('hidden');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => t.classList.add('hidden'), 2800);
+    }
+    function openModal(id) {
+      $(id).classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+      const focusable = $(id).querySelector('button, input');
+      if (focusable) focusable.focus();
+    }
+    function closeModal(id) {
+      $(id).classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+
+    function registrarIncidente(type, dur) {
+      exam.incidents.push({ at: Date.now(), dur, type });
+      const count = exam.incidents.length;
+      $('chip-incidentes').textContent = count + (count === 1 ? ' incidente' : ' incidentes');
+      $('chip-incidentes').className = 'font-mono text-[12px] font-medium text-alert';
+      const v = $('vigil');
+      v.classList.remove('ok');
+      v.classList.add('alert');
+    }
+    function vigilNormal() {
+      const v = $('vigil');
+      v.classList.remove('alert');
+      v.classList.add('ok');
+      $('chip-incidentes').className = 'font-mono text-[12px] font-medium text-paper/80';
+    }
+    function avisoDeFoco(tipo, dur, at) {
+      const info = TIPOS_EVENTO[tipo] || { label: 'Evento de foco', tone: 'alert' };
+      $('aviso-titulo').textContent = dur > 0
+        ? 'Se registró una pérdida de foco'
+        : 'Se registró un atajo de teclado';
+      $('aviso-texto').textContent = dur > 0
+        ? 'Estuviste fuera de la ventana durante ' + dec(dur / 1000) + ' s. El evento quedó en el registro de auditoría.'
+        : 'El atajo detectado quedó en el registro de auditoría.';
+      $('aviso-detalle').innerHTML =
+        '<span class="font-mono text-sm font-bold text-paper">' + hms(at) + '</span>' +
+        '<span class="font-mono text-[11px] text-paper/60">' + info.label + '</span>';
+      $('aviso-conteo').textContent = 'Incidentes acumulados: ' + exam.incidents.length;
+      openModal('modal-aviso');
+    }
+    $('btn-continuar-aviso').addEventListener('click', () => closeModal('modal-aviso'));
+
+    function notaPerdida(tipo) {
+      if (!exam.running || exam.finished) return;
+      if (lostAt === null) { lostAt = Date.now(); }
+    }
+    function focoRecuperado() {
+      if (!exam.running || exam.finished) return;
+      if (lostAt === null) return;
+      const dur = Date.now() - lostAt;
+      const tipo = lostType;
+      lostAt = null;
+      registrarIncidente(tipo, dur);
+      avisoDeFoco(tipo, dur, Date.now() - dur);
+    }
+    let lostType = 'ventana-sin-foco';
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { lostType = 'cambio-de-pestana'; notaPerdida('cambio-de-pestana'); }
+      else { focoRecuperado(); }
+    });
+    window.addEventListener('blur', () => { lostType = 'ventana-sin-foco'; notaPerdida('ventana-sin-foco'); });
+    window.addEventListener('focus', focoRecuperado);
+
+    document.addEventListener('keydown', (e) => {
+      if (!exam.running || exam.finished) return;
+      const k = e.key;
+      if (k === 'F12') {
+        e.preventDefault();
+        registrarIncidente('atajo-f12', 0);
+        avisoDeFoco('atajo-f12', 0, Date.now());
+      } else if ((e.ctrlKey || e.metaKey) && (k.toLowerCase() === 'c' || k.toLowerCase() === 'v')) {
+        e.preventDefault();
+        registrarIncidente('atajo-copiar-pegar', 0);
+        avisoDeFoco('atajo-copiar-pegar', 0, Date.now());
+      } else if (k === 'Meta' || k === 'OS') {
+        e.preventDefault();
+      }
+    });
+    document.addEventListener('contextmenu', (e) => {
+      if (exam.running && !exam.finished) e.preventDefault();
+    });
+
+    let salidaPantallaIntencional = false;
+    document.addEventListener('fullscreenchange', () => {
+      if (exam.running && !exam.finished && !document.fullscreenElement && !salidaPantallaIntencional) {
+        registrarIncidente('salida-pantalla-completa', 0);
+        avisoDeFoco('salida-pantalla-completa', 0, Date.now());
+      }
+    });
+
+    async function pedirPantallaCompleta() {
+      if (!document.fullscreenEnabled) { toast('Este navegador no soporta pantalla completa. Podés continuar igual.'); return; }
+      try {
+        await document.documentElement.requestFullscreen();
+      } catch {
+        toast('No se pudo activar el modo de pantalla completa. Podés continuar igual.');
+      }
+    }
+    async function salirPantallaCompleta() {
+      salidaPantallaIntencional = true;
+      if (document.fullscreenElement) { try { await document.exitFullscreen(); } catch {} }
+    }
+
+    window.addEventListener('beforeunload', (e) => {
+      if (exam.running && !exam.finished) { e.preventDefault(); e.returnValue = ''; }
+    });
+    window.addEventListener('pagehide', () => {
+      if (exam.running && !exam.finished) {
+        registrarIncidente('cierre-pestana', 0);
+        guardarSesion({ status: 'interrumpida' });
+      }
+    });
+
+    function renderPreguntas() {
+      const cont = $('contenedor-preguntas');
+      cont.innerHTML = '';
+      QUESTIONS.forEach((q, i) => {
+        const card = document.createElement('article');
+        card.className = 'bg-paper rounded-2xl ring-1 ring-white/10 p-5 md:p-6';
+        const head = document.createElement('header');
+        head.className = 'flex flex-wrap items-center gap-2 mb-3';
+        head.innerHTML =
+          '<h3 class="font-display font-semibold text-ink mr-1">Pregunta ' + (i + 1) + '</h3>' +
+          '<span class="text-[11px] font-semibold rounded-full bg-brand-soft text-brand-deep px-2.5 py-0.5">' + q.topic + '</span>' +
+          '<span class="font-mono text-[11px] text-muted">' + dec(q.points) + ' puntos</span>' +
+          '<span id="estado-q' + q.id + '" class="ml-auto font-mono text-[11px] font-medium hidden"></span>';
+        const p = document.createElement('p');
+        p.className = 'text-ink font-medium mb-4 leading-relaxed';
+        p.textContent = q.text;
+        card.appendChild(head);
+        card.appendChild(p);
+        if (q.type === 'mc') {
+          const fieldset = document.createElement('fieldset');
+          fieldset.className = 'grid grid-cols-1 sm:grid-cols-2 gap-2.5';
+          q.options.forEach((op, idx) => {
+            const label = document.createElement('label');
+            label.className = 'group cursor-pointer';
+            label.innerHTML =
+              '<input type="radio" name="q' + q.id + '" value="' + idx + '" class="peer sr-only">' +
+              '<span class="flex items-center gap-3 rounded-xl border border-line bg-white px-3.5 py-3 transition peer-checked:border-brand peer-checked:bg-brand-soft peer-checked:ring-2 peer-checked:ring-brand/30 peer-focus-visible:outline peer-focus-visible:outline-3 peer-focus-visible:outline-brand">' +
+              '<span class="font-mono text-xs font-bold w-6 h-6 rounded-md bg-line text-muted flex items-center justify-center transition group-has-[:checked]:bg-brand group-has-[:checked]:text-white">' + String.fromCharCode(65 + idx) + '</span>' +
+              '<span class="text-sm font-medium text-ink">' + op + '</span></span>';
+            label.querySelector('input').addEventListener('change', () => {
+              exam.answers[q.id] = String(idx);
+              actualizarProgreso();
+            });
+            fieldset.appendChild(label);
+          });
+          card.appendChild(fieldset);
+        } else {
+          const wrap = document.createElement('div');
+          wrap.innerHTML =
+            '<textarea id="area-q' + q.id + '" maxlength="500" rows="3" placeholder="Escribí tu respuesta aquí…" ' +
+            'class="w-full rounded-xl border border-line bg-white px-3.5 py-3 text-sm resize-y placeholder-muted/60 focus:border-brand focus:ring-2 focus:ring-brand/30 outline-none"></textarea>' +
+            '<p class="font-mono text-[11px] text-muted mt-1.5 text-right"><span id="cont-q' + q.id + '">0</span> / 500</p>';
+          const ta = wrap.querySelector('textarea');
+          ta.addEventListener('input', () => {
+            exam.answers[q.id] = ta.value;
+            $('cont-q' + q.id).textContent = ta.value.length;
+            actualizarProgreso();
+          });
+          card.appendChild(wrap);
+        }
+        cont.appendChild(card);
+      });
+    }
+
+    function actualizarProgreso() {
+      const respondedas = QUESTIONS.filter((q) => {
+        const v = exam.answers[q.id];
+        return v !== undefined && String(v).trim() !== '';
+      }).length;
+      QUESTIONS.forEach((q) => {
+        const dot = $('estado-q' + q.id);
+        const v = exam.answers[q.id];
+        const hecha = v !== undefined && String(v).trim() !== '';
+        if (dot) {
+          dot.hidden = !hecha;
+          if (hecha) { dot.textContent = 'respondida'; dot.className = 'ml-auto font-mono text-[11px] font-medium text-ok'; }
+        }
+      });
+      $('barra-progreso').innerHTML = QUESTIONS.map((q) => {
+        const v = exam.answers[q.id];
+        const hecha = v !== undefined && String(v).trim() !== '';
+        return '<span class="ruler-seg ' + (hecha ? 'filled' : '') + '"></span>';
+      }).join('');
+      const sig = QUESTIONS.findIndex((q) => {
+        const v = exam.answers[q.id];
+        return v === undefined || String(v).trim() === '';
+      });
+      $('progreso-texto').textContent = respondedas === QUESTIONS.length
+        ? 'Respondiste las ' + QUESTIONS.length + ' preguntas'
+        : 'Pregunta ' + (sig + 1) + ' de ' + QUESTIONS.length;
+    }
+
+    function actualizarReloj() {
+      const m = Math.floor(exam.secondsLeft / 60);
+      const s = exam.secondsLeft % 60;
+      const reloj = $('reloj');
+      reloj.textContent = two(m) + ':' + two(s);
+      reloj.classList.toggle('timer-urgent', exam.secondsLeft <= 30);
+      reloj.classList.toggle('text-amber', exam.secondsLeft <= 60 && exam.secondsLeft > 30);
+      reloj.classList.toggle('text-paper', exam.secondsLeft > 60);
+    }
+
+    function iniciarExam() {
+      exam.running = true;
+      exam.finished = false;
+      exam.startedAt = Date.now();
+      exam.secondsLeft = TIEMPO_LIMITE;
+      exam.answers = {};
+      exam.incidents = [];
+      lostAt = null;
+      renderPreguntas();
+      actualizarProgreso();
+      actualizarReloj();
+      $('chip-incidentes').textContent = '0 incidentes';
+      $('chip-incidentes').className = 'font-mono text-[12px] font-medium text-paper/80';
+      vigilNormal();
+      exam.timerId = setInterval(() => {
+        exam.secondsLeft -= 1;
+        actualizarReloj();
+        if (exam.secondsLeft <= 0) {
+          clearInterval(exam.timerId);
+          finalizar('entregada', true);
+        }
+      }, 1000);
+    }
+
+    function autoCorrect(q, val) {
+      if (q.type === 'mc') return val === String(q.correct);
+      const texto = String(val || '').trim().toLowerCase();
+      if (!texto) return false;
+      if (q.id === 3) return norm(texto).includes('fotosintesis');
+      if (q.id === 4) {
+        const palabras = texto.match(/[a-zñáéíóú]+/g) || [];
+        return palabras.filter((w) => {
+          const last = w[w.length - 1];
+          return /[áéíóú]/.test(last) || ((last === 'n' || last === 's') && /[áéíóú]/.test(w[w.length - 2] || ''));
+        }).length >= 2;
+      }
+      return false;
+    }
+
+    function notaDe(s) {
+      return QUESTIONS.reduce((sum, q) => {
+        const override = s.overrides && s.overrides[q.id] !== undefined;
+        const ok = override ? s.overrides[q.id] : autoCorrect(q, s.answers[q.id]);
+        return sum + (ok ? q.points : 0);
+      }, 0);
+    }
+    function esProvisional(s) {
+      return QUESTIONS.some((q) => q.type === 'sa' && (!s.overrides || s.overrides[q.id] === undefined));
+    }
+
+    function guardarSesion(extra) {
+      const s = {
+        id: Date.now(),
+        status: 'entregada',
+        student: exam.student,
+        startedAt: exam.startedAt,
+        endedAt: Date.now(),
+        durationSec: Math.max(1, Math.round((Date.now() - exam.startedAt) / 1000)),
+        answers: { ...exam.answers },
+        incidents: [...exam.incidents],
+        overrides: {},
+        auto: {},
+        ...extra,
+      };
+      QUESTIONS.forEach((q) => { s.auto[q.id] = autoCorrect(q, s.answers[q.id]); });
+      const list = cargarSesiones();
+      list.unshift(s);
+      localStorage.setItem(SESSION_KEY, JSON.stringify(list.slice(0, 20)));
+      sesionActual = s;
+      return s;
+    }
+    function cargarSesiones() {
+      try { return JSON.parse(localStorage.getItem(SESSION_KEY)) || []; }
+      catch { return []; }
+    }
+
+    function finalizar(status, automatico) {
+      if (exam.finished) return;
+      exam.finished = true;
+      clearInterval(exam.timerId);
+      const s = guardarSesion({ status });
+      salirPantallaCompleta();
+      show('done');
+      $('hora-entrega').textContent = hms(s.endedAt);
+      renderResumen(s);
+      if (automatico) toast('Se agotó el tiempo. El examen se entregó automáticamente.');
+    }
+
+    function renderResumen(s) {
+      const rows = [
+        ['Alumno', s.student.nombre],
+        ['Curso', s.student.curso],
+        ['Tema', s.student.tema],
+        ['Duración', Math.floor(s.durationSec / 60) + ' min ' + (s.durationSec % 60) + ' s'],
+        ['Incidentes de foco', String(s.incidents.length)],
+        ['Nota estimada', dec(notaDe(s)) + ' / 10'],
+      ];
+      $('resumen-entrega').innerHTML = rows.map(([k, v]) =>
+        '<div class="bg-white rounded-xl border border-line px-4 py-3">' +
+        '<dt class="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">' + k + '</dt>' +
+        '<dd class="font-semibold text-ink text-sm mt-0.5 break-words">' + v + '</dd></div>'
+      ).join('');
+    }
+
+    function abrirPanelDocente() {
+      const list = cargarSesiones();
+      if (!list.length) { toast('Todavía no hay sesiones registradas.'); return; }
+      sesionActual = list[0];
+      renderSelector(list);
+      renderSesion(sesionActual);
+      show('teacher');
+    }
+    function renderSelector(list) {
+      const sel = $('selector-sesiones');
+      sel.innerHTML = list.map((s, i) =>
+        '<option value="' + i + '">' + hms(s.startedAt) + ' · ' + s.student.nombre + ' (' + s.student.tema + ')</option>'
+      ).join('');
+      sel.value = '0';
+    }
+    $('selector-sesiones').addEventListener('change', (e) => {
+      const list = cargarSesiones();
+      sesionActual = list[Number(e.target.value)];
+      renderSesion(sesionActual);
+    });
+
+    function chipTone(tone, text) {
+      const tones = {
+        ok: 'bg-ok-soft text-ok',
+        alert: 'bg-alert-soft text-alert',
+        amber: 'bg-amber-soft text-amber',
+      };
+      return '<span class="inline-flex items-center gap-1.5 font-semibold text-xs rounded-full px-2.5 py-1 ' + tones[tone] + '">' + text + '</span>';
+    }
+    function chipDot(tone, text) {
+      const tones = { ok: 'bg-ok', alert: 'bg-alert', amber: 'bg-amber', muted: 'bg-muted' };
+      return '<span class="inline-flex items-center gap-2 text-xs rounded-full px-2.5 py-1 bg-white ring-1 ring-line font-medium"><span class="w-2 h-2 rounded-full ' + tones[tone] + '"></span>' + text + '</span>';
+    }
+
+    function renderSesion(s) {
+      $('datos-alumno').innerHTML = [
+        ['Alumno', s.student.nombre],
+        ['Curso y división', s.student.curso],
+        ['Tema', s.student.tema],
+        ['Inicio', hms(s.startedAt)],
+        ['Duración', Math.floor(s.durationSec / 60) + ' min ' + (s.durationSec % 60) + ' s'],
+        ['Estado', s.status === 'interrumpida' ? 'Interrumpida' : 'Entregada'],
+      ].map(([k, v]) =>
+        '<div><dt class="font-mono text-[10px] uppercase tracking-[0.18em] text-muted mb-1">' + k + '</dt>' +
+        '<dd class="font-semibold text-ink break-words">' + v + '</dd></div>'
+      ).join('');
+
+      const nota = notaDe(s);
+      const provisional = esProvisional(s);
+      $('nota-valor').textContent = dec(nota);
+      const chip = $('chip-nota');
+      if (provisional) {
+        chip.textContent = 'Nota provisional · revisá las respuestas abiertas';
+        chip.className = 'font-semibold text-sm rounded-full px-3.5 py-1.5 bg-amber-soft text-amber';
+      } else {
+        chip.textContent = nota >= 6 ? 'Aprobado · Nota final' : 'Desaprobado · Nota final';
+        chip.className = 'font-semibold text-sm rounded-full px-3.5 py-1.5 ' + (nota >= 6 ? 'bg-ok-soft text-ok' : 'bg-alert-soft text-alert');
+      }
+
+      $('desglose').innerHTML = QUESTIONS.map((q, i) => {
+        const val = s.answers[q.id];
+        const sinRespuesta = val === undefined || String(val).trim() === '';
+        let respuesta;
+        if (q.type === 'mc') {
+          const idx = Number(val);
+          respuesta = Number.isInteger(idx) && idx >= 0 && q.options[idx] !== undefined
+            ? String.fromCharCode(65 + idx) + ' · ' + q.options[idx] : 'Sin respuesta';
+        } else {
+          respuesta = sinRespuesta ? 'Sin respuesta' : String(val);
+        }
+        const auto = autoCorrect(q, val);
+        const override = s.overrides && s.overrides[q.id] !== undefined;
+        const ok = override ? s.overrides[q.id] : auto;
+        const stateChip = q.type === 'sa'
+          ? (sinRespuesta ? chipTone('alert', 'Sin respuesta')
+              : chipTone(ok ? 'ok' : 'alert', ok ? 'Correcta' : 'Incorrecta'))
+          : chipTone(ok ? 'ok' : 'alert', ok ? 'Correcta' : 'Incorrecta');
+        let accion = '';
+        if (q.type === 'sa' && !sinRespuesta) {
+          accion =
+            '<span class="flex gap-1.5">' +
+            '<button data-sesion="' + s.id + '" data-q="' + q.id + '" data-val="true" class="aprob-bt rounded-lg text-xs font-semibold px-2.5 py-1.5 transition ' + (ok && override ? 'bg-ok text-white' : 'bg-ok-soft text-ok hover:bg-ok hover:text-white') + '">Aprobar</button>' +
+            '<button data-sesion="' + s.id + '" data-q="' + q.id + '" data-val="false" class="rech-bt rounded-lg text-xs font-semibold px-2.5 py-1.5 transition ' + (!ok && override ? 'bg-alert text-white' : 'bg-alert-soft text-alert hover:bg-alert hover:text-white') + '">Rechazar</button>' +
+            '</span>';
+        }
+        return '<div class="rounded-xl border border-line bg-white p-4">' +
+          '<div class="flex flex-wrap items-center gap-2 mb-2">' +
+          '<span class="font-mono text-xs font-bold text-muted">' + String(i + 1).padStart(2, '0') + '</span>' +
+          '<span class="text-[11px] font-semibold rounded-full bg-brand-soft text-brand-deep px-2.5 py-0.5">' + q.topic + '</span>' +
+          '<span class="font-mono text-[11px] text-muted">' + dec(q.points) + ' pts</span>' +
+          '<span class="ml-auto flex gap-2">' + stateChip + accion + '</span></div>' +
+          '<p class="text-sm font-medium text-ink mb-2 leading-snug">' + q.text + '</p>' +
+          '<p class="text-sm text-muted leading-relaxed break-words bg-paper rounded-lg px-3 py-2"><span class="font-mono text-[10px] uppercase tracking-[0.14em] mr-2 text-muted/70">Respuesta</span>' + respuesta + '</p>' +
+          '</div>';
+      }).join('');
+
+      const total = s.incidents.length;
+      $('chip-total-incidentes').textContent = total === 0 ? 'Sin incidentes' : total + (total === 1 ? ' incidente' : ' incidentes');
+      $('chip-total-incidentes').className = 'font-mono text-xs font-bold rounded-full px-3 py-1 ' + (total === 0 ? 'bg-ok-soft text-ok' : 'bg-alert-soft text-alert');
+      if (total === 0) {
+        $('log-incidentes').innerHTML =
+          '<tr><td colspan="3" class="py-4"><span class="inline-flex items-center gap-2">' +
+          '<span class="w-2 h-2 rounded-full bg-ok"></span>Sin incidentes registrados. La sesión fue limpia.</span></td></tr>';
+      } else {
+        $('log-incidentes').innerHTML = [...s.incidents].map((inc) => {
+          const info = TIPOS_EVENTO[inc.type] || { label: 'Evento de foco', tone: 'alert' };
+          return '<tr class="border-b border-line/70 last:border-0">' +
+            '<td class="py-2.5 pr-4 font-bold text-ink">' + hms(inc.at) + '</td>' +
+            '<td class="py-2.5 pr-4 font-medium ' + (inc.dur < 1000 ? 'text-muted' : 'text-alert') + '">' + duracion(inc.dur) + '</td>' +
+            '<td class="py-2.5">' + chipDot(info.tone, info.label) + '</td></tr>';
+        }).join('');
+      }
+    }
+
+    document.addEventListener('click', (e) => {
+      const aprob = e.target.closest('.aprob-bt');
+      const rech = e.target.closest('.rech-bt');
+      if (!aprob && !rech) return;
+      const qid = Number((aprob || rech).dataset.q);
+      const val = (aprob || rech).dataset.val === 'true';
+      const list = cargarSesiones();
+      const target = list.find((s) => s.id === sesionActual.id);
+      if (!target) return;
+      if (!target.overrides) target.overrides = {};
+      target.overrides[qid] = val;
+      localStorage.setItem(SESSION_KEY, JSON.stringify(list));
+      sesionActual = target;
+      renderSesion(target);
+    });
+
+    function buildInforme(s) {
+      const lines = [];
+      lines.push('EVALUADOR SEGURO · INFORME DE AUDITORÍA');
+      lines.push('========================================');
+      lines.push('Alumno: ' + s.student.nombre + ' (' + s.student.curso + ')');
+      lines.push('Tema: ' + s.student.tema);
+      lines.push('Inicio: ' + hms(s.startedAt) + ' · Duración: ' + Math.floor(s.durationSec / 60) + ' min ' + (s.durationSec % 60) + ' s');
+      lines.push('Estado: ' + (s.status === 'interrumpida' ? 'Interrumpida' : 'Entregada'));
+      lines.push('Nota: ' + dec(notaDe(s)) + ' / 10' + (esProvisional(s) ? ' (provisional)' : ''));
+      lines.push('');
+      lines.push('DESGLOSE');
+      QUESTIONS.forEach((q, i) => {
+        const val = s.answers[q.id];
+        const auto = autoCorrect(q, val);
+        const override = s.overrides && s.overrides[q.id] !== undefined;
+        const ok = override ? s.overrides[q.id] : auto;
+        lines.push((i + 1) + '. [' + (ok ? 'OK' : 'NO') + '] ' + q.text + ' → ' + (val === undefined || String(val).trim() === '' ? '(sin respuesta)' : String(val)));
+      });
+      lines.push('');
+      lines.push('INCIDENTES DE FOCO');
+      if (!s.incidents.length) {
+        lines.push('Sin incidentes registrados.');
+      } else {
+        s.incidents.forEach((inc) => {
+          const info = TIPOS_EVENTO[inc.type] || { label: 'Evento' };
+          lines.push(hms(inc.at) + ' · fuera ' + duracion(inc.dur) + ' · ' + info.label);
+        });
+      }
+      lines.push('');
+      lines.push('Generado: ' + hms(Date.now()) + ' · Evaluador Seguro (datos locales)');
+      return lines.join('\n');
+    }
+    $('btn-copiar').addEventListener('click', async () => {
+      if (!sesionActual) return;
+      const texto = buildInforme(sesionActual);
+      try {
+        await navigator.clipboard.writeText(texto);
+      } catch {
+        const ta = document.createElement('textarea');
+        ta.value = texto;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+      }
+      toast('Informe copiado al portapapeles.');
+    });
+
+    function solicitarClave(cb) {
+      $('error-clave').classList.add('hidden');
+      $('campo-clave').value = '';
+      openModal('modal-clave');
+      $('campo-clave').onkeydown = (e) => {
+        if (e.key === 'Enter') confirmar();
+        if (e.key === 'Escape') closeModal('modal-clave');
+      };
+      $('btn-confirmar-clave').onclick = confirmar;
+      function confirmar() {
+        if ($('campo-clave').value === CLAVE_DOCENTE) {
+          sessionStorage.setItem('evaluador_docente', '1');
+          closeModal('modal-clave');
+          abrirPanelDocente();
+        } else {
+          $('error-clave').classList.remove('hidden');
+          const caja = $('caja-clave');
+          caja.classList.remove('shake');
+          void caja.offsetWidth;
+          caja.classList.add('shake');
+        }
+      }
+    }
+    function accesoDocente() {
+      if (sessionStorage.getItem('evaluador_docente') === '1') abrirPanelDocente();
+      else solicitarClave();
+    }
+    $('btn-acceso-docente').addEventListener('click', accesoDocente);
+    $('btn-ir-docente').addEventListener('click', accesoDocente);
+    $('btn-cancelar-clave').addEventListener('click', () => closeModal('modal-clave'));
+
+    $('form-inicio').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nombre = $('campo-nombre').value.trim();
+      const curso = $('campo-curso').value.trim();
+      const tema = $('campo-tema').value.trim();
+      const err = $('error-ficha');
+      if (!nombre || !curso || !tema) {
+        err.textContent = 'Completa todos los campos antes de comenzar.';
+        err.classList.remove('hidden');
+        return;
+      }
+      err.classList.add('hidden');
+      exam.student = { nombre, curso, tema };
+      show('exam');
+      pedirPantallaCompleta();
+      iniciarExam();
+    });
+
+    $('btn-entregar').addEventListener('click', () => {
+      if (!exam.running || exam.finished) return;
+      $('entregar-tiempo').textContent = $('reloj').textContent;
+      openModal('modal-entregar');
+    });
+    $('btn-seguir').addEventListener('click', () => closeModal('modal-entregar'));
+    $('btn-confirmar-entrega').addEventListener('click', () => {
+      closeModal('modal-entregar');
+      finalizar('entregada', false);
+    });
+
+    $('btn-nueva').addEventListener('click', () => {
+      exam.student = null;
+      exam.answers = {};
+      exam.incidents = [];
+      exam.running = false;
+      exam.finished = false;
+      clearInterval(exam.timerId);
+      $('form-inicio').reset();
+      $('error-ficha').classList.add('hidden');
+      show('home');
+    });
+    $('btn-salir-panel').addEventListener('click', () => show('home'));
+  </script>
+</body>
+</html>

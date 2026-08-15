@@ -1,0 +1,6 @@
+services:
+  ciudadania-recibo-sueldo:
+    build:
+      context: .
+    container_name: ciudadania-recibo-sueldo
+    restart: unless-stopped

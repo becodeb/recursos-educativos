@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recibo de Sueldo · Trabajo y Ciudadanía</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        display: ['Archivo', 'system-ui', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+      },
+      colors: {
+        paper: '#F6F4EE',
+        ink: '#1B2432',
+        line: '#DDD9CB',
+        azul: {
+          100: '#DCE9F4',
+          300: '#79A9D3',
+          500: '#2C6CA5',
+          600: '#225685',
+          700: '#1A4368',
+          800: '#123252',
+          900: '#0C1F33',
+        },
+        stamp: '#B42318',
+      },
+    },
+  },
+};
+</script>
+<style>
+  .tabular { font-variant-numeric: tabular-nums; }
+  .stamp {
+    color: #B42318;
+    border: 3px double #B42318;
+    box-shadow: inset 0 0 0 2px rgba(180,35,24,.08);
+    transform: rotate(-3deg);
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  }
+  @media print {
+    body * { visibility: hidden; }
+    #print-area, #print-area * { visibility: visible; }
+    #print-area { position: absolute; inset: 0; margin: 0; }
+    .no-print { display: none !important; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body class="bg-paper text-ink font-display antialiased min-h-screen">
+
+  <!-- ============ HEADER ============ -->
+  <header class="border-b border-line bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-[3px] bg-azul-800 text-white flex items-center justify-center font-mono font-bold text-sm">$</div>
+        <div>
+          <h1 class="text-lg font-extrabold tracking-tight leading-none">Recibo de Sueldo</h1>
+          <p class="text-[11px] uppercase tracking-[0.18em] text-azul-500 font-semibold mt-1">Trabajo y Ciudadanía · Liquidación didáctica</p>
+        </div>
+      </div>
+      <nav class="flex rounded-[3px] border border-line overflow-hidden no-print" role="tablist" aria-label="Modo de la aplicación">
+        <button id="tab-liqui" class="tab-btn px-4 py-2 text-sm font-bold tracking-tight bg-azul-800 text-white" data-mode="liqui" aria-selected="true">Calculadora</button>
+        <button id="tab-audit" class="tab-btn px-4 py-2 text-sm font-bold tracking-tight bg-white text-ink" data-mode="audit" aria-selected="false">Auditoría</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+
+    <!-- ============ MODO LIQUIDACIÓN ============ -->
+    <section id="view-liqui" class="grid lg:grid-cols-[320px_1fr] gap-8 items-start">
+
+      <!-- ---- Panel de configuración ---- -->
+      <aside class="bg-white border border-line rounded-[3px] p-5 no-print shadow-[0_1px_0_rgba(0,0,0,0.03)]">
+        <p class="text-[11px] uppercase tracking-[0.2em] font-bold text-azul-500 mb-1">Configuración salarial</p>
+        <h2 class="text-lg font-extrabold tracking-tight mb-4">Datos de la liquidación</h2>
+
+        <div class="space-y-4">
+          <div>
+            <label for="in-empleador" class="block text-xs font-bold text-ink/70 mb-1">Empleador / Razón social</label>
+            <input id="in-empleador" type="text" value="Cooperativa Didáctica S.A."
+              class="w-full border border-line rounded-[3px] px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-azul-500/50">
+          </div>
+          <div>
+            <label for="in-trabajador" class="block text-xs font-bold text-ink/70 mb-1">Trabajador/a</label>
+            <input id="in-trabajador" type="text" value="Aylén Gómez"
+              class="w-full border border-line rounded-[3px] px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-azul-500/50">
+          </div>
+          <div>
+            <label for="in-periodo" class="block text-xs font-bold text-ink/70 mb-1">Período</label>
+            <input id="in-periodo" type="text" value="Agosto 2026"
+              class="w-full border border-line rounded-[3px] px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-azul-500/50">
+          </div>
+
+          <hr class="border-line">
+
+          <div>
+            <label for="in-basico" class="block text-xs font-bold text-ink/70 mb-1">Sueldo básico bruto (ARS)</label>
+            <input id="in-basico" type="text" inputmode="decimal" value="480000"
+              class="w-full border border-line rounded-[3px] px-3 py-2 text-sm font-mono font-semibold tabular focus:outline-none focus:ring-2 focus:ring-azul-500/50">
+            <p class="text-[11px] text-ink/50 mt-1">Base del convenio. Las horas se calculan sobre 200 horas mensuales.</p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="in-anios" class="block text-xs font-bold text-ink/70 mb-1">Antigüedad (años)</label>
+              <input id="in-anios" type="number" min="0" max="50" value="5"
+                class="w-full border border-line rounded-[3px] px-3 py-2 text-sm font-mono font-semibold tabular focus:outline-none focus:ring-2 focus:ring-azul-500/50">
+            </div>
+            <div>
+              <label for="in-hs50" class="block text-xs font-bold text-ink/70 mb-1">Hs. extra 50%</label>
+              <input id="in-hs50" type="number" min="0" step="0.5" value="8"
+                class="w-full border border-line rounded-[3px] px-3 py-2 text-sm font-mono font-semibold tabular focus:outline-none focus:ring-2 focus:ring-azul-500/50">
+            </div>
+            <div>
+              <label for="in-hs100" class="block text-xs font-bold text-ink/70 mb-1">Hs. extra 100%</label>
+              <input id="in-hs100" type="number" min="0" step="0.5" value="4"
+                class="w-full border border-line rounded-[3px] px-3 py-2 text-sm font-mono font-semibold tabular focus:outline-none focus:ring-2 focus:ring-azul-500/50">
+            </div>
+            <div>
+              <label for="in-categoria" class="block text-xs font-bold text-ink/70 mb-1">Categoría</label>
+              <input id="in-categoria" type="text" value="Admin. CCT 130/75"
+                class="w-full border border-line rounded-[3px] px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-azul-500/50">
+            </div>
+          </div>
+
+          <div class="space-y-2 pt-1">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input id="chk-presentismo" type="checkbox" checked class="w-4 h-4 accent-azul-800">
+              <span class="text-sm font-semibold">Presentismo <span class="text-ink/50 font-mono text-xs tabular">8,33%</span></span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input id="chk-sindicato" type="checkbox" checked class="w-4 h-4 accent-azul-800">
+              <span class="text-sm font-semibold">Afiliación sindical <span class="text-ink/50 font-mono text-xs tabular">2%</span></span>
+            </label>
+          </div>
+        </div>
+
+        <details class="mt-5 border-t border-line pt-4 group">
+          <summary class="text-xs font-bold text-azul-600 cursor-pointer select-none">Ver fórmula de cada concepto</summary>
+          <ul class="mt-3 space-y-2 text-[12.5px] leading-relaxed text-ink/75 font-medium">
+            <li><strong class="text-ink">Antigüedad:</strong> 1% del básico por año de servicio.</li>
+            <li><strong class="text-ink">Presentismo:</strong> 8,33% del básico (equivalente a 1/12).</li>
+            <li><strong class="text-ink">Hora extra:</strong> valor hora = básico ÷ 200. Al 50% se paga ×1,5; al 100%, ×2.</li>
+            <li><strong class="text-ink">Aportes:</strong> jubilación 11%, obra social 3%, Ley 19.032 (PAMI) 3% y sindicato 2%. Se calculan <em>solo</em> sobre lo remunerativo.</li>
+            <li><strong class="text-ink">Neto:</strong> bruto − retenciones. Es lo que el trabajador cobra "en mano".</li>
+          </ul>
+        </details>
+      </aside>
+
+      <!-- ---- Recibo en vivo ---- -->
+      <div id="print-area">
+        <div class="bg-white border border-line rounded-[3px] overflow-hidden shadow-[0_2px_12px_rgba(12,31,51,0.08)]">
+          <div id="recibo-header"></div>
+          <div id="recibo-body"></div>
+        </div>
+
+        <!-- ---- Resumen ---- -->
+        <div class="grid sm:grid-cols-3 gap-3 mt-5">
+          <div class="bg-white border border-line rounded-[3px] p-4">
+            <p class="text-[11px] uppercase tracking-[0.18em] font-bold text-ink/50">Total bruto</p>
+            <p id="sum-bruto" class="mt-1 font-mono font-bold text-xl tabular">$ 0,00</p>
+            <p class="text-[11px] text-ink/50 mt-1">Remunerativo + no remunerativo</p>
+          </div>
+          <div class="bg-white border border-line rounded-[3px] p-4">
+            <p class="text-[11px] uppercase tracking-[0.18em] font-bold text-ink/50">Total retenciones</p>
+            <p id="sum-retenciones" class="mt-1 font-mono font-bold text-xl tabular text-stamp">$ 0,00</p>
+            <p class="text-[11px] text-ink/50 mt-1">Aportes de ley y sindicales</p>
+          </div>
+          <div class="bg-azul-800 text-white rounded-[3px] p-4 relative overflow-hidden">
+            <p class="text-[11px] uppercase tracking-[0.18em] font-bold text-azul-100">Sueldo neto en mano</p>
+            <p id="sum-neto" class="mt-1 font-mono font-extrabold text-2xl tabular">$ 0,00</p>
+            <span class="absolute -right-3 -bottom-4 text-[10px] font-mono font-bold uppercase tracking-[0.3em] text-white/20 select-none -rotate-6">líquido a cobrar</span>
+          </div>
+        </div>
+
+        <button id="btn-print" class="no-print mt-5 inline-flex items-center gap-2 text-sm font-bold text-azul-600 hover:text-azul-800">
+          <span aria-hidden="true">⎙</span> Imprimir recibo
+        </button>
+      </div>
+    </section>
+
+    <!-- ============ MODO AUDITORÍA ============ -->
+    <section id="view-audit" class="hidden">
+      <div class="max-w-3xl mx-auto text-center mb-8">
+        <p class="text-[11px] uppercase tracking-[0.2em] font-bold text-azul-500 mb-2">Modo auditoría</p>
+        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Detectá el error</h2>
+        <p class="text-sm text-ink/70 font-medium mt-2 max-w-xl mx-auto">En cada recibo hay <strong class="text-ink">un solo concepto mal liquidado</strong>. Tocá el renglón sospechoso, elegí la corrección correcta y comprobá si lo encontraste.</p>
+      </div>
+
+      <div class="grid lg:grid-cols-[300px_1fr] gap-8 items-start max-w-5xl mx-auto">
+        <aside class="bg-white border border-line rounded-[3px] p-5 no-print">
+          <p class="text-[11px] uppercase tracking-[0.2em] font-bold text-azul-500 mb-1">Consigna</p>
+          <h3 class="font-extrabold tracking-tight mb-2">¿Qué se liquidó mal?</h3>
+          <p id="audit-question" class="text-sm text-ink/75 font-medium leading-relaxed">Cargando consigna…</p>
+
+          <div id="audit-options" class="mt-4 space-y-2"></div>
+
+          <button id="btn-check" class="mt-4 w-full bg-azul-800 hover:bg-azul-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-sm py-2.5 rounded-[3px] transition-colors" disabled>
+            Comprobar
+          </button>
+          <button id="btn-again" class="mt-2 w-full border border-line text-ink/70 hover:text-ink font-bold text-sm py-2.5 rounded-[3px] transition-colors hidden">
+            Reintentar
+          </button>
+          <button id="btn-next" class="mt-2 w-full border border-line text-azul-600 hover:text-azul-800 font-bold text-sm py-2.5 rounded-[3px] transition-colors hidden">
+            Siguiente consigna
+          </button>
+
+          <div id="audit-verdict" class="hidden mt-4 text-sm font-medium leading-relaxed rounded-[3px] p-4"></div>
+        </aside>
+
+        <div class="bg-white border border-line rounded-[3px] overflow-hidden shadow-[0_2px_12px_rgba(12,31,51,0.08)]">
+          <div id="audit-receipt-header"></div>
+          <div id="audit-receipt-body"></div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="mt-12 border-t border-line pt-5 pb-8 text-[11.5px] text-ink/50 font-medium leading-relaxed max-w-4xl">
+      Material didáctico para la materia <strong>Trabajo y Ciudadanía</strong>. Los valores son una aproximación de convenio tipo (Ley de Contrato de Trabajo 20.744; aportes: Ley 24.241, Ley 23.660, Ley 19.032). En un recibo real pueden aparecer otros conceptos (aguinaldo proporcional, vacaciones, bonos no remunerativos) y la escala de antigüedad varía según el convenio colectivo.
+    </footer>
+  </main>
+
+<script>
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  var fmt = new Intl.NumberFormat('es-AR', {
+    style: 'currency', currency: 'ARS', minimumFractionDigits: 2, maximumFractionDigits: 2
+  });
+
+  function parseAmount(v) {
+    var n = Number(String(v).trim().replace(/\./g, '').replace(',', '.'));
+    return isFinite(n) && n >= 0 ? n : 0;
+  }
+  function round2(n) { return Math.round(n * 100) / 100; }
+  function parseNum(v) { var n = Number(v); return isFinite(n) && n >= 0 ? n : 0; }
+
+  var state = {
+    empleador: 'Cooperativa Didáctica S.A.',
+    trabajador: 'Aylén Gómez',
+    periodo: 'Agosto 2026',
+    categoria: 'Admin. CCT 130/75',
+    basico: 480000,
+    anios: 5,
+    hs50: 8,
+    hs100: 4,
+    presentismo: true,
+    sindicato: true
+  };
+
+  /* ---------- Motor de cálculo ---------- */
+
+  function compute(cfg) {
+    var b = cfg.basico;
+    var hv = b / 200;
+    var antiguedad = round2(b * cfg.anios * 0.01);
+    var presentismo = cfg.presentismo ? round2(b * 0.0833) : 0;
+    var extra50 = round2(cfg.hs50 * hv * 1.5);
+    var extra100 = round2(cfg.hs100 * hv * 2);
+    var noRem = round2(cfg.noRem || 0);
+
+    var remun = round2(b + antiguedad + presentismo + extra50 + extra100);
+
+    var jub = round2(remun * 0.11);
+    var os = round2(remun * 0.03);
+    var pami = round2(remun * 0.03);
+    var sind = cfg.sindicato ? round2(remun * 0.02) : 0;
+
+    return {
+      items: {
+        remunerativos: [
+          { key: 'basico',     concepto: 'Sueldo básico',            unidades: '—',        monto: b },
+          { key: 'antiguedad', concepto: 'Antigüedad (1% por año)',  unidades: cfg.anios + ' años', monto: antiguedad },
+          { key: 'presentismo',concepto: 'Presentismo (8,33%)',      unidades: cfg.presentismo ? '8,33%' : '—', monto: presentismo },
+          { key: 'extra50',    concepto: 'Horas extra al 50%',       unidades: cfg.hs50 + ' hs', monto: extra50 },
+          { key: 'extra100',   concepto: 'Horas extra al 100%',      unidades: cfg.hs100 + ' hs', monto: extra100 }
+        ],
+        noRemunerativos: [
+          { key: 'noRem', concepto: 'Suma fija no remunerativa (acuerdo)', unidades: '—', monto: noRem }
+        ],
+        descuentos: [
+          { key: 'jub', concepto: 'Jubilación (Ley 24.241 — 11%)',   unidades: '11%', monto: jub },
+          { key: 'os',   concepto: 'Obra social (Ley 23.660 — 3%)',  unidades: '3%',  monto: os },
+          { key: 'pami', concepto: 'Ley 19.032 / PAMI (3%)',         unidades: '3%',  monto: pami },
+          { key: 'sind', concepto: 'Sindicato (2%)',                 unidades: cfg.sindicato ? '2%' : '—', monto: sind }
+        ]
+      },
+      brutos: { remun: remun, noRem: noRem, total: round2(remun + noRem) },
+      descuentosTotal: round2(jub + os + pami + sind),
+      neto: round2(remun + noRem - (jub + os + pami + sind))
+    };
+  }
+
+  /* ---------- Renderizado del recibo (tabla oficial) ---------- */
+
+  var CELL = 'px-3 py-2 font-mono font-semibold text-right tabular text-[13px]';
+
+  function receiptHeaderHTML(d) {
+    return '<div class="bg-azul-800 text-white">' +
+      '<div class="flex items-center justify-between px-4 py-2 border-b border-white/15">' +
+        '<span class="font-mono text-[11px] uppercase tracking-[0.22em] font-semibold">Recibo de sueldo</span>' +
+        '<span class="font-mono text-[11px] uppercase tracking-[0.22em] font-semibold">Liquidación mensual</span>' +
+      '</div>' +
+      '<dl class="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1.5 px-4 py-3 text-[12px]">' +
+        '<div><dt class="text-azul-100 text-[10px] uppercase tracking-wider font-semibold">Empleador</dt><dd class="font-mono font-medium">' + esc(d.empleador) + '</dd></div>' +
+        '<div><dt class="text-azul-100 text-[10px] uppercase tracking-wider font-semibold">CUIT</dt><dd class="font-mono font-medium">30-71111111-8</dd></div>' +
+        '<div><dt class="text-azul-100 text-[10px] uppercase tracking-wider font-semibold">Período</dt><dd class="font-mono font-medium">' + esc(d.periodo) + '</dd></div>' +
+        '<div><dt class="text-azul-100 text-[10px] uppercase tracking-wider font-semibold">Trabajador/a</dt><dd class="font-mono font-medium">' + esc(d.trabajador) + '</dd></div>' +
+        '<div><dt class="text-azul-100 text-[10px] uppercase tracking-wider font-semibold">CUIL</dt><dd class="font-mono font-medium">27-12345678-9</dd></div>' +
+        '<div><dt class="text-azul-100 text-[10px] uppercase tracking-wider font-semibold">Categoría</dt><dd class="font-mono font-medium">' + esc(d.categoria) + '</dd></div>' +
+      '</dl></div>';
+  }
+
+  function sectionHeader(label, cls) {
+    return '<tr class="' + cls + '"><th class="px-3 py-1.5 text-left text-[10px] uppercase tracking-[0.18em] font-bold" colspan="5">' + label + '</th></tr>';
+  }
+
+  function rowHTML(r, opts) {
+    opts = opts || {};
+    var cls = opts.clickable
+      ? 'cursor-pointer transition-colors ' + (opts.selected === r.key ? 'bg-azul-100' : 'hover:bg-azul-100/60')
+      : '';
+    return '<tr class="border-t border-line ' + cls + '" data-key="' + r.key + '"' + (opts.clickable ? ' tabindex="0" role="button" aria-pressed="' + (opts.selected === r.key) + '"' : '') + '>' +
+      '<td class="px-3 py-2 text-[13px] font-semibold">' + esc(r.concepto) + '</td>' +
+      '<td class="px-3 py-2 font-mono text-center text-[12.5px] text-ink/60 tabular">' + esc(r.unidades) + '</td>' +
+      '<td class="' + CELL + '">' + (r.remunerativo != null ? fmt.format(r.remunerativo) : '—') + '</td>' +
+      '<td class="' + CELL + '">' + (r.noRemunerativo != null ? fmt.format(r.noRemunerativo) : '—') + '</td>' +
+      '<td class="' + CELL + '">' + (r.descuento != null ? fmt.format(r.descuento) : '—') + '</td>' +
+    '</tr>';
+  }
+
+  function rowsFor(list, map) {
+    return list.filter(function (r) { return r.monto > 0; })
+      .map(function (r) {
+        return {
+          key: r.key,
+          concepto: r.concepto,
+          unidades: r.unidades,
+          remunerativo: map.remunerativos ? r.monto : null,
+          noRemunerativo: map.noRemunerativos ? r.monto : null,
+          descuento: map.descuentos ? r.monto : null
+        };
+      });
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function buildTableHTML(res, opts) {
+    var clickable = !!(opts && opts.clickable);
+    var html =
+      '<table class="w-full border-collapse">' +
+      '<thead><tr class="bg-line/60">' +
+        '<th class="px-3 py-2 text-left text-[10px] uppercase tracking-[0.18em] font-bold text-ink/60">Concepto</th>' +
+        '<th class="px-3 py-2 text-center text-[10px] uppercase tracking-[0.18em] font-bold text-ink/60 w-[90px]">Unidades</th>' +
+        '<th class="px-3 py-2 text-right text-[10px] uppercase tracking-[0.18em] font-bold text-ink/60 w-[140px]">Remunerativo</th>' +
+        '<th class="px-3 py-2 text-right text-[10px] uppercase tracking-[0.18em] font-bold text-ink/60 w-[150px]">No remunerativo</th>' +
+        '<th class="px-3 py-2 text-right text-[10px] uppercase tracking-[0.18em] font-bold text-ink/60 w-[130px]">Descuentos</th>' +
+      '</tr></thead><tbody>';
+
+    var remun = rowsFor(res.items.remunerativos, { remunerativos: true });
+    var noRem = rowsFor(res.items.noRemunerativos, { noRemunerativos: true });
+    var desc = rowsFor(res.items.descuentos, { descuentos: true });
+
+    if (remun.length) {
+      html += sectionHeader('Remunerativos', 'bg-azul-800 text-white');
+      html += remun.map(function (r) { return rowHTML(r, opts); }).join('');
+      html += '<tr class="border-t-2 border-azul-800 font-bold"><td class="px-3 py-2 text-[12.5px] font-extrabold" colspan="2">Total remunerativo</td>' +
+        '<td class="' + CELL + ' font-bold">' + fmt.format(res.brutos.remun) + '</td><td></td><td></td></tr>';
+    }
+    if (noRem.length) {
+      html += sectionHeader('No remunerativos', 'bg-azul-300 text-azul-900');
+      html += noRem.map(function (r) { return rowHTML(r, opts); }).join('');
+      html += '<tr class="border-t-2 border-azul-300 font-bold"><td class="px-3 py-2 text-[12.5px] font-extrabold" colspan="2">Total no remunerativo</td>' +
+        '<td></td><td class="' + CELL + ' font-bold">' + fmt.format(res.brutos.noRem) + '</td><td></td></tr>';
+    }
+    if (desc.length) {
+      html += sectionHeader('Descuentos / aportes', 'bg-stamp text-white');
+      html += desc.map(function (r) { return rowHTML(r, opts); }).join('');
+      html += '<tr class="border-t-2 border-stamp font-bold"><td class="px-3 py-2 text-[12.5px] font-extrabold" colspan="2">Total retenciones</td>' +
+        '<td></td><td></td><td class="' + CELL + ' font-bold">' + fmt.format(res.descuentosTotal) + '</td></tr>';
+    }
+
+    html += '</tbody></table>';
+
+    html += '<div class="border-t-2 border-dashed border-line mx-4 my-1"></div>';
+    html += '<div class="flex flex-wrap items-center justify-between gap-4 px-4 py-3">' +
+      '<div>' +
+        '<p class="text-[10px] uppercase tracking-[0.18em] font-bold text-ink/50">Sueldo bruto</p>' +
+        '<p class="font-mono font-bold text-base tabular">' + fmt.format(res.brutos.total) + '</p>' +
+      '</div>' +
+      '<div class="text-right">' +
+        '<p class="text-[10px] uppercase tracking-[0.18em] font-bold text-ink/50">Neto en mano (líquido a cobrar)</p>' +
+        '<p class="stamp inline-block font-mono font-extrabold text-lg px-3 py-0.5 tabular rounded-[2px]">' + fmt.format(res.neto) + '</p>' +
+      '</div>' +
+    '</div>';
+
+    return html;
+  }
+
+  /* ---------- Modo liquidación ---------- */
+
+  function readState() {
+    state.empleador = $('in-empleador').value || state.empleador;
+    state.trabajador = $('in-trabajador').value || state.trabajador;
+    state.periodo = $('in-periodo').value || state.periodo;
+    state.categoria = $('in-categoria').value || state.categoria;
+    state.basico = parseAmount($('in-basico').value);
+    state.anios = parseNum($('in-anios').value);
+    state.hs50 = parseNum($('in-hs50').value);
+    state.hs100 = parseNum($('in-hs100').value);
+    state.presentismo = $('chk-presentismo').checked;
+    state.sindicato = $('chk-sindicato').checked;
+  }
+
+  function renderLiquidacion() {
+    readState();
+    var res = compute(state);
+    $('recibo-header').innerHTML = receiptHeaderHTML(state);
+    $('recibo-body').innerHTML = buildTableHTML(res, { clickable: false });
+    $('sum-bruto').textContent = fmt.format(res.brutos.total);
+    $('sum-retenciones').textContent = fmt.format(res.descuentosTotal);
+    $('sum-neto').textContent = fmt.format(res.neto);
+  }
+
+  /* ---------- Modo auditoría ---------- */
+
+  var AUDIT_BASE = {
+    empleador: 'Cooperativa Didáctica S.A.',
+    trabajador: 'Aylén Gómez',
+    periodo: 'Agosto 2026',
+    categoria: 'Admin. CCT 130/75',
+    basico: 520000,
+    anios: 6,
+    hs50: 10,
+    hs100: 2,
+    presentismo: true,
+    sindicato: true,
+    noRem: 30000
+  };
+
+  var AUDIT_ERRORS = [
+    {
+      id: 'jub-base',
+      key: 'jub',
+      question: 'El descuento de Jubilación (11%) se calculó sobre una base incorrecta. ¿Sobre qué base corresponde liquidarlo?',
+      options: [
+        { v: 'rem', l: 'Solo sobre el total remunerativo' },
+        { v: 'todo', l: 'Sobre remunerativo + no remunerativo' }
+      ],
+      correct: 'rem',
+      hint: 'Fijate qué monto suma la jubilación y comprobá cuál es el 11% exacto de cada base posible.',
+      explain: 'Correcto. Los aportes se calculan SOLO sobre la parte remunerativa: la suma no remunerativa (acuerdo, bono) no tributa aportes de ley. Por eso el 11% debe calcularse sobre el total remunerativo y no sobre todo el bruto.'
+    },
+    {
+      id: 'os-rate',
+      key: 'os',
+      question: 'El porcentaje de Obra Social aplicado no es el correcto. ¿Qué porcentaje establece la Ley 23.660?',
+      options: [
+        { v: '3', l: '3%' },
+        { v: '4', l: '4%' },
+        { v: '5', l: '5%' }
+      ],
+      correct: '3',
+      hint: 'Compará el monto descontado contra el total remunerativo: probá cuál porcentaje da exacto.',
+      explain: 'Correcto. El aporte de obra social es del 3% del total remunerativo (Ley 23.660). El recibo lo liquidó al 4%, lo que descontó de más al trabajador.'
+    },
+    {
+      id: 'extra-mult',
+      key: 'extra50',
+      question: 'Las horas extra al 50% se liquidaron con un recargo incorrecto. ¿Cuánto debe pagarse cada hora?',
+      options: [
+        { v: '1.5', l: 'Valor hora × 1,5 (recargo 50%)' },
+        { v: '2', l: 'Valor hora × 2 (recargo 100%)' }
+      ],
+      correct: '1.5',
+      hint: 'El recargo de la hora al 50% NO es el doble: ese corresponde a las horas al 100%.',
+      explain: 'Correcto. La hora extra al 50% se paga el valor hora más la mitad: ×1,5. Liquidarla al doble (×2) es el error típico de recibo que paga de más — o de menos si la categoría es al 100%.'
+    },
+    {
+      id: 'ant-unit',
+      key: 'antiguedad',
+      question: 'El adicional por antigüedad se liquidó con el porcentaje equivocado. ¿Cuánto corresponde por cada año de servicio?',
+      options: [
+        { v: '1', l: '1% del básico por año' },
+        { v: '2', l: '2% del básico por año' }
+      ],
+      correct: '1',
+      hint: 'Multiplicá el básico por los años y fijate qué porcentaje reproduce el monto del recibo.',
+      explain: 'Correcto. La antigüedad se paga 1% del básico por año de servicio (los convenios pueden fijar otra escala, pero la base conceptual es 1% anual). El recibo aplicó 2% por año y pagó de más.'
+    }
+  ];
+
+  var auditState = { error: null, selected: null, option: null };
+
+  function computeAudit(err) {
+    var res = compute(AUDIT_BASE);
+    var items = res.items;
+
+    if (err.id === 'jub-base') {
+      items.descuentos[0].monto = round2((res.brutos.remun + res.brutos.noRem) * 0.11);
+    } else if (err.id === 'os-rate') {
+      items.descuentos[1].monto = round2(res.brutos.remun * 0.04);
+    } else if (err.id === 'extra-mult') {
+      var hv = AUDIT_BASE.basico / 200;
+      items.remunerativos[3].monto = round2(AUDIT_BASE.hs50 * hv * 2);
+    } else if (err.id === 'ant-unit') {
+      items.remunerativos[1].monto = round2(AUDIT_BASE.basico * AUDIT_BASE.anios * 0.02);
+    }
+
+    res.descuentosTotal = round2(items.descuentos.reduce(function (a, r) { return a + r.monto; }, 0));
+    res.neto = round2(res.brutos.total - res.descuentosTotal);
+    return res;
+  }
+
+  function renderAudit() {
+    var err = auditState.error;
+    var res = computeAudit(err);
+    $('audit-receipt-header').innerHTML = receiptHeaderHTML(AUDIT_BASE);
+    $('audit-receipt-body').innerHTML = buildTableHTML(res, {
+      clickable: true,
+      selected: auditState.selected
+    });
+    $('audit-question').textContent = err.question;
+
+    var box = $('audit-options');
+    box.innerHTML = '';
+    err.options.forEach(function (o, i) {
+      var label = document.createElement('label');
+      label.className = 'flex items-center gap-2.5 border border-line rounded-[3px] px-3 py-2.5 text-sm font-semibold cursor-pointer transition-colors hover:border-azul-500 ' +
+        (auditState.option === o.v ? 'border-azul-800 bg-azul-100/50' : '');
+      label.innerHTML = '<input type="radio" name="audit-opt" value="' + o.v + '" class="accent-azul-800"' + (auditState.option === o.v ? ' checked' : '') + '> ' + o.l;
+      label.querySelector('input').addEventListener('change', function () {
+        auditState.option = o.v;
+        renderAudit();
+        $('btn-check').disabled = false;
+      });
+      box.appendChild(label);
+    });
+
+    $('btn-check').disabled = auditState.option === null;
+  }
+
+  function startAudit() {
+    auditState.error = AUDIT_ERRORS[Math.floor(Math.random() * AUDIT_ERRORS.length)];
+    auditState.selected = null;
+    auditState.option = null;
+    $('audit-verdict').className = 'hidden mt-4 text-sm font-medium leading-relaxed rounded-[3px] p-4';
+    $('btn-check').classList.remove('hidden');
+    $('btn-again').classList.add('hidden');
+    $('btn-next').classList.add('hidden');
+    renderAudit();
+  }
+
+  function checkAnswer() {
+    var err = auditState.error;
+    var ok = auditState.option === err.correct;
+    var v = $('audit-verdict');
+    v.classList.remove('hidden');
+    if (ok) {
+      v.className = 'mt-4 text-sm font-medium leading-relaxed rounded-[3px] p-4 bg-emerald-50 border border-emerald-300 text-emerald-900';
+      v.innerHTML = '<p class="font-extrabold mb-1">✓ ¡Correcto! Error detectado.</p><p>' + err.explain + '</p>';
+      $('btn-next').classList.remove('hidden');
+    } else {
+      v.className = 'mt-4 text-sm font-medium leading-relaxed rounded-[3px] p-4 bg-red-50 border border-red-200 text-red-900';
+      v.innerHTML = '<p class="font-extrabold mb-1">✗ Todavía no.</p><p>' + err.hint + '</p>';
+      $('btn-again').classList.remove('hidden');
+    }
+    $('btn-check').classList.add('hidden');
+  }
+
+  function bindAuditClicks() {
+    $('audit-receipt-body').addEventListener('click', function (e) {
+      var tr = e.target.closest('tr[data-key]');
+      if (!tr) return;
+      var key = tr.getAttribute('data-key');
+      if (key === 'noRem') return;
+      auditState.selected = (auditState.selected === key) ? null : key;
+      renderAudit();
+    });
+    $('audit-receipt-body').addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      var tr = e.target.closest('tr[data-key]');
+      if (!tr) return;
+      e.preventDefault();
+      tr.click();
+    });
+    $('btn-check').addEventListener('click', checkAnswer);
+    $('btn-again').addEventListener('click', function () {
+      auditState.selected = null;
+      auditState.option = null;
+      $('audit-verdict').classList.add('hidden');
+      $('btn-again').classList.add('hidden');
+      $('btn-check').classList.remove('hidden');
+      renderAudit();
+    });
+    $('btn-next').addEventListener('click', startAudit);
+  }
+
+  /* ---------- Navegación de modos ---------- */
+
+  function switchMode(mode) {
+    var isLiqui = mode === 'liqui';
+    $('view-liqui').classList.toggle('hidden', !isLiqui);
+    $('view-audit').classList.toggle('hidden', isLiqui);
+    $('tab-liqui').className = 'tab-btn px-4 py-2 text-sm font-bold tracking-tight ' + (isLiqui ? 'bg-azul-800 text-white' : 'bg-white text-ink');
+    $('tab-audit').className = 'tab-btn px-4 py-2 text-sm font-bold tracking-tight ' + (isLiqui ? 'bg-white text-ink' : 'bg-azul-800 text-white');
+    $('tab-liqui').setAttribute('aria-selected', isLiqui);
+    $('tab-audit').setAttribute('aria-selected', !isLiqui);
+  }
+
+  document.querySelectorAll('.tab-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () { switchMode(btn.getAttribute('data-mode')); });
+  });
+
+  /* ---------- Bindings ---------- */
+
+  var bindInputs = ['in-empleador', 'in-trabajador', 'in-periodo', 'in-categoria', 'in-basico', 'in-anios', 'in-hs50', 'in-hs100'];
+  bindInputs.forEach(function (id) {
+    $(id).addEventListener('input', renderLiquidacion);
+  });
+  $('chk-presentismo').addEventListener('change', renderLiquidacion);
+  $('chk-sindicato').addEventListener('change', renderLiquidacion);
+  $('in-basico').addEventListener('blur', function () {
+    readState();
+    $('in-basico').value = state.basico.toLocaleString('es-AR');
+  });
+  $('btn-print').addEventListener('click', function () { window.print(); });
+
+  /* ---------- Init ---------- */
+
+  renderLiquidacion();
+  startAudit();
+  bindAuditClicks();
+})();
+</script>
+</body>
+</html>

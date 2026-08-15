@@ -1,0 +1,7 @@
+services:
+  fisica-lanzamiento:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fisica-lanzamiento
+    restart: unless-stopped

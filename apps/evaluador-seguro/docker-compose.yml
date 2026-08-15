@@ -1,0 +1,8 @@
+services:
+  evaluador-seguro:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    expose:
+      - "80"
+    restart: unless-stopped

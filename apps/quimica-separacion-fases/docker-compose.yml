@@ -1,0 +1,7 @@
+services:
+  quimica-separacion-fases:
+    build:
+      context: .
+    restart: unless-stopped
+    expose:
+      - "80"

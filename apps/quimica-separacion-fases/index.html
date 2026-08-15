@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laboratorio de Métodos de Separación de Fases y Mezclas</title>
+<meta name="description" content="Laboratorio interactivo de Físico-Química: separá mezclas aplicando métodos en el orden correcto, con retroalimentación didáctica.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2314355B'/%3E%3Cpath d='M9 25 L14 16 V8 H18 V16 L23 25 Z' fill='none' stroke='%23F7F2E8' stroke-width='2'/%3E%3Cpath d='M13 8 H19' stroke='%23F7F2E8' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<style type="text/tailwindcss">
+@theme {
+  --color-paper: #F7F2E8;
+  --color-card: #FFFFFF;
+  --color-ink: #14355B;
+  --color-cobalt: #1E62B8;
+  --color-steel: #55677C;
+  --color-safety: #C77800;
+  --color-lab-green: #2E7D52;
+  --color-lab-red: #B23A26;
+  --color-ruled: #D7E2EE;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "IBM Plex Sans", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+}
+
+body { font-family: var(--font-body); }
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.beaker {
+  position: relative;
+  width: min(100%, 320px);
+  margin-inline: auto;
+  aspect-ratio: 0.86;
+  background: linear-gradient(180deg, rgba(30,98,184,0.05), rgba(30,98,184,0.02));
+  border: 3px solid var(--color-ink);
+  border-top-width: 2px;
+  border-bottom-width: 8px;
+  border-radius: 0 0 2.6rem 2.6rem;
+  overflow: hidden;
+  transition: box-shadow 0.25s ease;
+}
+.beaker::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 22%;
+  width: 54px;
+  height: 16px;
+  border: 3px solid var(--color-ink);
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  background: var(--color-card);
+  z-index: 2;
+}
+.beaker-scale {
+  position: absolute;
+  right: 8px;
+  top: 14px;
+  bottom: 16px;
+  width: 9px;
+  border-left: 1px solid rgba(20,53,91,0.5);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 26px,
+    rgba(20,53,91,0.5) 26px 28px
+  );
+}
+.beaker-scale span {
+  position: absolute;
+  right: 14px;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  color: rgba(20,53,91,0.6);
+}
+.beaker-drag {
+  box-shadow: 0 0 0 5px rgba(30,98,184,0.25);
+  outline: 3px dashed var(--color-cobalt);
+  outline-offset: 6px;
+}
+
+.capa {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transition: height 0.7s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease, transform 0.5s ease;
+}
+.capa.quitar {
+  opacity: 0;
+  transform: translateY(30px);
+}
+.tex-limaduras {
+  background-color: #66707e;
+  background-image:
+    radial-gradient(circle at 15% 35%, #4a525e 9%, transparent 10%),
+    radial-gradient(circle at 55% 60%, #565f6c 8%, transparent 9%),
+    radial-gradient(circle at 85% 30%, #4a525e 10%, transparent 11%);
+}
+.tex-arena {
+  background-color: #D9B878;
+  background-image:
+    radial-gradient(circle at 20% 45%, #C19A5B 10%, transparent 11%),
+    radial-gradient(circle at 60% 25%, #C9A566 9%, transparent 10%),
+    radial-gradient(circle at 80% 65%, #B58E52 11%, transparent 12%);
+}
+.tex-agua {
+  background: linear-gradient(180deg, rgba(122,183,235,0.72), rgba(56,128,201,0.88));
+}
+.tex-salmuera {
+  background: linear-gradient(180deg, rgba(170,208,240,0.78), rgba(110,164,214,0.88));
+}
+.tex-aceite {
+  background: linear-gradient(180deg, rgba(255,196,87,0.9), rgba(240,164,54,0.92));
+}
+.tex-piedras {
+  background-color: #8d97a5;
+  background-image:
+    radial-gradient(circle at 18% 40%, #6e7887 22%, transparent 23%),
+    radial-gradient(circle at 65% 65%, #77818f 18%, transparent 19%),
+    radial-gradient(circle at 80% 25%, #66707e 16%, transparent 17%);
+}
+.tex-destilada {
+  background: linear-gradient(180deg, rgba(219,236,250,0.8), rgba(158,200,235,0.75));
+}
+.es-liquido { animation: oleaje 5.5s ease-in-out infinite alternate; }
+@keyframes oleaje {
+  from { transform: translateY(0); }
+  to { transform: translateY(-2.5px); }
+}
+.sacudir { animation: sacudida 0.4s ease; }
+@keyframes sacudida {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-7px); }
+  50% { transform: translateX(6px); }
+  75% { transform: translateX(-4px); }
+}
+.entrada { animation: entrada 0.45s ease both; }
+@keyframes entrada {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.cuaderno {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 27px,
+    var(--color-ruled) 27px 28px
+  );
+}
+.fila-registro { line-height: 28px; }
+
+.tool {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.tool:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -8px rgba(20,53,91,0.35); }
+.tool.dragging { opacity: 0.4; }
+.tool.seleccionada {
+  border-color: var(--color-cobalt);
+  box-shadow: 0 0 0 3px rgba(30,98,184,0.2);
+}
+
+.progreso { transition: width 0.5s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+</style>
+</head>
+<body class="bg-paper text-ink min-h-screen">
+
+<header class="bg-ink text-paper">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="eyebrow text-safety mb-2">Físico-Química · Educación secundaria</p>
+      <h1 class="font-display font-700 text-2xl sm:text-4xl font-bold tracking-tight">
+        Laboratorio de métodos de separación
+      </h1>
+      <p class="mt-2 text-paper/80 max-w-xl text-sm sm:text-base">
+        Separación de fases y mezclas. Elegí una muestra, arrastrá los métodos al vaso de
+        precipitados y registrá cada operación en el cuaderno de laboratorio.
+      </p>
+    </div>
+    <button id="btnReiniciar" class="font-mono text-sm border border-safety text-safety hover:bg-safety hover:text-ink rounded-lg px-4 py-2 transition-colors">
+      Reiniciar mezcla
+    </button>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10 grid gap-6">
+
+  <div class="grid lg:grid-cols-12 gap-6">
+
+    <section class="lg:col-span-7 space-y-6">
+
+      <div class="bg-card border border-ink/10 rounded-2xl p-5 sm:p-6 shadow-sm">
+        <p class="eyebrow text-cobalt mb-3">01 · Muestra y mezcla</p>
+        <h2 class="font-display font-semibold text-lg mb-4">Seleccioná la mezcla a separar</h2>
+        <div id="selectorMezclas" class="grid sm:grid-cols-2 gap-3"></div>
+        <div class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+          <p id="txtPaso" class="font-mono text-steel">Paso 1 de 3</p>
+          <p id="txtAisladas" class="font-mono text-steel">Fracciones aisladas: 0</p>
+          <p id="txtFallos" class="font-mono text-safety"></p>
+        </div>
+        <div class="mt-3 h-1.5 bg-ink/10 rounded-full overflow-hidden">
+          <div id="barraProgreso" class="progreso h-full bg-lab-green rounded-full" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="bg-card border border-ink/10 rounded-2xl p-5 sm:p-6 shadow-sm">
+        <div class="flex items-baseline justify-between gap-4 mb-1">
+          <p class="eyebrow text-cobalt">02 · Vaso de precipitados</p>
+          <p id="txtMezclaActual" class="font-mono text-xs text-steel text-right"></p>
+        </div>
+        <div id="zonaVaso" class="mt-4 py-2 rounded-2xl" aria-label="Vaso de precipitados: soltá aquí una herramienta para aplicarla">
+          <div id="vaso" class="beaker">
+            <div class="beaker-scale">
+              <span style="top:8px">400</span>
+              <span style="top:92px">300</span>
+              <span style="top:176px">200</span>
+              <span style="top:260px">100</span>
+            </div>
+            <div id="capas"></div>
+          </div>
+          <p id="txtArrastre" class="text-center text-sm text-steel mt-4">
+            Arrastrá una herramienta desde la estantería hasta el vaso
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-card border border-ink/10 rounded-2xl p-5 sm:p-6 shadow-sm">
+        <p class="eyebrow text-cobalt mb-3">03 · Propiedades de las fases presentes</p>
+        <div id="fichasFases" class="space-y-3"></div>
+      </div>
+
+    </section>
+
+    <section class="lg:col-span-5 space-y-6">
+
+      <div class="bg-card border border-ink/10 rounded-2xl p-5 sm:p-6 shadow-sm">
+        <p class="eyebrow text-cobalt mb-3">04 · Estantería de herramientas</p>
+        <h2 class="font-display font-semibold text-lg mb-1">Métodos de separación</h2>
+        <p class="text-sm text-steel mb-4">
+          Arrastrá la herramienta sobre el vaso, o tocá una y pulsá «Aplicar al vaso».
+        </p>
+        <div id="estanteria" class="grid gap-3"></div>
+        <button id="btnAplicar" disabled
+          class="mt-4 w-full font-mono text-sm rounded-lg px-4 py-3 border-2 border-cobalt/40 text-cobalt/50 disabled:cursor-not-allowed transition-colors">
+          Aplicar al vaso
+        </button>
+        <p class="mt-2 text-xs text-steel" id="txtSeleccion"></p>
+      </div>
+
+      <div class="bg-card border border-ink/10 rounded-2xl p-5 sm:p-6 shadow-sm" aria-live="polite">
+        <p class="eyebrow text-cobalt mb-3">05 · Retroalimentación</p>
+        <div id="feedback"></div>
+        <div id="informe" class="hidden mt-4"></div>
+      </div>
+
+    </section>
+  </div>
+
+  <section class="bg-card border border-ink/10 rounded-2xl p-5 sm:p-6 shadow-sm">
+    <div class="flex flex-wrap items-baseline justify-between gap-2 mb-1">
+      <p class="eyebrow text-cobalt">06 · Cuaderno de laboratorio</p>
+      <p class="font-mono text-xs text-steel">Registro de operaciones</p>
+    </div>
+    <div id="cuaderno" class="cuaderno mt-3 px-4 py-2 rounded-lg">
+      <p class="fila-registro text-sm text-steel italic">Todavía no hay registros. Aplicá tu primer método.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="max-w-6xl mx-auto px-4 sm:px-6 pb-10">
+  <p class="eyebrow text-steel/70 text-center">
+    Ciencias Naturales · Físico-Química · Métodos físicos de separación
+  </p>
+</footer>
+
+<script>
+"use strict";
+
+const HERRAMIENTAS = {
+  imantacion: {
+    id: "imantacion", nombre: "Imantación", herramienta: "Imán",
+    descripcion: "Separa materiales magnéticos",
+    icono: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="w-7 h-7"><path d="M10 14v14a8 8 0 0 0 16 0V14"/><path d="M26 14v14a8 8 0 0 0 16 0V14"/><path d="M10 10v4M26 10v4M42 10v4" stroke-width="4"/><path d="M14 32h4v10h-4zM26 32h4v10h-4z" fill="currentColor" stroke="none"/></svg>'
+  },
+  tamizacion: {
+    id: "tamizacion", nombre: "Tamización", herramienta: "Tamiz",
+    descripcion: "Separa sólidos por tamaño de partícula",
+    icono: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="w-7 h-7"><circle cx="24" cy="26" r="14"/><path d="M10 26h28M13 20h22M13 32h22M18 14l4 8M26 14l2 6M16 20l2 6M24 20l2 6M30 20l2 6M20 32l2 6M28 32l2 6M12 26l4 6M36 26l-4 6" opacity=".55"/><path d="M8 40h32" stroke-width="5"/></svg>'
+  },
+  filtracion: {
+    id: "filtracion", nombre: "Filtración", herramienta: "Embudo con papel de filtro",
+    descripcion: "Separa sólidos insolubles de líquidos",
+    icono: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="w-7 h-7"><path d="M22 6h4l10 30H12z"/><path d="M16 10c2 2 2 4 0 6M22 10c2 2 2 4 0 6M28 10c2 2 2 4 0 6" opacity=".55"/><path d="M20 36v8" stroke-width="4"/></svg>'
+  },
+  decantacion: {
+    id: "decantacion", nombre: "Decantación", herramienta: "Ampolla de decantación",
+    descripcion: "Separa líquidos inmiscibles por densidad",
+    icono: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="w-7 h-7"><path d="M19 6h10M22 6l3 8c3 3 6 7 6 13a11 11 0 0 1-22 0c0-6 3-10 6-13z"/><path d="M14 27h20" opacity=".5"/><path d="M20 42h8v-8M20 34h8" stroke-width="4"/></svg>'
+  },
+  destilacion: {
+    id: "destilacion", nombre: "Destilación / Evaporación", herramienta: "Mechero y balón de destilación",
+    descripcion: "Separa por diferencia de punto de ebullición",
+    icono: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="w-7 h-7"><path d="M20 6h8M22 6v8h4V6M26 14l4 6 4 12a10 10 0 0 1-20 0l4-12z"/><path d="M26 36l8 6M22 38l-6 4" opacity=".55"/><path d="M24 46h6M22 42l2 4M28 42l2 4" stroke-width="4"/></svg>'
+  }
+};
+
+const MEZCLAS = [
+  {
+    id: "compleja",
+    nombre: "Agua + Sal disuelta + Arena + Limaduras de hierro",
+    resumen: "4 componentes · sólidos, disolución y líquido",
+    fases: [
+      { id: "limaduras", nombre: "Limaduras de hierro", estado: "Sólido en suspensión", magnetica: "Sí", soluble: "No", densidad: "7,87 g/cm³", ebull: "2.862 °C", capa: { clase: "tex-limaduras", peso: 11, label: "Limaduras de hierro", esLiquido: false } },
+      { id: "arena", nombre: "Arena", estado: "Sólido en suspensión", magnetica: "No", soluble: "No", densidad: "2,65 g/cm³", ebull: ">1.700 °C", capa: { clase: "tex-arena", peso: 17, label: "Arena", esLiquido: false } },
+      { id: "sal", nombre: "Sal disuelta", estado: "Disuelta en agua", magnetica: "No", soluble: "Sí (en agua)", densidad: "2,16 g/cm³", ebull: "1.413 °C", capa: { clase: "tex-salmuera", peso: 46, label: "Agua + sal disuelta", esLiquido: true } }
+    ],
+    orden: [["imantacion", "limaduras"], ["filtracion", "arena"], ["destilacion", "sal"]],
+    quedar: ["sal"],
+    errores: {
+      filtracion: {
+        mensaje: "Filtraste antes de imantar. Las limaduras son partículas muy finas: se mezclan con la arena sobre el papel de filtro y no podés aislar ninguna fase limpia.",
+        equipo: "El papel de filtro quedó inutilizable. Primero conviene sacar lo magnético."
+      },
+      tamizacion: {
+        mensaje: "La mezcla está húmeda y las partículas de arena y limaduras son más finas que la malla del tamiz: todo la atraviesa.",
+        equipo: "El tamiz no retuvo nada."
+      },
+      decantacion: {
+        mensaje: "No hay dos líquidos inmiscibles en esta mezcla: la sal está disuelta y los sólidos se hunden. La ampolla de decantación no tiene dos capas que separar.",
+        equipo: "La decantación no aplica a esta mezcla."
+      },
+      destilacion: {
+        mensaje: "Calentaste la mezcla con arena y limaduras dentro del balón: el vapor arrastra partículas sólidas y la arena se quema en seco al subir la temperatura.",
+        equipo: "El balón de destilación quedó contaminado y el termómetro dañado. Hay que destilar recién después de filtrar."
+      }
+    },
+    informe: {
+      fracciones: [
+        { nombre: "Limaduras de hierro", pureza: "98 %", nota: "Un poco de arena adherida por la humedad" },
+        { nombre: "Arena", pureza: "97 %", nota: "Quedó libre de limaduras gracias a la imantación previa" },
+        { nombre: "Sal cristalizada", pureza: "95 %", nota: "Cristales obtenidos al evaporar el agua" },
+        { nombre: "Agua destilada", pureza: "100 %", nota: "Sin sales disueltas ni partículas" }
+      ],
+      rendimiento: "90 %",
+      retro: "El orden no es caprichoso: cada método aprovecha una propiedad distinta (magnetismo, tamaño de poro, punto de ebullición). Si destilás primero, las partículas sólidas arruinan el equipo; si filtrás primero, las limaduras finas contaminan la arena."
+    }
+  },
+  {
+    id: "aceite",
+    nombre: "Agua + Aceite + Piedras",
+    resumen: "3 componentes · sólidos y líquidos inmiscibles",
+    fases: [
+      { id: "piedras", nombre: "Piedras", estado: "Sólido en el fondo", magnetica: "No", soluble: "No", densidad: "2,50 g/cm³", ebull: "—", capa: { clase: "tex-piedras", peso: 20, label: "Piedras", esLiquido: false } },
+      { id: "agua2", nombre: "Agua", estado: "Líquido", magnetica: "No", soluble: "—", densidad: "1,00 g/cm³", ebull: "100 °C", capa: { clase: "tex-agua", peso: 40, label: "Agua", esLiquido: true } },
+      { id: "aceite", nombre: "Aceite", estado: "Líquido inmiscible", magnetica: "No", soluble: "No (inmiscible)", densidad: "0,92 g/cm³", ebull: "≈ 300 °C", capa: { clase: "tex-aceite", peso: 24, label: "Aceite", esLiquido: true } }
+    ],
+    orden: [["tamizacion", "piedras"], ["decantacion", "aceite"]],
+    quedar: ["agua2"],
+    errores: {
+      decantacion: {
+        mensaje: "Abrís la llave y las piedras bloquean el paso del líquido; el aceite queda atrapado entre las piedras y la mezcla ni sale de la ampolla.",
+        equipo: "La llave de la ampolla se atascó. Primero hay que retirar los sólidos grandes."
+      },
+      filtracion: {
+        mensaje: "El papel de filtro retiene las piedras pero también retiene el aceite: el líquido que pasa sigue siendo una mezcla aceitosa de agua.",
+        equipo: "El papel quedó impregnado de aceite; no se logró separar ninguna fase líquida."
+      },
+      imantacion: {
+        mensaje: "Ningún componente de esta mezcla es magnético: el imán no atrajo ni una partícula.",
+        equipo: "La imantación no aplica a esta mezcla."
+      },
+      destilacion: {
+        mensaje: "Con el calor, el aceite se descompone en humos y las piedras tapan el balón: no obtenés ningún destilado limpio.",
+        equipo: "El balón de destilación se arruinó."
+      }
+    },
+    informe: {
+      fracciones: [
+        { nombre: "Piedras", pureza: "99 %", nota: "Separadas en seco por el tamiz, antes de tocar los líquidos" },
+        { nombre: "Aceite", pureza: "96 %", nota: "Capa superior recuperada de la ampolla" },
+        { nombre: "Agua", pureza: "98 %", nota: "Sin restos de aceite en superficie" }
+      ],
+      rendimiento: "95 %",
+      retro: "Primero lo más grande y sólido (tamización) y después los líquidos inmiscibles (decantación). Si filtrás primero, el aceite queda atrapado junto con las piedras y contaminás ambas fracciones."
+    }
+  },
+  {
+    id: "alcohol",
+    nombre: "Alcohol + Agua",
+    resumen: "2 componentes · líquidos miscibles",
+    fases: [
+      { id: "agua3", nombre: "Agua", estado: "Líquido", magnetica: "No", soluble: "Sí (miscible)", densidad: "1,00 g/cm³", ebull: "100 °C", capa: { clase: "tex-agua", peso: 52, label: "Alcohol + agua", esLiquido: true } },
+      { id: "alcohol", nombre: "Alcohol etílico", estado: "Líquido", magnetica: "No", soluble: "Sí (miscible)", densidad: "0,79 g/cm³", ebull: "78 °C", capa: { clase: "tex-agua", peso: 0, label: "", esLiquido: true } }
+    ],
+    orden: [["destilacion", "alcohol"]],
+    quedar: ["agua3"],
+    errores: {
+      imantacion: {
+        mensaje: "No hay ningún material magnético en esta mezcla: el imán no tiene qué atraer.",
+        equipo: "La imantación no aplica a esta mezcla."
+      },
+      filtracion: {
+        mensaje: "El alcohol y el agua están disueltos entre sí (son miscibles): atraviesan juntos los poros del papel de filtro, como un solo líquido.",
+        equipo: "El filtro no retuvo nada."
+      },
+      tamizacion: {
+        mensaje: "Todo es líquido: la malla del tamiz no tiene partículas sólidas que retener.",
+        equipo: "El tamiz no retuvo nada."
+      },
+      decantacion: {
+        mensaje: "El alcohol y el agua se mezclan en cualquier proporción: no forman dos capas, así que la ampolla de decantación no puede separarlas.",
+        equipo: "La decantación no aplica a esta mezcla."
+      }
+    },
+    informe: {
+      fracciones: [
+        { nombre: "Alcohol etílico", pureza: "90 %", nota: "Parte del vapor de agua se condensa junto con el alcohol" },
+        { nombre: "Agua", pureza: "95 %", nota: "Quedó en el balón, sin alcohol" }
+      ],
+      rendimiento: "88 %",
+      retro: "La destilación aprovecha la diferencia de puntos de ebullición: el alcohol hierve a 78 °C y el agua a 100 °C. Calentando y controlando la temperatura, el alcohol se condensa primero. Un termómetro bien calibrado y calor controlado mejoran la pureza."
+    }
+  },
+  {
+    id: "salada",
+    nombre: "Agua + Sal disuelta",
+    resumen: "2 componentes · disolución homogénea",
+    fases: [
+      { id: "sal2", nombre: "Sal disuelta", estado: "Disuelta en agua", magnetica: "No", soluble: "Sí (en agua)", densidad: "2,16 g/cm³", ebull: "1.413 °C", capa: { clase: "tex-salmuera", peso: 52, label: "Agua + sal disuelta", esLiquido: true } }
+    ],
+    orden: [["destilacion", "sal2"]],
+    quedar: [],
+    errores: {
+      imantacion: {
+        mensaje: "La sal no es magnética: el imán no atrae nada de esta disolución.",
+        equipo: "La imantación no aplica a esta mezcla."
+      },
+      filtracion: {
+        mensaje: "La sal está disuelta, no en suspensión: sus partículas pasan con el agua por los poros del papel de filtro.",
+        equipo: "El filtro no retuvo nada."
+      },
+      tamizacion: {
+        mensaje: "Todo es líquido: no hay sólidos que retener en la malla del tamiz.",
+        equipo: "El tamiz no retuvo nada."
+      },
+      decantacion: {
+        mensaje: "Hay un solo líquido homogéneo: la ampolla de decantación necesita dos líquidos inmiscibles para separar capas.",
+        equipo: "La decantación no aplica a esta mezcla."
+      }
+    },
+    informe: {
+      fracciones: [
+        { nombre: "Agua destilada", pureza: "100 %", nota: "Se evaporó y condensó sin sales" },
+        { nombre: "Sal cristalizada", pureza: "99 %", nota: "Cristales blancos al evaporarse el agua" }
+      ],
+      rendimiento: "92 %",
+      retro: "Al calentar la disolución a ebullición, el agua se evapora y la sal, que no es volátil, queda cristalizada. Si calentás muy fuerte, la sal salpica y perdés rendimiento: la evaporación controlada da cristales más puros."
+    }
+  }
+];
+
+const MENSAJES_GENERICOS = {
+  imantacion: "Ninguna fase presente es magnética: el imán no atrae nada.",
+  tamizacion: "No hay sólidos más grandes que la malla para retener.",
+  filtracion: "No hay un sólido insoluble en suspensión que quede retenido en el papel de filtro.",
+  decantacion: "No hay dos líquidos inmiscibles formando capas que la ampolla pueda separar.",
+  destilacion: "Calentar ahora no aísla ninguna fase: los componentes presentes aún están mezclados con otros que no deben ir al balón."
+};
+
+const SUCCESS = {
+  imantacion: {
+    titulo: "Imantación correcta",
+    texto: "El imán atrajo las limaduras de hierro, únicas partículas magnéticas de la mezcla. La imantación separa materiales según su respuesta al campo magnético."
+  },
+  tamizacion: {
+    titulo: "Tamización correcta",
+    texto: "Las piedras son más grandes que la malla del tamiz: quedaron retenidas y el líquido pasó. La tamización separa sólidos de distinto tamaño de grano."
+  },
+  filtracion: {
+    titulo: "Filtración correcta",
+    texto: "La arena es insoluble y más gruesa que los poros del papel de filtro: quedó retenida y el líquido pasó limpio. La filtración separa sólidos insolubles de un líquido."
+  },
+  decantacion: {
+    titulo: "Decantación correcta",
+    texto: "El aceite es menos denso (0,92 g/cm³) que el agua (1,00 g/cm³) y no se mezcla con ella: forma una capa superior. La decantación separa líquidos inmiscibles por densidad."
+  },
+  destilacion: {
+    titulo: "Destilación correcta",
+    texto: "Al calentar, el líquido más volátil hierve primero, se condensa y se recoge aparte. La destilación aprovecha la diferencia de puntos de ebullición."
+  }
+};
+
+let estado = null;
+
+function mezclaActual() {
+  return MEZCLAS.find((m) => m.id === estado.mezclaId);
+}
+
+function faseDeMezcla(mezcla, faseId) {
+  return mezcla.fases.find((f) => f.id === faseId);
+}
+
+function cargarMezcla(id) {
+  estado = {
+    mezclaId: id,
+    paso: 0,
+    log: [],
+    fallos: 0,
+    aisladas: [],
+    seleccion: null,
+    terminado: false
+  };
+  document.getElementById("informe").classList.add("hidden");
+  document.getElementById("informe").innerHTML = "";
+  renderSelector();
+  renderVaso();
+  renderFichas();
+  renderEstado();
+  renderCuaderno();
+  renderFeedback(null);
+  renderSeleccion();
+}
+
+function renderSelector() {
+  const cont = document.getElementById("selectorMezclas");
+  cont.innerHTML = "";
+  MEZCLAS.forEach((m) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "tool text-left rounded-xl border-2 p-3.5 transition-colors " +
+      (m.id === estado.mezclaId ? "border-cobalt bg-cobalt/5" : "border-ink/10 bg-paper hover:border-cobalt/40");
+    btn.setAttribute("aria-pressed", m.id === estado.mezclaId ? "true" : "false");
+    btn.innerHTML =
+      '<span class="block font-display font-semibold text-sm leading-snug">' + m.nombre + "</span>" +
+      '<span class="block mt-1 font-mono text-xs text-steel">' + m.resumen + "</span>";
+    btn.addEventListener("click", () => cargarMezcla(m.id));
+    cont.appendChild(btn);
+  });
+}
+
+function renderVaso() {
+  const m = mezclaActual();
+  const cont = document.getElementById("capas");
+  cont.innerHTML = "";
+  const capas = m.fases
+    .filter((f) => f.capa.peso > 0)
+    .map((f) => ({ f, activa: !estado.aisladas.includes(f.id) }));
+  const total = capas.reduce((acc, c) => acc + c.f.capa.peso, 0);
+
+  capas.forEach(({ f, activa }, idx) => {
+    const div = document.createElement("div");
+    const alt = 100 * f.capa.peso / total;
+    div.className = "capa " + f.capa.clase + (activa ? "" : " quitar") + (f.capa.esLiquido && activa ? " es-liquido" : "");
+    div.style.height = (activa ? alt : 0) + "%";
+    div.style.zIndex = String(capas.length - idx);
+    if (activa && f.capa.label) {
+      const etiqueta = document.createElement("span");
+      etiqueta.className = "absolute top-1.5 left-3 font-mono text-[11px] leading-none " +
+        (f.capa.clase === "tex-aceite" ? "text-ink/80" : "text-paper/90") +
+        " bg-ink/15 rounded px-1.5 py-1 backdrop-blur-[1px]";
+      etiqueta.textContent = f.capa.label;
+      div.appendChild(etiqueta);
+    }
+    cont.appendChild(div);
+  });
+
+  document.getElementById("txtMezclaActual").textContent = m.nombre;
+  if (estado.aisladas.length === 0) {
+    document.getElementById("txtArrastre").textContent = "Arrastrá una herramienta desde la estantería hasta el vaso";
+  } else {
+    document.getElementById("txtArrastre").textContent = "Arrastrá la herramienta que aísle la fase que sigue";
+  }
+}
+
+function renderFichas() {
+  const m = mezclaActual();
+  const cont = document.getElementById("fichasFases");
+  cont.innerHTML = "";
+  const restantes = m.fases.filter((f) => !estado.aisladas.includes(f.id));
+  if (restantes.length === 0) {
+    cont.innerHTML = '<p class="text-sm text-lab-green font-mono">✓ Todas las fases fueron aisladas.</p>';
+    return;
+  }
+  restantes.forEach((f) => {
+    const card = document.createElement("div");
+    card.className = "entrada border border-ink/10 rounded-xl p-3.5";
+    card.innerHTML =
+      '<div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 mb-2">' +
+        '<span class="font-display font-semibold">' + f.nombre + "</span>" +
+        '<span class="font-mono text-xs text-steel">' + f.estado + "</span>" +
+      "</div>" +
+      '<div class="flex flex-wrap gap-1.5 font-mono text-[11px]">' +
+        '<span class="rounded bg-ink/5 border border-ink/10 px-2 py-1">Magnética: <b>' + f.magnetica + "</b></span>" +
+        '<span class="rounded bg-ink/5 border border-ink/10 px-2 py-1">Solubilidad: <b>' + f.soluble + "</b></span>" +
+        '<span class="rounded bg-ink/5 border border-ink/10 px-2 py-1">Densidad: <b>' + f.densidad + "</b></span>" +
+        '<span class="rounded bg-ink/5 border border-ink/10 px-2 py-1">P. de ebullición: <b>' + f.ebull + "</b></span>" +
+      "</div>";
+    cont.appendChild(card);
+  });
+}
+
+function renderEstado() {
+  const m = mezclaActual();
+  document.getElementById("txtPaso").textContent = "Paso " + (estado.paso + 1) + " de " + m.orden.length;
+  document.getElementById("txtAisladas").textContent = "Fracciones aisladas: " + estado.aisladas.length;
+  document.getElementById("txtFallos").textContent = estado.fallos > 0 ? "Intentos fallidos: " + estado.fallos : "";
+  document.getElementById("barraProgreso").style.width = (100 * estado.aisladas.length / m.orden.length) + "%";
+}
+
+function renderHerramientas() {
+  const cont = document.getElementById("estanteria");
+  cont.innerHTML = "";
+  Object.values(HERRAMIENTAS).forEach((h) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.draggable = true;
+    btn.dataset.herramienta = h.id;
+    btn.className = "tool seleccionable flex items-start gap-3 rounded-xl border-2 border-ink/10 bg-paper p-3 text-left cursor-grab";
+    btn.setAttribute("aria-label", h.herramienta + ": " + h.descripcion);
+    btn.innerHTML =
+      '<span class="shrink-0 mt-0.5 text-cobalt">' + h.icono + "</span>" +
+      '<span>' +
+        '<span class="block font-display font-semibold text-sm leading-snug">' + h.nombre + "</span>" +
+        '<span class="block font-mono text-[11px] text-steel mt-1">' + h.herramienta + " · " + h.descripcion + "</span>" +
+      "</span>";
+    btn.addEventListener("dragstart", (e) => {
+      e.dataTransfer.setData("text/plain", h.id);
+      e.dataTransfer.effectAllowed = "copy";
+      btn.classList.add("dragging");
+    });
+    btn.addEventListener("dragend", () => btn.classList.remove("dragging"));
+    btn.addEventListener("click", () => {
+      estado.seleccion = estado.seleccion === h.id ? null : h.id;
+      renderSeleccion();
+    });
+    cont.appendChild(btn);
+  });
+}
+
+function renderSeleccion() {
+  document.querySelectorAll(".seleccionable").forEach((b) => {
+    b.classList.toggle("seleccionada", estado.seleccion === b.dataset.herramienta);
+  });
+  const btnAplicar = document.getElementById("btnAplicar");
+  const habilitado = estado.seleccion !== null && !estado.terminado;
+  btnAplicar.disabled = !habilitado;
+  btnAplicar.className = "mt-4 w-full font-mono text-sm rounded-lg px-4 py-3 border-2 transition-colors " +
+    (habilitado ? "border-cobalt bg-cobalt text-paper hover:bg-ink cursor-pointer" : "border-cobalt/40 text-cobalt/50 disabled:cursor-not-allowed");
+  btnAplicar.textContent = habilitado ? "Aplicar " + HERRAMIENTAS[estado.seleccion].herramienta + " al vaso" : "Aplicar al vaso";
+  document.getElementById("txtSeleccion").textContent = estado.seleccion
+    ? "Herramienta seleccionada: " + HERRAMIENTAS[estado.seleccion].herramienta + " — pulsá «Aplicar» o arrastrala al vaso."
+    : "Sin herramienta seleccionada.";
+}
+
+function aplicar(id) {
+  if (estado.terminado) return;
+  const m = mezclaActual();
+  const esperado = m.orden[estado.paso];
+
+  if (id === esperado[0]) {
+    const fase = faseDeMezcla(m, esperado[1]);
+    estado.aisladas.push(esperado[1]);
+    const exito = SUCCESS[id];
+    renderVaso();
+    renderFichas();
+    renderEstado();
+    renderFeedback({
+      tipo: "ok",
+      titulo: exito.titulo + " → " + fase.nombre + " aislada",
+      texto: exito.texto
+    });
+    registro("ok", "Paso " + (estado.paso + 1) + " · " + HERRAMIENTAS[id].herramienta, fase.nombre + " aislada por " + HERRAMIENTAS[id].nombre.toLowerCase());
+    if (estado.paso + 1 === m.orden.length) {
+      terminar();
+    } else {
+      estado.paso++;
+      renderEstado();
+    }
+    return;
+  }
+
+  const err = m.errores[id] || { mensaje: MENSAJES_GENERICOS[id] };
+  estado.fallos++;
+  renderEstado();
+  sacudirVaso();
+  renderFeedback({
+    tipo: "err",
+    titulo: HERRAMIENTAS[id].herramienta + ": método incorrecto en este punto",
+    texto: err.mensaje,
+    equipo: err.equipo
+  });
+  registro("err", "Paso " + (estado.paso + 1) + " · " + HERRAMIENTAS[id].herramienta, err.mensaje + (err.equipo ? " Equipo: " + err.equipo : ""));
+}
+
+function terminar() {
+  estado.terminado = true;
+  renderEstado();
+  renderSeleccion();
+  renderFeedback({
+    tipo: "ok",
+    titulo: "¡Mezcla separada por completo!",
+    texto: "Todas las fases fueron aisladas. Revisá el informe de pureza y rendimiento."
+  });
+  renderInforme();
+}
+
+function sacudirVaso() {
+  const vaso = document.getElementById("vaso");
+  vaso.classList.remove("sacudir");
+  void vaso.offsetWidth;
+  vaso.classList.add("sacudir");
+}
+
+function renderFeedback(msg) {
+  const cont = document.getElementById("feedback");
+  if (!msg) {
+    cont.innerHTML = '<p class="text-sm text-steel">Aplicá un método para recibir la retroalimentación aquí.</p>';
+    return;
+  }
+  const esOk = msg.tipo === "ok";
+  cont.innerHTML =
+    '<div class="entrada rounded-xl border-2 p-4 ' + (esOk ? "border-lab-green/40 bg-lab-green/5" : "border-lab-red/40 bg-lab-red/5") + '">' +
+      '<p class="font-display font-semibold ' + (esOk ? "text-lab-green" : "text-lab-red") + '">' +
+        (esOk ? "✓ " : "✗ ") + msg.titulo +
+      "</p>" +
+      '<p class="mt-2 text-sm leading-relaxed">' + msg.texto + "</p>" +
+      (msg.equipo ? '<p class="mt-2 font-mono text-xs text-safety">Equipo: ' + msg.equipo + "</p>" : "") +
+    "</div>";
+}
+
+function renderInforme() {
+  const m = mezclaActual();
+  const inf = m.informe;
+  let filas = "";
+  inf.fracciones.forEach((fr) => {
+    filas +=
+      '<tr class="border-t border-ink/10">' +
+        '<td class="py-2 pr-3 font-display font-medium text-sm">' + fr.nombre + "</td>" +
+        '<td class="py-2 pr-3 font-mono text-sm text-cobalt">' + fr.pureza + "</td>" +
+        '<td class="py-2 text-xs text-steel">' + fr.nota + "</td>" +
+      "</tr>";
+  });
+  document.getElementById("informe").innerHTML =
+    '<div class="entrada rounded-xl border-2 border-lab-green/50 bg-lab-green/5 p-4 sm:p-5">' +
+      '<p class="eyebrow text-lab-green mb-2">Informe final</p>' +
+      '<h3 class="font-display font-semibold text-lg mb-3">Pureza y rendimiento</h3>' +
+      '<div class="overflow-x-auto"><table class="w-full text-left">' +
+        '<thead><tr class="font-mono text-[11px] text-steel uppercase">' +
+          '<th class="py-1.5 pr-3">Fracción aislada</th><th class="py-1.5 pr-3">Pureza</th><th class="py-1.5">Observaciones</th>' +
+        "</tr></thead><tbody>" + filas + "</tbody></table></div>" +
+      '<p class="mt-4 flex items-baseline gap-3">' +
+        '<span class="font-mono text-[11px] text-steel uppercase">Rendimiento global</span>' +
+        '<span class="font-mono text-2xl font-medium text-lab-green">' + inf.rendimiento + "</span>" +
+      "</p>" +
+      '<div class="mt-4 rounded-lg border-l-4 border-safety bg-safety/10 p-3.5">' +
+        '<p class="font-mono text-[11px] text-safety uppercase mb-1">Retroalimentación didáctica</p>' +
+        '<p class="text-sm leading-relaxed">' + inf.retro + "</p>" +
+      "</div>" +
+      '<div class="mt-5 flex flex-wrap gap-3">' +
+        '<button id="btnRepetir" class="font-mono text-sm rounded-lg px-4 py-2.5 bg-cobalt text-paper hover:bg-ink transition-colors">Repetir la mezcla</button>' +
+        '<button id="btnCambiar" class="font-mono text-sm rounded-lg px-4 py-2.5 border-2 border-ink/20 hover:border-cobalt transition-colors">Cambiar de mezcla</button>' +
+      "</div>" +
+    "</div>";
+  document.getElementById("informe").classList.remove("hidden");
+  document.getElementById("btnRepetir").addEventListener("click", () => cargarMezcla(estado.mezclaId));
+  document.getElementById("btnCambiar").addEventListener("click", () => {
+    cargarMezcla(estado.mezclaId);
+    document.getElementById("selectorMezclas").scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+}
+
+function registro(tipo, paso, detalle) {
+  const cont = document.getElementById("cuaderno");
+  const vacio = cont.querySelector("p.italic");
+  if (vacio) cont.innerHTML = "";
+  const fila = document.createElement("p");
+  fila.className = "fila-registro font-mono text-[13px] " + (tipo === "ok" ? "text-ink" : "text-lab-red");
+  fila.innerHTML = '<span class="inline-block w-8 ' + (tipo === "ok" ? "text-lab-green" : "text-lab-red") + '">' + (tipo === "ok" ? "✓" : "✗") + "</span>" + paso;
+  if (tipo === "ok") fila.innerHTML += ' — <span class="font-medium">' + detalle.split(" por ")[0] + "</span> · " + detalle;
+  else fila.innerHTML += " — " + detalle;
+  cont.appendChild(fila);
+  cont.scrollTop = cont.scrollHeight;
+}
+
+document.getElementById("btnReiniciar").addEventListener("click", () => cargarMezcla(estado.mezclaId));
+
+document.getElementById("btnAplicar").addEventListener("click", () => {
+  if (estado.seleccion) aplicar(estado.seleccion);
+});
+
+const zonaVaso = document.getElementById("zonaVaso");
+const vaso = document.getElementById("vaso");
+["dragover", "dragenter"].forEach((ev) => {
+  zonaVaso.addEventListener(ev, (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    vaso.classList.add("beaker-drag");
+  });
+});
+zonaVaso.addEventListener("dragleave", (e) => {
+  if (!zonaVaso.contains(e.relatedTarget)) vaso.classList.remove("beaker-drag");
+});
+zonaVaso.addEventListener("drop", (e) => {
+  e.preventDefault();
+  vaso.classList.remove("beaker-drag");
+  const id = e.dataTransfer.getData("text/plain");
+  if (id) aplicar(id);
+});
+
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".seleccionable") && !e.target.closest("#btnAplicar") && estado.seleccion) {
+    estado.seleccion = null;
+    renderSeleccion();
+  }
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && estado.seleccion) {
+    estado.seleccion = null;
+    renderSeleccion();
+  }
+});
+
+renderHerramientas();
+cargarMezcla(MEZCLAS[0].id);
+</script>
+</body>
+</html>

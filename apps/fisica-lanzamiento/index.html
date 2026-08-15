@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tiro Oblicuo · Laboratorio de Física</title>
+<meta name="description" content="Registro y análisis de tiro oblicuo: mida alcances reales, compare con la parábola teórica y desafíe el cálculo de velocidad inicial.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        ink: '#1B2330',
+        paper: '#F5F6F2',
+        line: '#E4E8EF',
+        blue: '#2B5CE6',
+        green: '#1F7A5C',
+        red: '#D64545',
+        amber: '#E08A00',
+        wood: '#C89B6E',
+      },
+      fontFamily: {
+        display: ['"Chakra Petch"', 'sans-serif'],
+        sans: ['"IBM Plex Sans"', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'monospace'],
+      },
+    },
+  },
+};
+</script>
+<style>
+  body {
+    background-image:
+      linear-gradient(to right, rgba(27, 35, 48, 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(27, 35, 48, 0.035) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .swatch-theory { border-top: 2px dashed #2B5CE6; }
+  .swatch-real { background: #D64545; border-radius: 9999px; }
+  .swatch-disp { background: rgba(31, 122, 92, 0.2); border: 1.5px dashed rgba(31, 122, 92, 0.5); border-radius: 9999px; }
+  .swatch-target { background: #E08A00; }
+  input.invalid { border-color: #D64545; background: #FDF1F1; }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+  @media print {
+    .no-print { display: none !important; }
+    body { background: #fff; }
+    main { grid-template-columns: 1fr !important; }
+    section { break-inside: avoid; }
+  }
+</style>
+</head>
+<body class="font-sans text-ink antialiased">
+
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+
+  <header class="border-b border-line pb-6 mb-8 flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <p class="font-mono text-[11px] tracking-[0.22em] uppercase text-blue mb-2">Física · Cinemática · Trabajo práctico</p>
+      <h1 class="font-display text-3xl sm:text-4xl font-semibold tracking-tight">Registro y Análisis de Tiro Oblicuo</h1>
+      <p class="text-sm text-slate-500 mt-2 max-w-2xl leading-relaxed">Estación experimental para registrar alcances reales medidos con cinta métrica, compararlos con la parábola teórica y poner a prueba el cálculo de velocidad inicial.</p>
+    </div>
+    <button id="btn-print" class="no-print border border-line bg-white rounded-md px-3 py-1.5 text-xs font-medium hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue/30 transition">Imprimir ficha</button>
+  </header>
+
+  <main class="grid lg:grid-cols-[360px_1fr] gap-6 items-start">
+
+    <div class="space-y-6">
+
+      <section class="bg-white border border-line rounded-lg p-5">
+        <div class="flex items-baseline gap-2 mb-1">
+          <span class="font-mono text-[11px] text-blue">01</span>
+          <h2 class="font-display text-base font-semibold uppercase tracking-wide">Configuración de la estación</h2>
+        </div>
+        <p class="text-[13px] text-slate-500 mb-4">Parámetros del lanzador y del aula.</p>
+
+        <div class="space-y-4">
+          <div>
+            <label for="in-h" class="block text-[12px] font-medium text-slate-600 mb-1">Altura de la mesa <span class="font-mono">h</span> (m)</label>
+            <div class="relative">
+              <input id="in-h" type="number" inputmode="decimal" min="0.1" max="3" step="0.05" value="0.85"
+                class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue transition">
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">m</span>
+            </div>
+            <div class="flex gap-1.5 mt-2">
+              <button data-preset-h="0.75" class="chip rounded border border-line px-2.5 py-1 text-xs font-mono hover:border-blue hover:text-blue transition">0,75</button>
+              <button data-preset-h="0.85" class="chip rounded border border-line px-2.5 py-1 text-xs font-mono hover:border-blue hover:text-blue transition">0,85</button>
+              <button data-preset-h="1.00" class="chip rounded border border-line px-2.5 py-1 text-xs font-mono hover:border-blue hover:text-blue transition">1,00</button>
+            </div>
+            <p id="err-h" class="hidden text-[12px] text-red mt-1">Ingrese una altura entre 0,1 y 3 m.</p>
+          </div>
+
+          <div>
+            <label for="in-theta" class="block text-[12px] font-medium text-slate-600 mb-1">Ángulo de tiro <span class="font-mono">θ</span> (°)</label>
+            <div class="relative">
+              <input id="in-theta" type="number" inputmode="decimal" min="0" max="89" step="1" value="30"
+                class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue transition">
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">°</span>
+            </div>
+            <div class="flex gap-1.5 mt-2">
+              <button data-preset-t="0" class="chip rounded border border-line px-2.5 py-1 text-xs font-mono hover:border-blue hover:text-blue transition">0°</button>
+              <button data-preset-t="15" class="chip rounded border border-line px-2.5 py-1 text-xs font-mono hover:border-blue hover:text-blue transition">15°</button>
+              <button data-preset-t="30" class="chip rounded border border-line px-2.5 py-1 text-xs font-mono hover:border-blue hover:text-blue transition">30°</button>
+              <button data-preset-t="45" class="chip rounded border border-line px-2.5 py-1 text-xs font-mono hover:border-blue hover:text-blue transition">45°</button>
+            </div>
+            <p id="err-theta" class="hidden text-[12px] text-red mt-1">El ángulo debe estar entre 0° y 89°.</p>
+          </div>
+
+          <div>
+            <label for="in-g" class="block text-[12px] font-medium text-slate-600 mb-1">Gravedad <span class="font-mono">g</span> (m/s²)</label>
+            <div class="relative">
+              <input id="in-g" type="number" inputmode="decimal" min="1" max="20" step="0.1" value="9.8"
+                class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue transition">
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">m/s²</span>
+            </div>
+            <p id="err-g" class="hidden text-[12px] text-red mt-1">Ingrese una gravedad entre 1 y 20 m/s².</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="bg-white border border-line rounded-lg p-5">
+        <div class="flex items-baseline gap-2 mb-1">
+          <span class="font-mono text-[11px] text-blue">02</span>
+          <h2 class="font-display text-base font-semibold uppercase tracking-wide">Registro de ensayos</h2>
+        </div>
+        <p class="text-[13px] text-slate-500 mb-4">Alcances horizontales medidos con cinta métrica en el piso, desde la base de la mesa.</p>
+
+        <div class="space-y-2">
+          <div class="grid grid-cols-[64px_1fr] gap-2 px-1 text-[11px] uppercase tracking-wide text-slate-400 font-medium">
+            <span>Ensayo</span>
+            <span>Alcance x (m)</span>
+          </div>
+          <div id="trials" class="space-y-2"></div>
+          <p id="err-x" class="hidden text-[12px] text-red mt-1">Los alcances deben ser mayores que 0. Revise las celdas marcadas.</p>
+        </div>
+
+        <div class="flex gap-2 mt-4">
+          <button id="btn-sample" class="border border-line bg-white rounded-md px-3 py-2 text-xs font-medium hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue/30 transition">Datos de ejemplo</button>
+          <button id="btn-clear" class="border border-line bg-white rounded-md px-3 py-2 text-xs font-medium hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue/30 transition">Limpiar ensayos</button>
+        </div>
+      </section>
+
+      <section class="bg-white border border-line rounded-lg p-5">
+        <div class="flex items-baseline gap-2 mb-1">
+          <span class="font-mono text-[11px] text-amber">04</span>
+          <h2 class="font-display text-base font-semibold uppercase tracking-wide">Desafío: acierto al blanco</h2>
+        </div>
+        <p class="text-[13px] text-slate-500 mb-4">El docente fija la distancia del blanco en el piso. Calcule <span class="font-mono">v₀</span> con la ayuda y dispare virtualmente.</p>
+
+        <div class="space-y-4">
+          <div>
+            <label for="in-d" class="block text-[12px] font-medium text-slate-600 mb-1">Distancia del blanco <span class="font-mono">D</span> (m)</label>
+            <div class="relative">
+              <input id="in-d" type="number" inputmode="decimal" min="0.5" max="30" step="0.05" value="3.5"
+                class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber/30 focus:border-amber transition">
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">m</span>
+            </div>
+            <p id="err-d" class="hidden text-[12px] text-red mt-1">Ingrese una distancia mayor que 0.</p>
+          </div>
+
+          <div>
+            <label for="in-v0" class="block text-[12px] font-medium text-slate-600 mb-1">Velocidad estimada <span class="font-mono">v₀</span> (m/s)</label>
+            <div class="relative">
+              <input id="in-v0" type="number" inputmode="decimal" min="0.1" max="30" step="0.05" placeholder="Ej: 4,2"
+                class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber/30 focus:border-amber transition">
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">m/s</span>
+            </div>
+            <p id="err-v0" class="hidden text-[12px] text-red mt-1">Ingrese una velocidad mayor que 0.</p>
+          </div>
+
+          <div class="flex gap-2">
+            <button id="btn-fire" class="flex-1 bg-amber text-white text-sm font-semibold rounded-md px-4 py-2.5 hover:bg-amber/90 active:scale-[0.99] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber/40">Disparar</button>
+            <button id="btn-retry" class="border border-line bg-white rounded-md px-4 py-2 text-xs font-medium hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue/30 transition">Nuevo intento</button>
+          </div>
+
+          <div id="result" class="hidden border border-line bg-paper rounded-md px-4 py-3">
+            <p class="text-[11px] uppercase tracking-wide text-slate-400 font-medium mb-1">Puntaje de precisión</p>
+            <div class="flex items-end gap-2">
+              <span id="score-num" class="font-mono text-4xl font-semibold text-amber leading-none">0</span>
+              <span class="text-xs text-slate-400 mb-1">/ 100</span>
+            </div>
+            <p id="score-tier" class="text-sm font-medium mt-2"></p>
+            <p id="score-detail" class="text-[12px] text-slate-500 mt-0.5"></p>
+          </div>
+
+          <details class="border border-line rounded-md px-4 py-3">
+            <summary class="text-sm cursor-pointer text-slate-600 select-none">Ver ayuda de cálculo</summary>
+            <div class="mt-3 font-mono text-[13px] text-slate-600 space-y-1.5">
+              <p>v₀ = √( g·D² / (2·cos²θ·(h + D·tanθ)) )</p>
+            </div>
+            <p class="text-[12px] text-slate-500 mt-2">Modelo exacto de tiro oblicuo: despeja v₀ usando el tiempo de vuelo real T para que el impacto caiga sobre el blanco.</p>
+          </details>
+        </div>
+      </section>
+
+    </div>
+
+    <section class="bg-white border border-line rounded-lg p-5">
+      <div class="flex items-baseline gap-2 mb-1">
+        <span class="font-mono text-[11px] text-blue">03</span>
+        <h2 class="font-display text-base font-semibold uppercase tracking-wide">Trayectoria y métricas</h2>
+      </div>
+      <p class="text-[13px] text-slate-500 mb-4">Vista lateral del aula: mesa de lanzamiento, parábola teórica, impactos reales y zona de dispersión.</p>
+
+      <div class="border border-line rounded-md overflow-hidden bg-white">
+        <canvas id="scene" class="w-full aspect-[16/9] block" aria-label="Gráfico de la trayectoria del tiro oblicuo en el aula"></canvas>
+      </div>
+
+      <div class="flex flex-wrap gap-x-5 gap-y-2 mt-4 text-[12px] text-slate-500">
+        <span class="inline-flex items-center gap-2"><span class="inline-block w-6 h-[3px] swatch-theory"></span>Parábola teórica</span>
+        <span class="inline-flex items-center gap-2"><span class="inline-block w-3 h-3 swatch-real"></span>Impactos reales</span>
+        <span class="inline-flex items-center gap-2"><span class="inline-block w-6 h-3 swatch-disp"></span>Zona ±σ</span>
+        <span class="inline-flex items-center gap-2"><span class="inline-block w-3 h-3 swatch-target"></span>Blanco (desafío)</span>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
+        <div class="border border-line rounded-lg p-4">
+          <p class="text-[11px] uppercase tracking-wide text-slate-400 font-medium">Alcance promedio</p>
+          <p id="m-mean" class="font-mono text-2xl font-semibold mt-1">—</p>
+          <p class="text-[11px] text-slate-400 mt-1"><span id="m-count">0 de 5</span> ensayos</p>
+        </div>
+        <div class="border border-line rounded-lg p-4">
+          <p class="text-[11px] uppercase tracking-wide text-slate-400 font-medium">Dispersión</p>
+          <p id="m-sigma" class="font-mono text-2xl font-semibold mt-1">—</p>
+          <p class="text-[11px] text-slate-400 mt-1">desviación σ</p>
+        </div>
+        <div class="border border-line rounded-lg p-4">
+          <p class="text-[11px] uppercase tracking-wide text-slate-400 font-medium">Error relativo</p>
+          <p id="m-err" class="font-mono text-2xl font-semibold mt-1">—</p>
+          <p class="text-[11px] text-slate-400 mt-1">vs. alcance teórico <span id="m-teo">—</span></p>
+        </div>
+        <div class="border border-line rounded-lg p-4">
+          <p class="text-[11px] uppercase tracking-wide text-slate-400 font-medium">Velocidad inicial</p>
+          <p id="m-v0" class="font-mono text-2xl font-semibold mt-1">—</p>
+          <p class="text-[11px] text-slate-400 mt-1">deducida de X̄</p>
+        </div>
+      </div>
+
+      <p class="text-[11px] text-slate-400 mt-4 leading-relaxed">Modelo simplificado del laboratorio: el tiempo de caída se aproxima con t = √(2h/g) y de allí se deduce v₀ = X̄ / (t·cos θ). El alcance teórico de referencia usa el tiempo de vuelo real T; el error relativo compara X̄ contra ese alcance. Para tiro horizontal (θ = 0°) ambos modelos coinciden.</p>
+    </section>
+
+  </main>
+
+  <footer class="mt-10 border-t border-line pt-4 text-[11px] text-slate-400 leading-relaxed max-w-3xl">
+    Laboratorio de Física — Cinemática del tiro oblicuo. Valores de entrada: altura de mesa h, ángulo θ y gravedad g. Ensayos: alcances x₁…x₅ medidos con cinta métrica.
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var $ = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  var rad = function (deg) { return deg * Math.PI / 180; };
+  var fmt = function (v, d) {
+    return v.toLocaleString('es-AR', { minimumFractionDigits: d, maximumFractionDigits: d });
+  };
+
+  var el = {
+    h: $('#in-h'), theta: $('#in-theta'), g: $('#in-g'),
+    d: $('#in-d'), v0: $('#in-v0'),
+    errH: $('#err-h'), errTheta: $('#err-theta'), errG: $('#err-g'),
+    errD: $('#err-d'), errV0: $('#err-v0'), errX: $('#err-x'),
+    trials: $('#trials'), btnSample: $('#btn-sample'), btnClear: $('#btn-clear'),
+    btnFire: $('#btn-fire'), btnRetry: $('#btn-retry'), btnPrint: $('#btn-print'),
+    result: $('#result'), scoreNum: $('#score-num'), scoreTier: $('#score-tier'), scoreDetail: $('#score-detail'),
+    mMean: $('#m-mean'), mSigma: $('#m-sigma'), mErr: $('#m-err'), mTeo: $('#m-teo'), mCount: $('#m-count'),
+    canvas: $('#scene'),
+  };
+
+  var TRIALS = 5;
+  var trialInputs = [];
+
+  function fallTime(h, g) { return Math.sqrt(2 * h / g); }
+
+  function flightTime(v0, theta, h, g) {
+    var vy = v0 * Math.sin(rad(theta));
+    return (vy + Math.sqrt(vy * vy + 2 * g * h)) / g;
+  }
+
+  function rangeTrue(v0, theta, h, g) {
+    return v0 * Math.cos(rad(theta)) * flightTime(v0, theta, h, g);
+  }
+
+  function peakY(v0, theta, h, g) {
+    var vy = v0 * Math.sin(rad(theta));
+    return h + vy * vy / (2 * g);
+  }
+
+  function trajectory(v0, theta, h, g, tMax) {
+    var pts = [];
+    var steps = 140;
+    var cosT = Math.cos(rad(theta));
+    var sinT = Math.sin(rad(theta));
+    for (var i = 0; i <= steps; i++) {
+      var t = tMax * i / steps;
+      pts.push([v0 * cosT * t, h + v0 * sinT * t - 0.5 * g * t * t]);
+    }
+    return pts;
+  }
+
+  function buildTrials() {
+    trialInputs = [];
+    el.trials.innerHTML = '';
+    for (var i = 1; i <= TRIALS; i++) {
+      var wrap = document.createElement('div');
+      wrap.className = 'grid grid-cols-[64px_1fr] gap-2 items-center';
+      var label = document.createElement('span');
+      label.className = 'font-mono text-xs text-slate-500 pl-1';
+      label.textContent = 'Ensayo ' + i;
+      var input = document.createElement('input');
+      input.type = 'number';
+      input.inputMode = 'decimal';
+      input.min = '0.01';
+      input.max = '30';
+      input.step = '0.01';
+      input.placeholder = '0,00';
+      input.className = 'w-full rounded-md border border-slate-300 bg-white px-3 py-1.5 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue transition';
+      input.setAttribute('aria-label', 'Alcance del ensayo ' + i + ' en metros');
+      input.addEventListener('input', onTrialInput);
+      wrap.appendChild(label);
+      wrap.appendChild(input);
+      el.trials.appendChild(wrap);
+      trialInputs.push(input);
+    }
+  }
+
+  function onTrialInput() {
+    validateTrials();
+    renderAll();
+  }
+
+  function readStation() {
+    return {
+      h: parseFloat(el.h.value),
+      theta: parseFloat(el.theta.value),
+      g: parseFloat(el.g.value),
+    };
+  }
+
+  function readTrials() {
+    return trialInputs.map(function (inp) {
+      var v = parseFloat(inp.value);
+      return (isFinite(v) && v > 0) ? v : null;
+    });
+  }
+
+  function validateStation() {
+    var s = readStation();
+    el.errH.classList.toggle('hidden', !(isFinite(s.h) && s.h >= 0.1 && s.h <= 3));
+    el.errTheta.classList.toggle('hidden', !(isFinite(s.theta) && s.theta >= 0 && s.theta < 90));
+    el.errG.classList.toggle('hidden', !(isFinite(s.g) && s.g >= 1 && s.g <= 20));
+  }
+
+  function validateTrials() {
+    var bad = false;
+    trialInputs.forEach(function (inp) {
+      var v = parseFloat(inp.value);
+      var invalid = inp.value.trim() !== '' && !(isFinite(v) && v > 0);
+      inp.classList.toggle('invalid', invalid);
+      if (invalid) bad = true;
+    });
+    el.errX.classList.toggle('hidden', !bad);
+  }
+
+  function validateChallenge() {
+    var d = parseFloat(el.d.value);
+    var v = parseFloat(el.v0.value);
+    el.errD.classList.toggle('hidden', !(isFinite(d) && d > 0));
+    el.errV0.classList.toggle('hidden', !(el.v0.value.trim() !== '' && isFinite(v) && v > 0));
+  }
+
+  function derived(s, trials) {
+    var valid = trials.filter(function (v) { return v !== null; });
+    if (valid.length === 0) return null;
+    var mean = valid.reduce(function (a, b) { return a + b; }, 0) / valid.length;
+    var n = valid.length;
+    var sigma = n > 1
+      ? Math.sqrt(valid.reduce(function (acc, v) { return acc + (v - mean) * (v - mean); }, 0) / (n - 1))
+      : 0;
+    var tFall = fallTime(s.h, s.g);
+    var v0 = mean / (Math.cos(rad(s.theta)) * tFall);
+    var xTeo = rangeTrue(v0, s.theta, s.h, s.g);
+    var errRel = Math.abs(mean - xTeo) / xTeo * 100;
+    return { mean: mean, sigma: sigma, tFall: tFall, v0: v0, xTeo: xTeo, errRel: errRel, count: n };
+  }
+
+  function updateMetrics(d) {
+    el.mMean.textContent = d ? fmt(d.mean, 2) + ' m' : '—';
+    el.mSigma.textContent = d ? fmt(d.sigma, 3) + ' m' : '—';
+    el.mErr.textContent = d ? fmt(d.errRel, 1) + ' %' : '—';
+    el.mTeo.textContent = d ? fmt(d.xTeo, 2) + ' m' : '—';
+    el.mCount.textContent = d ? d.count + ' de ' + TRIALS : '0 de ' + TRIALS;
+    el.mV0 = el.mV0 || $('#m-v0');
+    el.mV0.textContent = d ? fmt(d.v0, 2) + ' m/s' : '—';
+  }
+
+  function updateScore(shot, target) {
+    if (!shot || !Number.isFinite(shot.score)) {
+      el.result.classList.add('hidden');
+      return;
+    }
+    el.result.classList.remove('hidden');
+    el.scoreNum.textContent = shot.score;
+    var dx = Math.abs(shot.xLand - target);
+    el.scoreDetail.textContent = 'Impacto a ' + fmt(shot.xLand, 2) + ' m — desvío ' + fmt(dx * 100, 0) + ' cm';
+    var tier;
+    if (shot.score >= 95) tier = '¡Precisión de laboratorio!';
+    else if (shot.score >= 80) tier = 'Muy buen cálculo';
+    else if (shot.score >= 60) tier = 'Aproximado — revise el cálculo';
+    else if (shot.score >= 35) tier = 'Lejos del blanco — verifique θ y h';
+    else tier = 'Falló — repase el modelo de tiro oblicuo';
+    el.scoreTier.textContent = tier;
+  }
+
+  function sizeCanvas() {
+    var rect = el.canvas.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    el.canvas.width = Math.round(rect.width * dpr);
+    el.canvas.height = Math.round(rect.height * dpr);
+    var ctx = el.canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: rect.width, h: rect.height };
+  }
+
+  function drawScene(shotProgress, shot) {
+    var dims = sizeCanvas();
+    var ctx = dims.ctx;
+    var w = dims.w;
+    var h = dims.h;
+    var s = readStation();
+    var trials = readTrials();
+    var d = derived(s, trials);
+    var target = parseFloat(el.d.value);
+    var hasTarget = isFinite(target) && target > 0;
+    var invalidStation = !(isFinite(s.h) && s.h >= 0.1 && isFinite(s.theta) && s.theta >= 0 && s.theta < 90 && isFinite(s.g) && s.g > 0);
+    if (invalidStation || w === 0) return;
+
+    var xs = [2];
+    if (d) xs.push(d.mean + 3 * d.sigma, d.xTeo);
+    if (hasTarget) xs.push(target);
+    if (shot) xs.push(rangeTrue(shot.v0, s.theta, s.h, s.g));
+    var xMax = Math.max.apply(null, xs) * 1.12;
+
+    var peaks = [s.h * 1.3];
+    if (d) peaks.push(peakY(d.v0, s.theta, s.h, s.g) * 1.18);
+    if (shot) peaks.push(peakY(shot.v0, s.theta, s.h, s.g) * 1.18);
+    var yMax = Math.max.apply(null, peaks.concat([1.2]));
+
+    var mL = 46, mR = 26, mT = 20, mB = 40;
+    var sx = (w - mL - mR) / xMax;
+    var sy = (h - mT - mB) / yMax;
+    var yFloor = h - mB;
+    var px = function (x) { return mL + x * sx; };
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = '#F1F3ED';
+    ctx.fillRect(0, 0, w, yFloor);
+    ctx.fillStyle = '#E7E9E1';
+    ctx.fillRect(0, yFloor, w, h - yFloor);
+
+    ctx.strokeStyle = 'rgba(27,35,48,0.06)';
+    ctx.lineWidth = 1;
+    for (var gx = 0; gx <= xMax; gx += 0.5) {
+      var gxp = px(gx);
+      ctx.beginPath();
+      ctx.moveTo(gxp, yFloor);
+      ctx.lineTo(gxp, h);
+      ctx.stroke();
+    }
+
+    var rulerY = h - 20;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, rulerY, w, 20);
+    ctx.strokeStyle = 'rgba(27,35,48,0.25)';
+    ctx.strokeRect(0.5, rulerY + 0.5, w - 1, 19);
+    var minor = sx * 0.1 >= 6 ? 0.1 : 0.5;
+    ctx.strokeStyle = 'rgba(27,35,48,0.45)';
+    for (var rx = 0; rx <= xMax; rx += minor) {
+      var rxp = px(rx);
+      ctx.beginPath();
+      ctx.moveTo(rxp, rulerY);
+      ctx.lineTo(rxp, rulerY + (rx % 0.5 === 0 ? 9 : 5));
+      ctx.stroke();
+    }
+    ctx.fillStyle = 'rgba(27,35,48,0.55)';
+    ctx.font = '9px "IBM Plex Mono", monospace';
+    ctx.textAlign = 'center';
+    for (var rl = 0; rl <= xMax; rl += 0.5) {
+      var label = rl % 1 === 0 ? String(rl) : rl.toFixed(1).replace('.', ',');
+      ctx.fillText(label, px(rl), rulerY + 16);
+    }
+    ctx.fillText('m', w - mR + 4, rulerY + 16);
+
+    var T = px(0);
+    var wT = Math.max(30, 0.55 * sx);
+    var yTop = yFloor - s.h * sy;
+    ctx.fillStyle = '#8F6B4A';
+    ctx.fillRect(T + 5, yTop, 4, yFloor - yTop);
+    ctx.fillRect(T + wT - 9, yTop, 4, yFloor - yTop);
+    ctx.fillStyle = '#C89B6E';
+    ctx.fillRect(T, yTop - 5, wT, 6);
+    ctx.fillStyle = '#DCAF85';
+    ctx.fillRect(T, yTop - 5, wT, 1.5);
+    ctx.fillStyle = 'rgba(27,35,48,0.5)';
+    ctx.textAlign = 'left';
+    ctx.fillText('mesa', T, yTop - 11);
+
+    var Xh = T + wT + 14;
+    ctx.strokeStyle = 'rgba(27,35,48,0.4)';
+    ctx.setLineDash([3, 3]);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(Xh, yTop);
+    ctx.lineTo(Xh, yFloor);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillText('h', Xh + 4, (yTop + yFloor) / 2);
+
+    var aLen = Math.max(22, 0.3 * sx);
+    var ang = rad(s.theta);
+    var ax1 = T + wT - 2;
+    var ay1 = yTop;
+    var ax2 = ax1 + Math.cos(ang) * aLen;
+    var ay2 = yTop - Math.sin(ang) * aLen;
+    ctx.strokeStyle = 'rgba(43,92,230,0.6)';
+    ctx.setLineDash([4, 3]);
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(ax1 + 2, ay1);
+    ctx.lineTo(ax2, ay2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#2B5CE6';
+    ctx.beginPath();
+    ctx.arc(ax2, ay2, 2.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#2B5CE6';
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(T + wT - 2, yTop, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    if (d) {
+      var tT = flightTime(d.v0, s.theta, s.h, s.g);
+      var pts = trajectory(d.v0, s.theta, s.h, s.g, tT);
+      ctx.strokeStyle = 'rgba(43,92,230,0.75)';
+      ctx.setLineDash([6, 5]);
+      ctx.lineWidth = 1.7;
+      ctx.beginPath();
+      pts.forEach(function (p, i) {
+        if (i === 0) ctx.moveTo(px(p[0]), yFloor - p[1] * sy);
+        else ctx.lineTo(px(p[0]), yFloor - p[1] * sy);
+      });
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.strokeStyle = 'rgba(43,92,230,0.55)';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(px(d.xTeo), yFloor);
+      ctx.lineTo(px(d.xTeo), yFloor - 7);
+      ctx.stroke();
+    }
+
+    var valid = trials.filter(function (v) { return v !== null; });
+    valid.forEach(function (x) {
+      ctx.fillStyle = '#D64545';
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(px(x), yFloor, 4.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    });
+
+    if (d && d.sigma > 0) {
+      var rx = Math.max(d.sigma * sx, 3);
+      ctx.fillStyle = 'rgba(31,122,92,0.14)';
+      ctx.beginPath();
+      ctx.ellipse(px(d.mean), yFloor, rx, 13, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(31,122,92,0.45)';
+      ctx.setLineDash([3, 3]);
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(31,122,92,0.8)';
+      ctx.font = '9px "IBM Plex Mono", monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText('σ', px(d.mean) + rx + 5, yFloor - 10);
+    }
+
+    if (d) {
+      ctx.strokeStyle = 'rgba(43,92,230,0.5)';
+      ctx.setLineDash([4, 4]);
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(px(d.mean), yFloor);
+      ctx.lineTo(px(d.mean), yFloor - 44);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(43,92,230,0.85)';
+      ctx.font = '9px "IBM Plex Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('X̄', px(d.mean), yFloor - 49);
+    }
+
+    if (hasTarget) {
+      var Xt = px(target);
+      ctx.strokeStyle = '#E08A00';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(Xt, yFloor);
+      ctx.lineTo(Xt, yFloor - 92);
+      ctx.stroke();
+      ctx.fillStyle = '#E08A00';
+      ctx.beginPath();
+      ctx.moveTo(Xt, yFloor - 92);
+      ctx.lineTo(Xt + 11, yFloor - 87);
+      ctx.lineTo(Xt, yFloor - 82);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = 'rgba(224,138,0,0.9)';
+      ctx.font = '9px "IBM Plex Mono", monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText('Blanco', Xt + 14, yFloor - 84);
+    }
+
+    if (shot) {
+      var st = flightTime(shot.v0, s.theta, s.h, s.g);
+      var pts2 = trajectory(shot.v0, s.theta, s.h, s.g, st);
+      var n = Math.min(pts2.length - 1, Math.max(1, Math.ceil(pts2.length * shotProgress)));
+      ctx.strokeStyle = 'rgba(224,138,0,0.95)';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      for (var i = 0; i <= n; i++) {
+        if (i === 0) ctx.moveTo(px(pts2[0][0]), yFloor - pts2[0][1] * sy);
+        else ctx.lineTo(px(pts2[i][0]), yFloor - pts2[i][1] * sy);
+      }
+      ctx.stroke();
+
+      var bp = pts2[Math.min(n, pts2.length - 1)];
+      ctx.fillStyle = '#E08A00';
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(px(bp[0]), yFloor - bp[1] * sy, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      if (shotProgress >= 1) {
+        var Xl = px(shot.xLand);
+        ctx.strokeStyle = 'rgba(224,138,0,0.9)';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.arc(Xl, yFloor, 11, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = '#E08A00';
+        ctx.beginPath();
+        ctx.arc(Xl, yFloor, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(224,138,0,0.9)';
+        ctx.font = '9px "IBM Plex Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('impacto', Xl, yFloor - 17);
+      }
+    }
+
+    if (!d && !shot) {
+      ctx.fillStyle = 'rgba(27,35,48,0.45)';
+      ctx.font = '12px "IBM Plex Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Registre al menos un ensayo para trazar la parábola teórica.', w / 2, h / 2);
+    }
+  }
+
+  var state = { shot: null };
+
+  function renderAll(fullProgress) {
+    var s = readStation();
+    var d = derived(s, readTrials());
+    var target = parseFloat(el.d.value);
+    updateMetrics(d);
+    updateScore(state.shot, target);
+    drawScene(fullProgress ? 1 : 1, state.shot);
+  }
+
+  function fire() {
+    validateChallenge();
+    var s = readStation();
+    var v = parseFloat(el.v0.value);
+    var target = parseFloat(el.d.value);
+    if (!(isFinite(v) && v > 0) || !(isFinite(target) && target > 0)) return;
+    var T = flightTime(v, s.theta, s.h, s.g);
+    var xLand = rangeTrue(v, s.theta, s.h, s.g);
+    state.shot = { v0: v, T: T, xLand: xLand, score: null };
+    renderAll(false);
+
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var dur = Math.min(1700, Math.max(500, T * 1000));
+    var t0 = performance.now();
+
+    function finish() {
+      var dx = Math.abs(state.shot.xLand - target);
+      state.shot.score = Math.max(0, Math.round(100 - dx * 100));
+      renderAll(true);
+    }
+
+    function frame(now) {
+      var p = Math.min(1, (now - t0) / dur);
+      drawScene(p, state.shot);
+      if (p < 1) requestAnimationFrame(frame);
+      else finish();
+    }
+
+    if (reduced) finish();
+    else requestAnimationFrame(frame);
+  }
+
+  function sampleData() {
+    var s = readStation();
+    var xExp = 3.2 * Math.cos(rad(s.theta)) * fallTime(s.h, s.g);
+    var k = [0.96, 1.02, 0.99, 1.04, 0.97];
+    trialInputs.forEach(function (inp, i) {
+      inp.value = (xExp * k[i]).toFixed(2);
+    });
+    validateTrials();
+    renderAll();
+  }
+
+  function clearTrials() {
+    trialInputs.forEach(function (inp) { inp.value = ''; });
+    state.shot = null;
+    validateTrials();
+    renderAll();
+  }
+
+  function retry() {
+    state.shot = null;
+    el.v0.value = '';
+    validateChallenge();
+    renderAll();
+  }
+
+  function bindPresets() {
+    $$('.chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        if (chip.dataset.presetH !== undefined) el.h.value = chip.dataset.presetH;
+        if (chip.dataset.presetT !== undefined) el.theta.value = chip.dataset.presetT;
+        validateStation();
+        renderAll();
+      });
+    });
+  }
+
+  el.h.addEventListener('input', function () { validateStation(); renderAll(); });
+  el.theta.addEventListener('input', function () { validateStation(); renderAll(); });
+  el.g.addEventListener('input', function () { validateStation(); renderAll(); });
+  el.d.addEventListener('input', function () {
+    validateChallenge();
+    state.shot = null;
+    renderAll();
+  });
+  el.v0.addEventListener('input', validateChallenge);
+  el.btnFire.addEventListener('click', fire);
+  el.btnRetry.addEventListener('click', retry);
+  el.btnSample.addEventListener('click', sampleData);
+  el.btnClear.addEventListener('click', clearTrials);
+  el.btnPrint.addEventListener('click', function () { window.print(); });
+  window.addEventListener('resize', function () { drawScene(1, state.shot); });
+
+  buildTrials();
+  bindPresets();
+  validateStation();
+  validateTrials();
+  validateChallenge();
+  renderAll();
+})();
+</script>
+</body>
+</html>
