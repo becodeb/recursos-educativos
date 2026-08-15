@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analizador y Mapeador de Circuitos Productivos Regionales</title>
+<meta name="description" content="Recurso educativo de Geografía: armá el mapa de los circuitos productivos de Argentina, ubicá los actores sociales y analizá cómo se distribuye el valor.">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@500;600;700;800&family=Karla:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        display: ['Alegreya', 'Georgia', 'serif'],
+        body: ['Karla', 'system-ui', 'sans-serif'],
+      },
+      colors: {
+        paper: '#F1EBDD',
+        tinta: '#262119',
+        line: '#D8D0BC',
+        muted: '#6E6759',
+        bosque: '#20271B',
+        pizarra: '#E7E1D0',
+        card: '#FBF8F0',
+        verde:  '#4E6A3E',
+        rio:    '#2E5E70',
+        ambar:  '#B67F2A',
+        brique: '#A5452E',
+        verdel: '#E4EAD9',
+        riol:   '#DCE7EB',
+        ambarl: '#F1E6CC',
+        briquel:'#F2DDD5',
+      },
+    },
+  },
+};
+</script>
+<style>
+  :focus-visible { outline: 3px solid #B67F2A; outline-offset: 2px; border-radius: 4px; }
+  .tabular { font-variant-numeric: tabular-nums; }
+
+  .ruta-animada { animation: ruta 9s linear infinite; }
+  @keyframes ruta { to { stroke-dashoffset: -360; } }
+
+  @keyframes sacudida {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+  .sacudida { animation: sacudida .45s ease; }
+
+  .barra-crece { transition: width .9s cubic-bezier(.22,.8,.24,1); }
+
+  details > summary { list-style: none; cursor: pointer; }
+  details > summary::-webkit-details-marker { display: none; }
+  details[open] .chevron { transform: rotate(180deg); }
+  .chevron { transition: transform .25s ease; }
+
+  .dropzone-activa { border-color: #4E6A3E; background: #E4EAD9; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ruta-animada { animation: none; }
+    .barra-crece { transition: none; }
+    * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+</style>
+</head>
+<body class="bg-paper text-tinta font-body antialiased">
+
+<header class="sticky top-0 z-40 bg-paper/95 backdrop-blur border-b border-line">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-3">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full border-2 border-verde bg-verdel flex items-center justify-center">
+        <svg viewBox="0 0 24 24" class="w-5 h-5 text-verde" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 20c0-4 3-7 9-7 0 6-4 9-9 7z" stroke-linejoin="round"/>
+          <path d="M3 20c1-8 5-12 12-13" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="leading-tight">
+        <p class="font-display font-bold text-lg">Circuitos Productivos</p>
+        <p class="text-[11px] uppercase tracking-widest text-muted font-semibold">Geografía de Argentina · Recurso para el aula</p>
+      </div>
+    </div>
+    <nav id="selector" class="flex flex-wrap gap-2 ml-auto" aria-label="Selector de circuito productivo"></nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="max-w-6xl mx-auto px-4 pt-10 pb-4">
+    <p class="text-xs uppercase tracking-[0.2em] text-muted font-bold mb-3">Analizador y mapeador</p>
+    <h1 class="font-display font-extrabold text-4xl sm:text-5xl leading-tight max-w-3xl">
+      ¿Quién se queda con el precio de la <span id="producto-hero" class="text-brique">botella de vino</span>?
+    </h1>
+    <p class="mt-4 max-w-2xl text-muted text-lg">
+      Elegí un circuito, ubicá a los actores sociales en su eslabón correcto y analizá cómo se
+      distribuye el valor a lo largo de la cadena. Cada eslabón del circuito se queda con una parte del precio final.
+    </p>
+    <div id="datos-circuito" class="mt-6 flex flex-wrap gap-2"></div>
+  </section>
+
+  <section class="max-w-6xl mx-auto px-4 pb-10">
+    <div class="rounded-2xl bg-bosque text-pizarra p-5 sm:p-7 shadow-lg">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div>
+          <p class="text-xs uppercase tracking-[0.2em] text-pizarra/60 font-bold">La ruta del producto</p>
+          <p id="trazado" class="font-display font-bold text-xl mt-1">Complejo Vitivinícola · Cuyo</p>
+        </div>
+        <p id="estado-mapeo" class="hidden text-sm font-semibold text-verdel bg-verde/25 border border-verde/40 rounded-full px-3 py-1.5">
+          ✓ Circuito mapeado
+        </p>
+      </div>
+
+      <svg id="mapa" viewBox="0 0 800 240" class="w-full h-auto" role="img" aria-label="Ruta del circuito productivo por sus cuatro eslabones">
+        <path id="ruta-base" d="M80,150 C 150,150 230,95 300,150 C 370,205 450,205 520,150 C 590,95 670,150 740,150" fill="none" stroke-width="7" stroke-linecap="round" opacity="0.16"/>
+        <path id="ruta-anim" class="ruta-animada" d="M80,150 C 150,150 230,95 300,150 C 370,205 450,205 520,150 C 590,95 670,150 740,150" fill="none" stroke-width="3" stroke-linecap="round" stroke-dasharray="10 9"/>
+        <circle id="punto" r="6" fill="#A5452E">
+          <animateMotion dur="8s" repeatCount="indefinite" path="M80,150 C 150,150 230,95 300,150 C 370,205 450,205 520,150 C 590,95 670,150 740,150"/>
+        </circle>
+        <g id="nodos"></g>
+        <g class="hidden md:inline">
+          <text x="80" y="205" text-anchor="middle" class="font-display" font-size="17" font-weight="700" fill="#E7E1D0">Agrícola</text>
+          <text x="80" y="221" text-anchor="middle" font-size="11.5" fill="#A8A18C">Eslabón primario</text>
+          <text x="300" y="66" text-anchor="middle" class="font-display" font-size="17" font-weight="700" fill="#E7E1D0">Industrial</text>
+          <text x="300" y="82" text-anchor="middle" font-size="11.5" fill="#A8A18C">Transformación</text>
+          <text x="520" y="205" text-anchor="middle" class="font-display" font-size="17" font-weight="700" fill="#E7E1D0">Transporte</text>
+          <text x="520" y="221" text-anchor="middle" font-size="11.5" fill="#A8A18C">Logística</text>
+          <text x="740" y="66" text-anchor="middle" class="font-display" font-size="17" font-weight="700" fill="#E7E1D0">Comercial</text>
+          <text x="740" y="82" text-anchor="middle" font-size="11.5" fill="#A8A18C">Mercado y exportación</text>
+        </g>
+      </svg>
+
+      <div class="mt-4 flex flex-wrap gap-2 text-xs">
+        <span class="flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-3 py-1"><span class="w-2.5 h-2.5 rounded-full" style="background:#4E6A3E"></span>Agrícola</span>
+        <span class="flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-3 py-1"><span class="w-2.5 h-2.5 rounded-full" style="background:#2E5E70"></span>Industrial</span>
+        <span class="flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-3 py-1"><span class="w-2.5 h-2.5 rounded-full" style="background:#B67F2A"></span>Transporte</span>
+        <span class="flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-3 py-1"><span class="w-2.5 h-2.5 rounded-full" style="background:#A5452E"></span>Comercial</span>
+        <span class="ml-auto hidden sm:block text-pizarra/50">El producto fluye por la ruta: la línea punteada marca su recorrido.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="max-w-6xl mx-auto px-4 pb-4">
+    <ol class="flex flex-col sm:flex-row gap-3 text-sm">
+      <li class="flex items-start gap-3 bg-card border border-line rounded-xl px-4 py-3 flex-1">
+        <span class="font-display font-extrabold text-amber-700 w-6 h-6 rounded-full bg-ambarl flex items-center justify-center shrink-0">1</span>
+        <span>Elegí un circuito en el selector de arriba.</span>
+      </li>
+      <li class="flex items-start gap-3 bg-card border border-line rounded-xl px-4 py-3 flex-1">
+        <span class="font-display font-extrabold text-rio w-6 h-6 rounded-full bg-riol flex items-center justify-center shrink-0">2</span>
+        <span>Arrastrá los actores de la cantera hacia su eslabón. En pantallas táctiles: tocá el actor y luego el eslabón.</span>
+      </li>
+      <li class="flex items-start gap-3 bg-card border border-line rounded-xl px-4 py-3 flex-1">
+        <span class="font-display font-extrabold text-verde w-6 h-6 rounded-full bg-verdel flex items-center justify-center shrink-0">3</span>
+        <span>Verificá el circuito y analizá el desglose del precio.</span>
+      </li>
+    </ol>
+  </section>
+
+  <section class="max-w-6xl mx-auto px-4 py-10">
+    <div class="grid lg:grid-cols-[1fr_340px] gap-8 items-start">
+
+      <div id="eslabones" class="grid gap-4"></div>
+
+      <aside class="lg:sticky lg:top-24 bg-card border border-line rounded-2xl p-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="font-display font-bold text-xl">Cantera de actores</h2>
+            <p class="text-sm text-muted mt-0.5">Cada actor corresponde a un eslabón… o a otro circuito.</p>
+          </div>
+        </div>
+        <div id="progreso" class="mt-3 text-sm font-semibold tabular"></div>
+        <div id="cantera" class="mt-3 grid grid-cols-1 gap-2 min-h-24"></div>
+        <div id="retro" class="mt-4" aria-live="polite"></div>
+        <div class="mt-5 grid grid-cols-2 gap-2">
+          <button id="btn-verificar" class="rounded-xl bg-verde hover:bg-verde/90 text-white font-bold px-4 py-3 transition-colors">Verificar circuito</button>
+          <button id="btn-reiniciar" class="rounded-xl border border-line bg-white hover:bg-paper font-semibold px-4 py-3 transition-colors">Reiniciar</button>
+        </div>
+      </aside>
+
+    </div>
+  </section>
+
+  <section id="valor" class="max-w-6xl mx-auto px-4 py-10 border-t border-line">
+    <p class="text-xs uppercase tracking-[0.2em] text-muted font-bold mb-2">Análisis de valor agregado</p>
+    <h2 class="font-display font-extrabold text-3xl sm:text-4xl">¿Cómo se reparte el precio final?</h2>
+    <p id="valor-intro" class="mt-3 text-muted max-w-2xl"></p>
+
+    <div class="mt-8 grid lg:grid-cols-[1fr_380px] gap-8 items-start">
+      <div>
+        <div id="barra" class="flex h-10 rounded-xl overflow-hidden shadow-inner"></div>
+        <div id="detalle" class="mt-5 grid gap-3"></div>
+        <p class="mt-6 text-xs text-muted border-l-2 border-line pl-3">
+          Porcentajes estimados con fines didácticos: no reflejan valores reales de mercado ni acuerdos
+          comerciales actuales. Sirven para pensar la asimetría estructural de la cadena.
+        </p>
+      </div>
+      <aside class="bg-bosque text-pizarra rounded-2xl p-6">
+        <p class="text-xs uppercase tracking-[0.2em] text-pizarra/60 font-bold mb-2">Asimetría clave</p>
+        <p id="asimetria" class="font-display font-semibold text-xl leading-snug"></p>
+        <p class="mt-3 text-sm text-pizarra/70">El eslabón que más trabajo y riesgo aporta no siempre es el que concentra la mayor parte del precio.</p>
+      </aside>
+    </div>
+  </section>
+
+  <section id="preguntas" class="max-w-6xl mx-auto px-4 py-10 border-t border-line">
+    <p class="text-xs uppercase tracking-[0.2em] text-muted font-bold mb-2">Para pensar en el aula</p>
+    <h2 class="font-display font-extrabold text-3xl sm:text-4xl">Preguntas guiadas de análisis crítico</h2>
+    <div id="preguntas-lista" class="mt-8 grid gap-3 max-w-3xl"></div>
+  </section>
+
+</main>
+
+<footer class="border-t border-line mt-8">
+  <div class="max-w-6xl mx-auto px-4 py-8 flex flex-wrap items-center justify-between gap-4 text-sm text-muted">
+    <p class="font-display font-bold text-tinta">Circuitos Productivos · Argentina</p>
+    <p>Recurso educativo de Geografía · Contenido con fines didácticos.</p>
+  </div>
+</footer>
+
+<noscript>
+  <div class="max-w-6xl mx-auto px-4 py-8 bg-briquel border border-brique text-brique rounded-xl font-semibold">
+    Esta actividad necesita JavaScript activado para el arrastre de actores y los análisis interactivos.
+  </div>
+</noscript>
+
+<script>
+'use strict';
+
+const ESLABONES = [
+  { id: 'agr', num: 1, nombre: 'Eslabón Agrícola / Primario', corto: 'Agrícola',
+    color: '#4E6A3E', soft: '#E4EAD9', oscuro: '#3A502D',
+    detalle: 'Producción de la materia prima: cultivo, cosecha y primeros cuidados del producto.' },
+  { id: 'ind', num: 2, nombre: 'Eslabón Industrial / Transformación', corto: 'Industrial',
+    color: '#2E5E70', soft: '#DCE7EB', oscuro: '#234A58',
+    detalle: 'Transformación de la materia prima en un producto elaborado, listo para comercializar.' },
+  { id: 'tra', num: 3, nombre: 'Transporte y Logística', corto: 'Transporte',
+    color: '#B67F2A', soft: '#F1E6CC', oscuro: '#8F631C',
+    detalle: 'Traslado del producto entre eslabones: camiones, trenes, transporte refrigerado.' },
+  { id: 'com', num: 4, nombre: 'Eslabón Comercial / Exportación o Mercado Interno', corto: 'Comercial',
+    color: '#A5452E', soft: '#F2DDD5', oscuro: '#7E3420',
+    detalle: 'Venta final: exportación o mercado interno, supermercados, comercios y mayoristas.' },
+];
+
+const CIRCUITOS = {
+  vino: {
+    id: 'vino', nombre: 'Complejo Vitivinícola', region: 'Cuyo',
+    producto: 'botella de vino', precio: 1200, color: '#A5452E',
+    intro: 'Desde la uva en el viñedo hasta la botella en la góndola, la cadena vitivinícola cruza cuatro eslabones. Mirá quién se queda con cada parte del precio.',
+    asimetria: 'El viñatero produce la uva y soporta el clima, pero recibe el 10 % del precio final. Bodegas y comercios concentran el resto.',
+    reparto: { agr: 10, ind: 42, tra: 10, com: 38 },
+    actores: [
+      { id: 'v1', label: 'Viñateros pequeños y peones golondrina', eslabon: 'agr' },
+      { id: 'v2', label: 'Bodegas y enólogos', eslabon: 'ind' },
+      { id: 'v3', label: 'Transportistas de carga y camiones frigoríficos', eslabon: 'tra' },
+      { id: 'v4', label: 'Exportadoras de vino e hipermercados', eslabon: 'com' },
+      { id: 'v5', label: 'Molinos harineros', eslabon: null, pista: 'Este actor pertenece al circuito Sojero/Pampeano.' },
+    ],
+    preguntas: [
+      { q: '¿Qué eslabón concentra la mayor parte del precio de la botella?',
+        r: 'Los eslabones industrial y comercial concentran juntos el 80 % del precio. El eslabón agrícola, donde trabajan los viñateros y los peones golondrina, recibe solo el 10 %.' },
+      { q: '¿Por qué el productor primario recibe una porción tan chica?',
+        r: 'Porque hay muchos viñateros pequeños frente a pocas bodegas grandes, que concentran la compra de uva y la exportación. Además, la uva es perecedera: debe venderse rápido, lo que debilita el poder de negociación del productor.' },
+      { q: '¿Qué estrategias podrían mejorar el ingreso del productor primario?',
+        r: 'Formar cooperativas para negociar en conjunto, vender en forma directa (ferias, comercio electrónico), diferenciar el producto (denominación de origen, uva orgánica) y fortalecer políticas públicas que regulen la concentración.' },
+    ],
+  },
+  soja: {
+    id: 'soja', nombre: 'Sojero / Pampeano', region: 'Región Pampeana',
+    producto: 'paquete de harina', precio: 400, color: '#B67F2A',
+    intro: 'La soja que nace en la pampa termina como harina en la góndola o como grano exportado. ¿Quiénes capturan el valor en cada paso?',
+    asimetria: 'El productor sojero aporta la materia prima de toda la cadena y recibe el 16 %. Aceiteras, exportadoras y comercios capturan el grueso del valor.',
+    reparto: { agr: 16, ind: 34, tra: 12, com: 38 },
+    actores: [
+      { id: 's1', label: 'Productores de soja y contratistas rurales', eslabon: 'agr' },
+      { id: 's2', label: 'Aceiteras y molinos harineros', eslabon: 'ind' },
+      { id: 's3', label: 'Camioneros de granos y ferrocarril de carga', eslabon: 'tra' },
+      { id: 's4', label: 'Exportadoras de granos e hipermercados', eslabon: 'com' },
+      { id: 's5', label: 'Ingenios azucareros', eslabon: null, pista: 'Este actor pertenece al circuito de la Caña de Azúcar (NOA).' },
+    ],
+    preguntas: [
+      { q: '¿Qué eslabón concentra la mayor parte del precio del paquete de harina?',
+        r: 'El eslabón comercial (38 %) y el industrial (34 %) concentran juntos el 72 % del precio. El productor primario recibe el 16 %.' },
+      { q: '¿Por qué el productor sojero tiene poca capacidad de negociación?',
+        r: 'Porque las aceiteras y exportadoras concentran la demanda. Los productores —muchas veces pequeños arrendatarios o pooles de siembra— venden la cosecha en pocas ventanas de precios y dependen del precio internacional de la soja.' },
+      { q: '¿Qué estrategias podrían mejorar el ingreso del productor primario?',
+        r: 'Agregar valor en origen (industrializar la soja en la propia región), diversificar cultivos, comercialización asociativa y políticas de precios mínimos o retenciones progresivas.' },
+    ],
+  },
+  fruta: {
+    id: 'fruta', nombre: 'Frutícola', region: 'Alto Valle de Río Negro',
+    producto: 'cajón de manzanas', precio: 3000, color: '#2E5E70',
+    intro: 'La manzana del Alto Valle viaja refrigerada hasta el mercado. Su perecibilidad condiciona el poder de negociación de todo el eslabón primario.',
+    asimetria: 'El cajón de manzanas muestra la menor asimetría de los cuatro circuitos, pero el 28 % del productor debe cubrir cosecha, empaque y riesgo climático.',
+    reparto: { agr: 28, ind: 18, tra: 16, com: 38 },
+    actores: [
+      { id: 'f1', label: 'Pequeños productores frutícolas y peones golondrina', eslabon: 'agr' },
+      { id: 'f2', label: 'Galpones de empaque y fábricas de jugo', eslabon: 'ind' },
+      { id: 'f3', label: 'Transporte refrigerado de fruta', eslabon: 'tra' },
+      { id: 'f4', label: 'Exportadoras de fruta y supermercados', eslabon: 'com' },
+      { id: 'f5', label: 'Bodegas y enólogos', eslabon: null, pista: 'Este actor pertenece al Complejo Vitivinícola (Cuyo).' },
+    ],
+    preguntas: [
+      { q: '¿Qué eslabón concentra la mayor parte del precio del cajón de manzanas?',
+        r: 'El eslabón comercial (38 %) se queda con la mayor porción, seguido por el primario (28 %). Pero atención: ese 28 % debe cubrir la cosecha, el empaque y los riesgos climáticos del productor.' },
+      { q: '¿Por qué la fruta fresca es un producto vulnerable para el productor?',
+        r: 'Porque es altamente perecedera: si no se vende o se acondiciona rápido, se pierde. Esto obliga al productor a aceptar el precio que ofrecen los acopiadores y las grandes cadenas.' },
+      { q: '¿Qué estrategias podrían mejorar el ingreso del productor frutícola?',
+        r: 'Integración horizontal (cooperativas), diferenciación del producto (fruta orgánica, certificaciones de origen), venta directa y agregado de valor con empaque y conservación propios.' },
+    ],
+  },
+  azucar: {
+    id: 'azucar', nombre: 'Caña de Azúcar', region: 'NOA',
+    producto: 'kilo de azúcar', precio: 600, color: '#4E6A3E',
+    intro: 'En el NOA, el cañero vende su caña al ingenio. La concentración industrial de la región define quién pone las condiciones.',
+    asimetria: 'El ingenio es el único comprador de la caña: concentra el 40 % del precio y fija las condiciones de compra. El cañero recibe el 12 %.',
+    reparto: { agr: 12, ind: 40, tra: 10, com: 38 },
+    actores: [
+      { id: 'a1', label: 'Cañeros independientes y pequeños productores', eslabon: 'agr' },
+      { id: 'a2', label: 'Ingenios azucareros y destilerías', eslabon: 'ind' },
+      { id: 'a3', label: 'Camioneros de caña y ferrocarril', eslabon: 'tra' },
+      { id: 'a4', label: 'Exportadoras de azúcar e hipermercados', eslabon: 'com' },
+      { id: 'a5', label: 'Aceiteras', eslabon: null, pista: 'Este actor pertenece al circuito Sojero/Pampeano.' },
+    ],
+    preguntas: [
+      { q: '¿Qué eslabón concentra la mayor parte del precio del kilo de azúcar?',
+        r: 'El eslabón industrial (40 %), los ingenios, concentra la mayor porción junto con el comercial (38 %). El cañero recibe el 12 %.' },
+      { q: '¿Por qué el cañero independiente tiene poca capacidad de negociación?',
+        r: 'Porque el ingenio es el único comprador de su caña: en el NOA la producción está concentrada en pocos ingenios, que fijan las condiciones de compra (precio, fecha de molienda).' },
+      { q: '¿Qué estrategias podrían mejorar el ingreso del cañero?',
+        r: 'Cooperativas cañeras para negociar en conjunto, diversificación (caña orgánica, panela, alcohol), regulación de la cuota de molienda y políticas de financiamiento al pequeño productor.' },
+    ],
+  },
+};
+
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+let circuitoId = 'vino';
+let ubicados = {};
+let seleccionado = null;
+const completados = new Set();
+
+const fmt = (n) => '$' + n.toLocaleString('es-AR');
+
+function circuito() { return CIRCUITOS[circuitoId]; }
+
+function renderSelector() {
+  $('#selector').innerHTML = Object.values(CIRCUITOS).map(c => {
+    const activo = c.id === circuitoId;
+    const hecho = completados.has(c.id);
+    return `<button data-circuito="${c.id}" aria-pressed="${activo}"
+      class="flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-semibold transition-all ${
+        activo ? 'bg-tinta text-paper border-tinta shadow' : 'bg-white border-line hover:border-tinta/40'}"
+      title="${c.region}">
+      <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${c.color}"></span>
+      ${c.nombre}${hecho ? ' <span class="text-verde" aria-hidden="true">✓</span>' : ''}
+    </button>`;
+  }).join('');
+  $$('#selector button').forEach(b => b.addEventListener('click', () => selectCircuit(b.dataset.circuito)));
+}
+
+function renderNodos() {
+  const xs = [80, 300, 520, 740];
+  $('#nodos').innerHTML = ESLABONES.map((e, i) => `
+    <circle cx="${xs[i]}" cy="150" r="21" fill="#2B3325" stroke="${e.color}" stroke-width="2.5"/>
+    <text x="${xs[i]}" y="156" text-anchor="middle" font-size="16" font-weight="700" fill="#E7E1D0" class="tabular">${e.num}</text>
+  `).join('');
+}
+
+function renderDatos() {
+  const c = circuito();
+  $('#producto-hero').textContent = c.producto;
+  $('#producto-hero').className = 'text-brique';
+  $('#trazado').textContent = `${c.nombre} · ${c.region}`;
+  $('#valor-intro').textContent = c.intro;
+  $('#asimetria').textContent = c.asimetria;
+  $('#datos-circuito').innerHTML = [
+    ['Región', c.region], ['Producto', c.producto], ['Precio final', fmt(c.precio)],
+  ].map(([k, v]) =>
+    `<span class="bg-card border border-line rounded-full px-3.5 py-1.5 text-sm">
+      <span class="text-muted font-semibold">${k}:</span> <span class="font-bold">${v}</span></span>`).join('');
+  $('#estado-mapeo').classList.toggle('hidden', !completados.has(c.id));
+
+  const ruta = 'M80,150 C 150,150 230,95 300,150 C 370,205 450,205 520,150 C 590,95 670,150 740,150';
+  $('#ruta-base').setAttribute('stroke', c.color);
+  $('#ruta-anim').setAttribute('stroke', c.color);
+  $('#punto').setAttribute('fill', c.color);
+  $('#punto').querySelector('animateMotion').setAttribute('path', ruta);
+}
+
+function chipEnBanco(a) {
+  return `<button draggable="true" data-actor="${a.id}"
+    class="text-left w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm font-semibold shadow-sm hover:border-tinta/50 hover:shadow cursor-grab active:cursor-grabbing transition-all ${
+      seleccionado === a.id ? 'ring-2 ring-amber-600 ring-offset-2 ring-offset-card' : ''}"
+    title="Arrastrá hacia el eslabón o tocá para seleccionar">
+    ${a.label}
+  </button>`;
+}
+
+function renderCantera() {
+  const c = circuito();
+  const pendientes = c.actores.filter(a => !Object.values(ubicados).includes(a.id));
+  $('#cantera').innerHTML = pendientes.length
+    ? pendientes.map(chipEnBanco).join('')
+    : `<p class="text-sm text-muted bg-white border border-dashed border-line rounded-xl px-4 py-6 text-center">
+        Cantera vacía: todos los actores fueron ubicados.</p>`;
+  $('#progreso').textContent = `${c.actores.length - pendientes.length} de ${c.actores.length} actores ubicados`;
+
+  $$('#cantera button').forEach(b => {
+    b.addEventListener('click', () => { seleccionado = b.dataset.actor; renderCantera(); });
+    b.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); seleccionado = b.dataset.actor; renderCantera(); }
+    });
+    b.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', b.dataset.actor);
+      e.dataTransfer.effectAllowed = 'move';
+      seleccionado = null;
+    });
+  });
+}
+
+function chipUbicado(eslabonId, actor) {
+  const e = ESLABONES.find(x => x.id === eslabonId);
+  return `<div class="flex items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-sm font-semibold"
+    style="background:${e.soft}; border-color:${e.color}; color:${e.oscuro}">
+    <span>${actor.label}</span>
+    <button data-quitar="${actor.id}" class="shrink-0 w-6 h-6 rounded-full bg-white/70 hover:bg-white flex items-center justify-center border" aria-label="Quitar ${actor.label}">×</button>
+  </div>`;
+}
+
+function renderEslabones() {
+  $('#eslabones').innerHTML = ESLABONES.map(e => {
+    const actor = ubicados[e.id] ? circuito().actores.find(a => a.id === ubicados[e.id]) : null;
+    return `
+      <article class="bg-card border border-line rounded-2xl overflow-hidden">
+        <div class="flex items-start gap-3 px-5 pt-5 pb-3" style="border-left:5px solid ${e.color}">
+          <span class="font-display font-extrabold text-lg w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+            style="background:${e.soft}; color:${e.oscuro}">${e.num}</span>
+          <div>
+            <h3 class="font-display font-bold text-xl leading-tight">${e.nombre}</h3>
+            <p class="text-sm text-muted mt-0.5">${e.detalle}</p>
+          </div>
+        </div>
+        <div class="px-5 pb-5">
+          <div data-zona="${e.id}" tabindex="0"
+            class="dropzone min-h-[76px] rounded-xl border-2 border-dashed border-line bg-paper/60 p-3 flex items-center transition-colors"
+            role="button" aria-label="Zona de colocación del eslabón ${e.nombre}">
+            ${actor ? chipUbicado(e.id, actor)
+              : `<span class="text-sm text-muted/80 px-2">Arrastrá un actor acá o tocá uno y luego este eslabón.</span>`}
+          </div>
+        </div>
+      </article>`;
+  }).join('');
+
+  $$('[data-zona]').forEach(zona => {
+    const eslabonId = zona.dataset.zona;
+    zona.addEventListener('dragover', (e) => { e.preventDefault(); zona.classList.add('dropzone-activa'); });
+    zona.addEventListener('dragleave', () => zona.classList.remove('dropzone-activa'));
+    zona.addEventListener('drop', (e) => {
+      e.preventDefault(); zona.classList.remove('dropzone-activa');
+      const id = e.dataTransfer.getData('text/plain');
+      if (id) colocar(id, eslabonId);
+    });
+    zona.addEventListener('click', () => {
+      if (seleccionado) { colocar(seleccionado, eslabonId); seleccionado = null; }
+    });
+    zona.addEventListener('keydown', (e) => {
+      if ((e.key === 'Enter' || e.key === ' ') && seleccionado) {
+        e.preventDefault(); colocar(seleccionado, eslabonId); seleccionado = null;
+      }
+    });
+    const quitar = zona.querySelector('[data-quitar]');
+    if (quitar) quitar.addEventListener('click', () => quitarActor(quitar.dataset.quitar));
+  });
+}
+
+function colocar(actorId, eslabonId) {
+  const actor = circuito().actores.find(a => a.id === actorId);
+  if (!actor) return;
+  for (const [k, v] of Object.entries(ubicados)) if (v === actorId) delete ubicados[k];
+  ubicados[eslabonId] = actorId;
+  limpiarRetro();
+  renderEslabones();
+  renderCantera();
+}
+
+function quitarActor(actorId) {
+  for (const [k, v] of Object.entries(ubicados)) if (v === actorId) delete ubicados[k];
+  limpiarRetro();
+  renderEslabones();
+  renderCantera();
+}
+
+function mensaje(html, tipo) {
+  $('#retro').innerHTML = `<div class="rounded-xl px-4 py-3 text-sm font-semibold border ${tipo}">${html}</div>`;
+}
+
+function mensajeOk(html) {
+  mensaje(html, 'bg-verdel border-verde text-verde');
+}
+function mensajeError(html) {
+  mensaje(html, 'bg-briquel border-brique text-brique');
+}
+
+function limpiarRetro() {
+  $('#retro').innerHTML = '';
+}
+
+function verificar() {
+  const c = circuito();
+  const total = c.actores.length;
+  const puestos = Object.keys(ubicados).length;
+  if (puestos < total) {
+    mensajeError(`Faltan ${total - puestos} actores por ubicar. Revisá la cantera.`);
+    return;
+  }
+  const errores = [];
+  let correctos = 0;
+  for (const [eslabonId, actorId] of Object.entries(ubicados)) {
+    const actor = c.actores.find(a => a.id === actorId);
+    if (actor.eslabon === eslabonId) { correctos++; }
+    else if (actor.eslabon === null) { errores.push(`<b>${actor.label}</b>: ${actor.pista}`); }
+    else {
+      const correcto = ESLABONES.find(e => e.id === actor.eslabon);
+      errores.push(`<b>${actor.label}</b> corresponde al eslabón ${correcto.num} (${correcto.corto}).`);
+    }
+  }
+  const zona = errores.length ? '#eslabones' : 'body';
+  document.querySelector(zona).classList.add('sacudida');
+  setTimeout(() => document.querySelector(zona).classList.remove('sacudida'), 500);
+
+  if (correctos === total) {
+    completados.add(c.id);
+    $('#estado-mapeo').classList.remove('hidden');
+    renderSelector();
+    mensajeOk(`✓ Circuito mapeado con éxito: los ${total} actores están en su eslabón. Bajá y analizá el desglose del precio.`);
+  } else {
+    mensajeError(`Se ubicaron bien ${correctos} de ${total}. Revisá estos casos:<br>${errores.join('<br>')}`);
+  }
+}
+
+function reiniciar() {
+  ubicados = {};
+  seleccionado = null;
+  limpiarRetro();
+  renderEslabones();
+  renderCantera();
+}
+
+function renderValor() {
+  const c = circuito();
+  const totalPct = Object.values(c.reparto).reduce((a, b) => a + b, 0);
+  $('#barra').innerHTML = ESLABONES.map(e =>
+    `<div class="barra-crece h-full" style="width:${c.reparto[e.id]}%; background:${e.color}" title="${e.nombre}: ${c.reparto[e.id]}%"></div>`
+  ).join('');
+  $('#detalle').innerHTML = ESLABONES.map(e => {
+    const pct = c.reparto[e.id];
+    const monto = Math.round(c.precio * pct / 100);
+    return `
+      <div class="grid grid-cols-[auto_1fr_auto_auto] items-center gap-3 bg-card border border-line rounded-xl px-4 py-3">
+        <span class="w-3.5 h-3.5 rounded-full" style="background:${e.color}"></span>
+        <span class="font-semibold">Eslabón ${e.num} · ${e.corto}</span>
+        <span class="font-display font-extrabold text-2xl tabular" style="color:${e.oscuro || e.color}">${pct} %</span>
+        <span class="tabular font-semibold text-muted w-24 text-right">${fmt(monto)}</span>
+      </div>`;
+  }).join('');
+}
+
+function renderPreguntas() {
+  $('#preguntas-lista').innerHTML = circuito().preguntas.map((p, i) => `
+    <details class="bg-card border border-line rounded-xl">
+      <summary class="flex items-center justify-between gap-3 px-5 py-4">
+        <span class="font-display font-bold text-lg">
+          <span class="tabular text-brique font-extrabold mr-2">${i + 1}</span>${p.q}
+        </span>
+        <svg class="chevron w-5 h-5 shrink-0 text-muted" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </summary>
+      <p class="px-5 pb-5 text-muted border-t border-line pt-4">${p.r}</p>
+    </details>`).join('');
+}
+
+function selectCircuit(id) {
+  circuitoId = id;
+  seleccionado = null;
+  ubicados = {};
+  renderSelector();
+  renderDatos();
+  renderEslabones();
+  renderCantera();
+  renderValor();
+  renderPreguntas();
+  limpiarRetro();
+  $('#mapa').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  $('#barra').querySelectorAll('.barra-crece').forEach(b => b.style.width = '0%');
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => renderValor());
+  });
+}
+
+$('#btn-verificar').addEventListener('click', verificar);
+$('#btn-reiniciar').addEventListener('click', reiniciar);
+
+selectCircuit('vino');
+</script>
+</body>
+</html>

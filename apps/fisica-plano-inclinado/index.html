@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plano Inclinado y Rozamiento · Laboratorio Virtual</title>
+<meta name="description" content="Laboratorio virtual y experimental de plano inclinado: visualice el diagrama de cuerpo libre, el ángulo crítico de deslizamiento y deduzca el coeficiente de fricción real de su material escolar.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232B5CE6'/%3E%3Cline x1='5' y1='26' x2='27' y2='10' stroke='%23C89B6E' stroke-width='6' stroke-linecap='round'/%3E%3Crect x='13' y='12' width='9' height='7' rx='1.5' fill='%23F4F5F1' transform='rotate(-33 17.5 15.5)'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        ink: '#1B2330',
+        paper: '#F4F5F1',
+        line: '#E3E7EF',
+        blue: '#2B5CE6',
+        green: '#1F7A5C',
+        red: '#D64545',
+        amber: '#E08A00',
+        violet: '#6B46C1',
+        wood: '#C89B6E',
+      },
+      fontFamily: {
+        display: ['"Chakra Petch"', 'sans-serif'],
+        sans: ['"IBM Plex Sans"', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'monospace'],
+      },
+    },
+  },
+};
+</script>
+<style>
+  body {
+    background-image:
+      linear-gradient(to right, rgba(27, 35, 48, 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(27, 35, 48, 0.035) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  input[type='range'] { accent-color: #2B5CE6; }
+  .bal-beam { transition: transform 0.7s cubic-bezier(0.34, 1.3, 0.4, 1); }
+  .bal-pan { transition: fill 0.3s ease; }
+  .at-critical { animation: crit-pulse 1.1s ease-in-out infinite; }
+  @keyframes crit-pulse {
+    0%, 100% { fill: #E08A00; }
+    50% { fill: #F6B93B; }
+  }
+  .slide-in { animation: slide-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  @keyframes slide-in {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bal-beam, .at-critical, .slide-in { animation: none; transition: none; }
+  }
+  :focus-visible { outline: 2px solid #2B5CE6; outline-offset: 2px; border-radius: 4px; }
+  ::selection { background: rgba(43, 92, 230, 0.18); }
+</style>
+</head>
+<body class="bg-paper text-ink font-sans antialiased">
+
+<header class="max-w-6xl mx-auto px-4 pt-10 pb-6">
+  <p class="font-mono text-xs tracking-[0.25em] text-blue uppercase mb-2">Física · Dinámica · Rozamiento</p>
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <h1 class="font-display text-3xl sm:text-4xl font-bold leading-tight">Plano inclinado y rozamiento</h1>
+      <p class="mt-2 text-sm text-slate-600 max-w-xl">Laboratorio virtual: mueva el ángulo, observe el diagrama de cuerpo libre en tiempo real y encuentre el momento exacto en que el bloque empieza a deslizarse.</p>
+    </div>
+    <div class="font-mono text-xs text-slate-500 bg-white border border-line rounded-xl px-4 py-3 leading-6 shadow-sm">
+      <span class="text-red font-semibold">g = 9,8 m/s²</span><br>
+      μs · μk · θ_crit
+    </div>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-4 pb-16">
+
+  <section class="bg-white border border-line rounded-2xl shadow-sm overflow-hidden slide-in">
+    <div class="flex items-center justify-between px-5 pt-5 pb-3 border-b border-line">
+      <h2 class="font-display font-semibold text-lg flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-blue inline-block"></span>
+        Laboratorio virtual
+      </h2>
+      <p class="font-mono text-[11px] text-slate-500 hidden sm:block">DCL en tiempo real · escala proporcional</p>
+    </div>
+
+    <div class="grid lg:grid-cols-[1fr_330px]">
+      <div class="p-4 sm:p-5 border-b lg:border-b-0 lg:border-r border-line">
+        <canvas id="scene" role="img" aria-label="Plano inclinado con bloque y diagrama de cuerpo libre"
+          class="w-full rounded-xl border border-line cursor-grab active:cursor-grabbing touch-none"
+          style="aspect-ratio: 1000/560; background: #FBFCFA;"></canvas>
+        <p class="mt-2 font-mono text-[11px] text-slate-500 text-center">Arrastre el mango <span class="text-wood">●</span> en el extremo del plano, o use el slider del panel.</p>
+
+        <div id="readouts" class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2 mt-4"></div>
+      </div>
+
+      <aside class="p-5 flex flex-col gap-5">
+
+        <div>
+          <label for="thetaSlider" class="flex items-center justify-between text-sm font-medium mb-1.5">
+            <span>Ángulo de inclinación <span class="text-slate-400 font-normal">θ</span></span>
+            <span id="thetaReadout" class="font-mono font-semibold text-blue text-sm">30,0°</span>
+          </label>
+          <input id="thetaSlider" type="range" min="0" max="90" step="0.5" value="30" class="w-full">
+          <div class="flex justify-between font-mono text-[10px] text-slate-400 mt-0.5"><span>0°</span><span>90°</span></div>
+        </div>
+
+        <div>
+          <label for="massSlider" class="flex items-center justify-between text-sm font-medium mb-1.5">
+            <span>Masa del bloque <span class="text-slate-400 font-normal">m</span></span>
+            <span id="massReadout" class="font-mono font-semibold text-ink text-sm">1,0 kg</span>
+          </label>
+          <input id="massSlider" type="range" min="0.2" max="10" step="0.1" value="1" class="w-full">
+          <div class="flex justify-between font-mono text-[10px] text-slate-400 mt-0.5"><span>0,2 kg</span><span>10 kg</span></div>
+        </div>
+
+        <div>
+          <p class="text-sm font-medium mb-2">Superficies de contacto</p>
+          <div id="materials" class="grid grid-cols-2 gap-2"></div>
+        </div>
+
+        <div class="bg-paper border border-line rounded-xl p-3.5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-mono text-[10px] tracking-[0.2em] text-slate-500 uppercase">Ángulo crítico</span>
+            <span id="critReadout" class="font-mono text-xs font-semibold text-amber">θ_crit = 26,6°</span>
+          </div>
+          <div class="relative h-2 rounded-full bg-slate-200 overflow-hidden">
+            <div id="critBar" class="absolute inset-y-0 left-0 bg-amber rounded-full transition-all duration-300" style="width:0%"></div>
+            <div id="thetaBar" class="absolute inset-y-0 bg-blue rounded-full opacity-60 transition-all duration-200" style="width:33%"></div>
+          </div>
+          <p class="mt-2 text-[11px] text-slate-500 leading-4">El bloque se desliza cuando θ supera a θ_crit = arctan(μs): la componente Px vence al rozamiento estático máximo.</p>
+        </div>
+
+        <div class="bg-white border border-line rounded-xl p-3.5 shadow-sm">
+          <p class="font-mono text-[10px] tracking-[0.2em] text-slate-500 uppercase mb-1">¿Qué fuerza gana?</p>
+          <svg id="balance" viewBox="0 0 320 128" class="w-full" aria-hidden="true">
+            <line x1="160" y1="30" x2="160" y2="124" stroke="#1B2330" stroke-width="3"/>
+            <path d="M148 124 L172 124 L160 112 Z" fill="#1B2330"/>
+            <g id="beamGroup" class="bal-beam">
+              <line x1="10" y1="30" x2="310" y2="30" stroke="#1B2330" stroke-width="4"/>
+              <circle cx="10" cy="30" r="5" fill="#1B2330"/>
+              <circle cx="310" cy="30" r="5" fill="#1B2330"/>
+              <line x1="10" y1="30" x2="10" y2="74" stroke="#94A3B8" stroke-width="1.5"/>
+              <line x1="310" y1="30" x2="310" y2="74" stroke="#94A3B8" stroke-width="1.5"/>
+              <path class="bal-pan" d="M-4 74 A14 14 0 0 0 24 74 Z" fill="#1F7A5C" opacity="0.85" transform="translate(0,0)"/>
+              <path class="bal-pan" d="M296 74 A14 14 0 0 0 324 74 Z" fill="#E08A00" opacity="0.85"/>
+            </g>
+            <circle id="fulcrum" cx="160" cy="30" r="6" fill="#E08A00"/>
+            <text x="10" y="104" text-anchor="middle" class="font-mono" font-size="12" fill="#1F7A5C" font-weight="600">Px</text>
+            <text id="balLeft" x="10" y="120" text-anchor="middle" class="font-mono" font-size="11" fill="#1B2330">0,0 N</text>
+            <text x="310" y="104" text-anchor="middle" class="font-mono" font-size="12" fill="#E08A00" font-weight="600">Fr máx</text>
+            <text id="balRight" x="310" y="120" text-anchor="middle" class="font-mono" font-size="11" fill="#1B2330">0,0 N</text>
+          </svg>
+        </div>
+
+        <div class="flex flex-col gap-2.5">
+          <p id="statusPill" role="status" class="text-center font-display font-semibold text-sm rounded-xl px-3 py-2.5 bg-green/10 text-green border border-green/25">En equilibrio</p>
+          <div class="grid grid-cols-2 gap-2.5">
+            <button id="playBtn" class="font-display font-semibold text-sm rounded-xl px-3 py-2.5 bg-blue text-white hover:bg-blue/90 disabled:opacity-35 disabled:cursor-not-allowed transition-colors">▶ Iniciar</button>
+            <button id="resetBtn" class="font-display font-semibold text-sm rounded-xl px-3 py-2.5 bg-white border border-line hover:border-ink/30 transition-colors">↺ Reiniciar</button>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+  </section>
+
+  <section class="mt-8 bg-white border border-line rounded-2xl shadow-sm overflow-hidden slide-in" style="animation-delay:0.12s">
+    <div class="px-5 pt-5 pb-3 border-b border-line">
+      <h2 class="font-display font-semibold text-lg flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-wood inline-block"></span>
+        Tu experimento real
+      </h2>
+      <p class="mt-1 text-sm text-slate-600">Levanten la tabla en el aula hasta que el objeto empiece a deslizarse, midan ese ángulo con el transportador y registren la masa. La app deduce el coeficiente de rozamiento real del material escolar.</p>
+    </div>
+    <div class="p-5 grid lg:grid-cols-[340px_1fr] gap-6">
+      <div class="space-y-4">
+        <div>
+          <label for="expAngle" class="flex items-center justify-between text-sm font-medium mb-1.5">
+            <span>Ángulo medido <span class="text-slate-400 font-normal">(transportador)</span></span>
+            <span id="expAngleReadout" class="font-mono font-semibold text-amber text-sm">32,0°</span>
+          </label>
+          <input id="expAngle" type="range" min="1" max="89" step="0.5" value="32" class="w-full">
+          <p class="text-[11px] text-slate-500 mt-1">Ángulo en el que el objeto comenzó a deslizarse.</p>
+        </div>
+        <div>
+          <label for="expMass" class="flex items-center justify-between text-sm font-medium mb-1.5">
+            <span>Masa del objeto <span class="text-slate-400 font-normal">(balanza)</span></span>
+            <span id="expMassReadout" class="font-mono font-semibold text-ink text-sm">0,8 kg</span>
+          </label>
+          <input id="expMass" type="range" min="0.1" max="10" step="0.1" value="0.8" class="w-full">
+        </div>
+        <div class="bg-paper border border-line rounded-xl p-3.5">
+          <p class="font-mono text-[10px] tracking-[0.2em] text-slate-500 uppercase mb-2">Resultado deducido</p>
+          <p class="text-2xl font-display font-bold">μs = <span id="expMu" class="text-blue">0,62</span></p>
+          <p class="text-xs text-slate-500 mt-1 leading-4">μs = tan(θ) <span class="text-slate-400">·</span> si a ese ángulo aún no se deslizó, el μs real es mayor que este valor.</p>
+        </div>
+        <button id="loadLabBtn" class="w-full font-display font-semibold text-sm rounded-xl px-3 py-2.5 bg-wood text-white hover:opacity-90 transition-opacity">Cargar en el laboratorio virtual ↑</button>
+      </div>
+      <div>
+        <p class="font-mono text-[10px] tracking-[0.2em] text-slate-500 uppercase mb-3">Comparación con materiales conocidos</p>
+        <div id="compare" class="space-y-2"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="mt-10 border-t border-line pt-6 text-center">
+    <p class="font-mono text-xs text-slate-500 leading-6">
+      P = m·g &nbsp;·&nbsp; Px = P·sen θ &nbsp;·&nbsp; Py = P·cos θ &nbsp;·&nbsp; N = Py &nbsp;·&nbsp; Fr máx = μs·N &nbsp;·&nbsp; Fr = μk·N &nbsp;·&nbsp; θ_crit = arctan(μs)
+    </p>
+    <p class="mt-2 text-xs text-slate-400">Laboratorio Virtual y Experimental · Plano Inclinado y Rozamiento</p>
+  </footer>
+</main>
+
+<noscript><p class="text-center p-8">Esta aplicación necesita JavaScript habilitado.</p></noscript>
+
+<script>
+const MATERIALS = [
+  { key: 'madera', label: 'Madera / madera', us: 0.5, uk: 0.3 },
+  { key: 'goma', label: 'Goma / cemento', us: 1.0, uk: 0.8 },
+  { key: 'teflon', label: 'Teflón / acero', us: 0.04, uk: 0.04 },
+  { key: 'hielo', label: 'Hielo / metal', us: 0.1, uk: 0.03 },
+];
+const G = 9.8;
+const DESIGN_W = 1000;
+const DESIGN_H = 560;
+const PIVOT = { x: 150, y: 440 };
+const PLANE_LEN = 760;
+const VEC_LEN = 150;
+const PX_PER_MS = 40;
+const S_MAX = PLANE_LEN - 80;
+const S0 = 0.42 * PLANE_LEN;
+
+const VEC_STYLE = {
+  P: { color: '#D64545', label: 'P', dashed: false },
+  Px: { color: '#1F7A5C', label: 'Px', dashed: true },
+  Py: { color: '#6B46C1', label: 'Py', dashed: true },
+  N: { color: '#2B5CE6', label: 'N', dashed: false },
+  Fr: { color: '#E08A00', label: 'Fr', dashed: false },
+};
+
+const state = {
+  thetaDeg: 30,
+  massKg: 1,
+  matKey: 'madera',
+  s: S0,
+  v: 0,
+  playing: false,
+  reachedEnd: false,
+};
+
+const canvas = document.getElementById('scene');
+const ctx = canvas.getContext('2d');
+const thetaSlider = document.getElementById('thetaSlider');
+const thetaReadout = document.getElementById('thetaReadout');
+const massSlider = document.getElementById('massSlider');
+const massReadout = document.getElementById('massReadout');
+const materialsEl = document.getElementById('materials');
+const critReadout = document.getElementById('critReadout');
+const critBar = document.getElementById('critBar');
+const thetaBar = document.getElementById('thetaBar');
+const statusPill = document.getElementById('statusPill');
+const playBtn = document.getElementById('playBtn');
+const resetBtn = document.getElementById('resetBtn');
+const readoutsEl = document.getElementById('readouts');
+const beamGroup = document.getElementById('beamGroup');
+const fulcrum = document.getElementById('fulcrum');
+const balLeft = document.getElementById('balLeft');
+const balRight = document.getElementById('balRight');
+const expAngle = document.getElementById('expAngle');
+const expMass = document.getElementById('expMass');
+const expAngleReadout = document.getElementById('expAngleReadout');
+const expMassReadout = document.getElementById('expMassReadout');
+const expMu = document.getElementById('expMu');
+const compareEl = document.getElementById('compare');
+const loadLabBtn = document.getElementById('loadLabBtn');
+
+const fmt = (x, d = 1) => x.toLocaleString('es-AR', { minimumFractionDigits: d, maximumFractionDigits: d });
+const rad = (deg) => (deg * Math.PI) / 180;
+
+function mat() { return MATERIALS.find((m) => m.key === state.matKey); }
+
+function physics() {
+  const th = state.thetaDeg;
+  const matr = mat();
+  const P = state.massKg * G;
+  const Px = P * Math.sin(rad(th));
+  const Py = P * Math.cos(rad(th));
+  const N = Py;
+  const frMax = matr.us * N;
+  const sliding = Px > frMax + 1e-9;
+  const a = sliding ? G * (Math.sin(rad(th)) - matr.uk * Math.cos(rad(th))) : 0;
+  const fr = sliding ? matr.uk * N : Px;
+  return { P, Px, Py, N, frMax, fr, a, sliding, critDeg: Math.atan(matr.us) * 180 / Math.PI };
+}
+
+function roundRectPath(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function drawArrow(x0, y0, x1, y1, color, width, dashed) {
+  const dx = x1 - x0;
+  const dy = y1 - y0;
+  const len = Math.hypot(dx, dy);
+  if (len < 2) return;
+  const ux = dx / len;
+  const uy = dy / len;
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = width;
+  ctx.setLineDash(dashed ? [9, 8] : []);
+  ctx.beginPath();
+  ctx.moveTo(x0, y0);
+  ctx.lineTo(x1, y1);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  const h = Math.max(9, width * 3.4);
+  const bx = x1 - ux * h;
+  const by = y1 - uy * h;
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(bx - uy * h * 0.45, by + ux * h * 0.45);
+  ctx.lineTo(bx + uy * h * 0.45, by - ux * h * 0.45);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function labelAt(x, y, text, color, offsetX = 0, offsetY = 0) {
+  ctx.font = "600 17px 'IBM Plex Mono', monospace";
+  ctx.fillStyle = color;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, x + offsetX, y + offsetY);
+}
+
+function drawScene() {
+  ctx.clearRect(0, 0, DESIGN_W, DESIGN_H);
+  const th = state.thetaDeg;
+  const thRad = rad(th);
+  const phys = physics();
+  const critRad = rad(phys.critDeg);
+
+  const endX = PIVOT.x + PLANE_LEN * Math.cos(thRad);
+  const endY = PIVOT.y - PLANE_LEN * Math.sin(thRad);
+
+  ctx.strokeStyle = '#C8CEDA';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(20, PIVOT.y);
+  ctx.lineTo(980, PIVOT.y);
+  ctx.stroke();
+  ctx.font = "500 15px 'IBM Plex Mono', monospace";
+  ctx.fillStyle = '#94A3B8';
+  ctx.textAlign = 'left';
+  ctx.fillText('suelo', 22, PIVOT.y - 10);
+
+  ctx.strokeStyle = '#B98A5E';
+  ctx.lineWidth = 20;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(PIVOT.x, PIVOT.y);
+  ctx.lineTo(endX, endY);
+  ctx.stroke();
+  ctx.strokeStyle = '#8A5A2B';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(PIVOT.x - 8 * Math.cos(thRad), PIVOT.y + 8 * Math.sin(thRad));
+  ctx.lineTo(endX - 8 * Math.cos(thRad), endY + 8 * Math.sin(thRad));
+  ctx.stroke();
+  ctx.lineCap = 'butt';
+
+  ctx.fillStyle = '#8A5A2B';
+  ctx.beginPath();
+  ctx.moveTo(PIVOT.x - 16, PIVOT.y + 4);
+  ctx.lineTo(PIVOT.x + 16, PIVOT.y + 4);
+  ctx.lineTo(PIVOT.x, PIVOT.y - 6);
+  ctx.closePath();
+  ctx.fill();
+
+  const arcR = 64;
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.arc(PIVOT.x, PIVOT.y, arcR, -thRad, 0);
+  ctx.strokeStyle = '#1F7A5C';
+  ctx.stroke();
+  if (th > phys.critDeg + 0.2) {
+    ctx.beginPath();
+    ctx.arc(PIVOT.x, PIVOT.y, arcR, -thRad, -critRad);
+    ctx.strokeStyle = '#D64545';
+    ctx.stroke();
+  }
+  ctx.setLineDash([5, 5]);
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(PIVOT.x + 52 * Math.cos(critRad), PIVOT.y - 52 * Math.sin(critRad));
+  ctx.lineTo(PIVOT.x + 76 * Math.cos(critRad), PIVOT.y - 76 * Math.sin(critRad));
+  ctx.strokeStyle = '#E08A00';
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.font = "500 15px 'IBM Plex Mono', monospace";
+  ctx.fillStyle = '#E08A00';
+  ctx.fillText('θcrit', PIVOT.x + 82 * Math.cos(critRad) - 20, PIVOT.y - 82 * Math.sin(critRad) + 18);
+
+  const midAng = -thRad / 2;
+  ctx.font = "600 20px 'IBM Plex Mono', monospace";
+  ctx.fillStyle = '#1B2330';
+  ctx.fillText('θ = ' + fmt(th, 1) + '°', PIVOT.x + 100 * Math.cos(midAng) - 24, PIVOT.y + 100 * Math.sin(midAng) + 6);
+
+  ctx.fillStyle = '#2B5CE6';
+  ctx.beginPath();
+  ctx.arc(endX, endY, 13, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#F4F5F1';
+  ctx.beginPath();
+  ctx.arc(endX, endY, 6, 0, Math.PI * 2);
+  ctx.fill();
+
+  const massScale = Math.min(1.3, Math.max(0.6, 0.6 + (state.massKg - 1) * 0.07));
+  const bw = 76 * massScale;
+  const bh = 54 * massScale;
+  const ox = PIVOT.x + state.s * Math.cos(thRad);
+  const oy = PIVOT.y - state.s * Math.sin(thRad);
+
+  ctx.save();
+  ctx.translate(ox, oy);
+  ctx.rotate(-thRad);
+  ctx.fillStyle = 'rgba(27,35,48,0.12)';
+  ctx.beginPath();
+  ctx.ellipse(0, bh / 2 + 7, bw * 0.55, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#FFFFFF';
+  ctx.strokeStyle = '#1B2330';
+  ctx.lineWidth = 2.5;
+  roundRectPath(-bw / 2, -bh / 2, bw, bh, 7);
+  ctx.fill();
+  ctx.stroke();
+  ctx.font = "600 14px 'IBM Plex Mono', monospace";
+  ctx.fillStyle = '#1B2330';
+  ctx.textAlign = 'center';
+  ctx.fillText('m = ' + fmt(state.massKg, 1) + ' kg', 0, 4);
+  ctx.restore();
+
+  const O = { x: ox, y: oy - bh * 0.35 };
+  const vP = { x: O.x, y: O.y + VEC_LEN };
+  const vPx = { x: O.x - VEC_LEN * Math.sin(thRad) * Math.cos(thRad), y: O.y + VEC_LEN * Math.sin(thRad) * Math.sin(thRad) };
+  const vPy = { x: O.x + VEC_LEN * Math.cos(thRad) * Math.sin(thRad), y: O.y + VEC_LEN * Math.cos(thRad) * Math.cos(thRad) };
+  const vN = { x: O.x - VEC_LEN * Math.cos(thRad) * Math.sin(thRad), y: O.y - VEC_LEN * Math.cos(thRad) * Math.cos(thRad) };
+  const frLen = (phys.fr / (state.massKg * G)) * VEC_LEN;
+  const vFr = { x: O.x + frLen * Math.cos(thRad), y: O.y - frLen * Math.sin(thRad) };
+
+  ctx.setLineDash([4, 6]);
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = '#94A3B8';
+  ctx.beginPath();
+  ctx.moveTo(vP.x, vP.y);
+  ctx.lineTo(vPx.x, vPx.y);
+  ctx.moveTo(vP.x, vP.y);
+  ctx.lineTo(vPy.x, vPy.y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  drawArrow(O.x, O.y, vP.x, vP.y, VEC_STYLE.P.color, 4.5, false);
+  drawArrow(O.x, O.y, vPx.x, vPx.y, VEC_STYLE.Px.color, 3.5, true);
+  drawArrow(O.x, O.y, vPy.x, vPy.y, VEC_STYLE.Py.color, 3.5, true);
+  drawArrow(O.x, O.y, vN.x, vN.y, VEC_STYLE.N.color, 4.5, false);
+  if (frLen > 2) drawArrow(O.x, O.y, vFr.x, vFr.y, VEC_STYLE.Fr.color, 4.5, false);
+
+  labelAt(vP.x + 12, vP.y - 6, 'P', VEC_STYLE.P.color);
+  labelAt(vPx.x - 10, vPx.y + 20, 'Px', VEC_STYLE.Px.color);
+  labelAt(vPy.x - 8, vPy.y + 2, 'Py', VEC_STYLE.Py.color);
+  labelAt(vN.x - 12, vN.y - 8, 'N', VEC_STYLE.N.color);
+  if (frLen > 2) labelAt(vFr.x + 12, vFr.y + 6, 'Fr', VEC_STYLE.Fr.color);
+}
+
+function readoutTile(key, label, color, value) {
+  return `<div class="bg-paper border border-line rounded-lg px-2.5 py-2">
+    <p class="font-mono text-[10px] tracking-wide uppercase flex items-center gap-1.5" style="color:${color}">
+      <span class="w-1.5 h-1.5 rounded-full inline-block" style="background:${color}"></span>${label}
+    </p>
+    <p class="font-mono text-sm font-semibold text-ink leading-tight">${value}</p>
+  </div>`;
+}
+
+const readoutSpecs = [
+  { key: 'P', label: 'Peso P', color: VEC_STYLE.P.color },
+  { key: 'Px', label: 'Paralela Px', color: VEC_STYLE.Px.color },
+  { key: 'Py', label: 'Normal Py', color: VEC_STYLE.Py.color },
+  { key: 'N', label: 'Normal N', color: VEC_STYLE.N.color },
+  { key: 'frMax', label: 'Fr máx', color: VEC_STYLE.Fr.color },
+  { key: 'fr', label: 'Rozam. Fr', color: VEC_STYLE.Fr.color },
+  { key: 'a', label: 'Aceleración', color: '#1B2330' },
+];
+
+function renderReadouts(phys) {
+  const vals = {
+    P: fmt(phys.P, 1) + ' N',
+    Px: fmt(phys.Px, 1) + ' N',
+    Py: fmt(phys.Py, 1) + ' N',
+    N: fmt(phys.N, 1) + ' N',
+    frMax: fmt(phys.frMax, 1) + ' N',
+    fr: fmt(phys.fr, 1) + ' N',
+    a: fmt(phys.a, 2) + ' m/s²',
+  };
+  readoutsEl.innerHTML = readoutSpecs.map((s) => readoutTile(s.key, s.label, s.color, vals[s.key])).join('');
+}
+
+function renderMaterials() {
+  materialsEl.innerHTML = MATERIALS.map((m) => {
+    const crit = fmt(Math.atan(m.us) * 180 / Math.PI, 1);
+    const sel = m.key === state.matKey;
+    return `<button data-key="${m.key}" class="text-left rounded-xl border px-3 py-2.5 transition-all ${sel ? 'border-blue ring-2 ring-blue/20 bg-blue/5' : 'border-line hover:border-ink/30 bg-white'}">
+      <span class="block text-[13px] font-semibold leading-4">${m.label}</span>
+      <span class="block font-mono text-[10px] text-slate-500 mt-1">μs ${fmt(m.us, 2)} · μk ${fmt(m.uk, 2)}</span>
+      <span class="block font-mono text-[10px] text-amber mt-0.5">θcrit ${crit}°</span>
+    </button>`;
+  }).join('');
+  materialsEl.querySelectorAll('button').forEach((b) => {
+    b.addEventListener('click', () => {
+      state.matKey = b.dataset.key;
+      if (state.playing && !physics().sliding) pauseSim();
+      renderMaterials();
+      update();
+    });
+  });
+}
+
+function setPill(kind, text) {
+  const styles = {
+    ok: 'bg-green/10 text-green border-green/25',
+    warn: 'bg-amber/15 text-amber border-amber/30',
+    danger: 'bg-red/10 text-red border-red/25',
+  };
+  statusPill.className = `text-center font-display font-semibold text-sm rounded-xl px-3 py-2.5 border ${styles[kind]}`;
+  statusPill.textContent = text;
+}
+
+function updateStatus(phys) {
+  if (state.reachedEnd) {
+    setPill('ok', 'El bloque llegó al final del plano · presioná Reiniciar');
+    return;
+  }
+  if (state.playing && phys.sliding) {
+    setPill('danger', '¡Deslizamiento! Px venció a Fr máx · rozamiento cinético (μk)');
+    return;
+  }
+  if (phys.sliding && !state.playing) {
+    setPill('warn', 'A punto de deslizarse · presioná ▶ Iniciar');
+    return;
+  }
+  if (state.playing && !phys.sliding) {
+    setPill('ok', 'En equilibrio · el rozamiento estático frena al bloque');
+    return;
+  }
+  setPill('ok', 'En equilibrio · Fr = Px: el bloque no se desliza');
+}
+
+function updateBalance(phys) {
+  const denom = phys.Px + phys.frMax + 1e-9;
+  const tilt = Math.min(1, Math.max(-1, (phys.Px - phys.frMax) / denom)) * 10;
+  beamGroup.setAttribute('transform', `rotate(${tilt} 160 30)`);
+  balLeft.textContent = fmt(phys.Px, 1) + ' N';
+  balRight.textContent = phys.sliding ? fmt(phys.fr, 1) + ' N' : fmt(phys.frMax, 1) + ' N';
+  const atCrit = Math.abs(phys.Px - phys.frMax) / (phys.Px + phys.frMax + 1e-9) < 0.02;
+  fulcrum.classList.toggle('at-critical', atCrit);
+}
+
+function updateBars(phys) {
+  critBar.style.width = (phys.critDeg / 90) * 100 + '%';
+  thetaBar.style.width = (state.thetaDeg / 90) * 100 + '%';
+}
+
+function update() {
+  const phys = physics();
+  thetaReadout.textContent = fmt(state.thetaDeg, 1) + '°';
+  massReadout.textContent = fmt(state.massKg, 1) + ' kg';
+  critReadout.textContent = 'θ_crit = ' + fmt(phys.critDeg, 1) + '°';
+  renderReadouts(phys);
+  updateStatus(phys);
+  updateBalance(phys);
+  updateBars(phys);
+  playBtn.textContent = state.playing ? '❚❚ Pausar' : '▶ Iniciar';
+  playBtn.disabled = !phys.sliding && !state.playing;
+  drawScene();
+}
+
+function pauseSim() {
+  state.playing = false;
+  state.v = 0;
+}
+
+function resetBlock() {
+  state.playing = false;
+  state.s = S0;
+  state.v = 0;
+  state.reachedEnd = false;
+  update();
+}
+
+function step(dt) {
+  const phys = physics();
+  if (!state.playing) return;
+  if (!phys.sliding) {
+    pauseSim();
+    update();
+    return;
+  }
+  const aPx = phys.a * PX_PER_MS;
+  state.v = Math.min(260, state.v + aPx * dt);
+  state.s += state.v * dt;
+  if (state.s >= S_MAX) {
+    state.s = S_MAX;
+    state.v = 0;
+    state.playing = false;
+    state.reachedEnd = true;
+  }
+  update();
+}
+
+thetaSlider.addEventListener('input', () => {
+  state.thetaDeg = parseFloat(thetaSlider.value);
+  if (state.playing && !physics().sliding) pauseSim();
+  update();
+});
+massSlider.addEventListener('input', () => {
+  state.massKg = parseFloat(massSlider.value);
+  update();
+});
+playBtn.addEventListener('click', () => {
+  const phys = physics();
+  if (state.reachedEnd) resetBlock();
+  if (!state.playing) {
+    if (!phys.sliding) return;
+    state.playing = true;
+    update();
+  } else {
+    pauseSim();
+    update();
+  }
+});
+resetBtn.addEventListener('click', resetBlock);
+
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000);
+  last = now;
+  step(dt);
+  if (state.playing) requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+function resizeCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth;
+  const h = w * (DESIGN_H / DESIGN_W);
+  const bw = Math.round(w * dpr);
+  const bh = Math.round(h * dpr);
+  if (canvas.width !== bw || canvas.height !== bh) {
+    canvas.width = bw;
+    canvas.height = bh;
+  }
+  ctx.setTransform(bw / DESIGN_W, 0, 0, bw / DESIGN_W, 0, 0);
+  drawScene();
+}
+new ResizeObserver(resizeCanvas).observe(canvas);
+window.addEventListener('resize', resizeCanvas);
+
+let dragging = false;
+function hitTest(mx, my) {
+  const scale = canvas.width / DESIGN_W;
+  const dx = mx / scale - PIVOT.x;
+  const dy = my / scale - PIVOT.y;
+  const thRad = rad(state.thetaDeg);
+  const endX = PIVOT.x + PLANE_LEN * Math.cos(thRad);
+  const endY = PIVOT.y - PLANE_LEN * Math.sin(thRad);
+  if (Math.hypot(mx / scale - endX, my / scale - endY) < 34) return true;
+  const denom = Math.hypot(endX - PIVOT.x, endY - PIVOT.y);
+  const t = Math.max(0, Math.min(1, ((dx) * (endX - PIVOT.x) + (dy) * (endY - PIVOT.y)) / denom / denom));
+  const px = PIVOT.x + t * (endX - PIVOT.x);
+  const py = PIVOT.y + t * (endY - PIVOT.y);
+  return Math.hypot(mx / scale - px, my / scale - py) < 26;
+}
+function dragTo(mx, my) {
+  const scale = canvas.width / DESIGN_W;
+  const ang = Math.atan2(-(my / scale - PIVOT.y), mx / scale - PIVOT.x);
+  state.thetaDeg = Math.min(90, Math.max(0, (ang * 180) / Math.PI));
+  thetaSlider.value = state.thetaDeg;
+  if (state.playing && !physics().sliding) pauseSim();
+  update();
+}
+canvas.addEventListener('pointerdown', (e) => {
+  const r = canvas.getBoundingClientRect();
+  const mx = e.clientX - r.left;
+  const my = e.clientY - r.top;
+  if (!hitTest(mx, my)) return;
+  dragging = true;
+  canvas.setPointerCapture(e.pointerId);
+  dragTo(mx, my);
+});
+canvas.addEventListener('pointermove', (e) => {
+  if (!dragging) return;
+  const r = canvas.getBoundingClientRect();
+  dragTo(e.clientX - r.left, e.clientY - r.top);
+});
+canvas.addEventListener('pointerup', () => { dragging = false; });
+canvas.addEventListener('pointercancel', () => { dragging = false; });
+
+function expPhysics() {
+  const th = parseFloat(expAngle.value);
+  const m = parseFloat(expMass.value);
+  const mu = Math.tan(rad(th));
+  const P = m * G;
+  return {
+    th, m, mu, P,
+    Px: P * Math.sin(rad(th)),
+    N: P * Math.cos(rad(th)),
+    frMax: mu * P * Math.cos(rad(th)),
+  };
+}
+
+function renderCompare() {
+  const { mu, th, m, P, Px, N, frMax } = expPhysics();
+  expAngleReadout.textContent = fmt(th, 1) + '°';
+  expMassReadout.textContent = fmt(m, 1) + ' kg';
+  expMu.textContent = fmt(mu, 2);
+  const ranked = MATERIALS.map((matr) => ({ ...matr, dist: Math.abs(matr.us - mu) })).sort((a, b) => a.dist - b.dist);
+  const best = ranked[0];
+  const maxDist = Math.max(0.01, ranked[ranked.length - 1].dist);
+  compareEl.innerHTML = ranked.map((r) => {
+    const w = Math.max(6, 100 - (r.dist / maxDist) * 100);
+    return `<div class="flex items-center gap-3 ${r.key === best.key ? 'bg-blue/5 border border-blue/30 rounded-lg px-2.5 py-2 -mx-2.5' : ''}">
+      <span class="text-xs font-medium w-32 shrink-0">${r.label}</span>
+      <div class="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden">
+        <div class="h-full rounded-full transition-all duration-300 ${r.key === best.key ? 'bg-blue' : 'bg-slate-300'}" style="width:${w}%"></div>
+      </div>
+      <span class="font-mono text-[11px] text-slate-500 w-16 text-right shrink-0">μs ${fmt(r.us, 2)}</span>
+    </div>`;
+  }).join('');
+  const verdict = document.getElementById('verdict');
+  if (verdict) verdict.remove();
+  const el = document.createElement('p');
+  el.id = 'verdict';
+  el.className = 'mt-4 text-sm text-slate-700 leading-5';
+  el.innerHTML = `Con θ = <b>${fmt(th, 1)}°</b> y m = <b>${fmt(m, 1)} kg</b>, tu material escolar tiene un <b class="text-blue">μs ≈ ${fmt(mu, 2)}</b> y se parece más a <b>${best.label}</b>. Sus fuerzas: P = ${fmt(P, 1)} N · Px = ${fmt(Px, 1)} N · N = ${fmt(N, 1)} N · Fr máx = ${fmt(frMax, 1)} N.`;
+  compareEl.appendChild(el);
+}
+expAngle.addEventListener('input', renderCompare);
+expMass.addEventListener('input', renderCompare);
+loadLabBtn.addEventListener('click', () => {
+  state.thetaDeg = parseFloat(expAngle.value);
+  state.massKg = parseFloat(expMass.value);
+  thetaSlider.value = state.thetaDeg;
+  massSlider.value = state.massKg;
+  resetBlock();
+  document.querySelector('header').scrollIntoView({ behavior: 'smooth' });
+});
+
+renderMaterials();
+renderCompare();
+update();
+resizeCanvas();
+</script>
+</body>
+</html>

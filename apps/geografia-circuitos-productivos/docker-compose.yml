@@ -1,0 +1,8 @@
+services:
+  geografia-circuitos-productivos:
+    build:
+      context: .
+    container_name: geografia-circuitos-productivos
+    restart: unless-stopped
+    expose:
+      - "80"

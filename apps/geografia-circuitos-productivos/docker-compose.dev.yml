@@ -1,0 +1,4 @@
+services:
+  geografia-circuitos-productivos:
+    ports:
+      - "8087:80"

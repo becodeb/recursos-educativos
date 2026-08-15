@@ -1,0 +1,10 @@
+# Producción: sin mapeo de puertos en el host, solo expone el 80
+# para ser desplegado detrás de un reverse proxy (Traefik, Caddy, Nginx, etc.)
+services:
+  filosofia-detector-falacias:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    expose:
+      - "80"
+    restart: unless-stopped

@@ -1,0 +1,9 @@
+services:
+  biologia-osmosis:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: biologia-osmosis
+    restart: unless-stopped
+    expose:
+      - "80"

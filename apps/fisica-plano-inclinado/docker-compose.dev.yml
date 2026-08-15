@@ -1,0 +1,9 @@
+services:
+  fisica-plano-inclinado:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fisica-plano-inclinado-dev
+    restart: unless-stopped
+    ports:
+      - "8090:80"

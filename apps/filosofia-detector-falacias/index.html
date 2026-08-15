@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detector y clasificador de falacias no formales · Filosofía y lógica</title>
+  <meta name="description" content="Herramienta de aula para seleccionar, clasificar y analizar falacias no formales en textos argumentativos.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Karla:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: { DEFAULT: '#1B2A41', soft: '#2E4160' },
+            paper: { DEFAULT: '#F5F1E8', deep: '#EDE7D9' },
+            card: '#FFFDF8',
+            line: '#DCD4C0',
+            saffron: { DEFAULT: '#C9890A', strong: '#9A6A00' },
+            graphite: { DEFAULT: '#4C4A43', soft: '#6E6A60' }
+          },
+          fontFamily: {
+            display: ['Fraunces', 'Georgia', 'serif'],
+            body: ['Karla', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            mono: ['IBM Plex Mono', 'ui-monospace', 'SFMono-Regular', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    :root {
+      --ink: #1B2A41;
+      --ink-soft: #2E4160;
+      --paper: #F5F1E8;
+      --paper-deep: #EDE7D9;
+      --card: #FFFDF8;
+      --line: #DCD4C0;
+      --saffron: #C9890A;
+      --saffron-strong: #9A6A00;
+      --graphite: #4C4A43;
+      --graphite-soft: #6E6A60;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: #EFEAE0; }
+    ::selection { background: rgba(201, 137, 10, 0.28); }
+    :focus-visible { outline: 2px solid var(--saffron-strong); outline-offset: 2px; border-radius: 2px; }
+    .skip-link { position: absolute; left: -9999px; top: 0; background: var(--ink); color: #fff; padding: 0.5rem 1rem; z-index: 100; }
+    .skip-link:focus { left: 0; }
+    .tab-scroll { scrollbar-width: none; }
+    .tab-scroll::-webkit-scrollbar { display: none; }
+
+    /* Marcado: 6 tonos distinguibles sobre texto */
+    mark.hl { border-radius: 3px; padding: 0 1px; cursor: pointer; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+    mark.hl:hover { box-shadow: 0 0 0 1px currentColor; }
+    mark.hl:focus-visible { box-shadow: 0 0 0 2px var(--saffron-strong); }
+    .hl-rose { background: #F7DFDB; color: #7C2419; }
+    .hl-violet { background: #E8E0F6; color: #432F6E; }
+    .hl-amber { background: #F8E9C4; color: #6B4E00; }
+    .hl-teal { background: #D6ECE7; color: #135448; }
+    .hl-blue { background: #DCE7F5; color: #21405F; }
+    .hl-green { background: #D9ECDA; color: #23562A; }
+
+    .chip { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.02em; border: 1px solid transparent; border-radius: 999px; padding: 2px 9px; line-height: 1.5; white-space: nowrap; }
+    .chip-rose { background: #F7DFDB; color: #7C2419; border-color: #E2B7AE; }
+    .chip-violet { background: #E8E0F6; color: #432F6E; border-color: #C9B9E4; }
+    .chip-amber { background: #F8E9C4; color: #6B4E00; border-color: #E3CC8D; }
+    .chip-teal { background: #D6ECE7; color: #135448; border-color: #A9D1C7; }
+    .chip-blue { background: #DCE7F5; color: #21405F; border-color: #B2C9E4; }
+    .chip-green { background: #D9ECDA; color: #23562A; border-color: #ADD0B1; }
+
+    .swatch { display: inline-block; width: 12px; height: 12px; border: 1px solid transparent; border-radius: 3px; flex: none; }
+    .swatch-rose { background: #F7DFDB; border-color: #E2B7AE; }
+    .swatch-violet { background: #E8E0F6; border-color: #C9B9E4; }
+    .swatch-amber { background: #F8E9C4; border-color: #E3CC8D; }
+    .swatch-teal { background: #D6ECE7; border-color: #A9D1C7; }
+    .swatch-blue { background: #DCE7F5; border-color: #B2C9E4; }
+    .swatch-green { background: #D9ECDA; border-color: #ADD0B1; }
+
+    /* Ficha de desmontaje: tarjeta índice con cartas apiladas detrás */
+    .ficha { position: relative; z-index: 0; background: var(--card); border: 1px solid var(--line); border-radius: 3px; padding: 18px; box-shadow: 0 1px 2px rgba(27, 42, 65, 0.08); }
+    .ficha::before, .ficha::after { content: ''; position: absolute; inset: 0; border: 1px solid var(--line); background: var(--paper-deep); border-radius: 3px; z-index: -1; }
+    .ficha::before { transform: rotate(-1.6deg) translate(-3px, 3px); }
+    .ficha::after { transform: rotate(1.1deg) translate(3px, 1px); }
+    .ficha-corner { position: absolute; top: 0; right: 0; width: 26px; height: 26px; border-bottom-left-radius: 3px; background: linear-gradient(225deg, transparent 50%, #EAE3D1 50%, #DCD4C0 100%); }
+    .ficha-inner { animation: ficha-in 0.25s ease-out; }
+    @keyframes ficha-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    .ficha-quote { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; line-height: 1.6; color: var(--ink); background: var(--paper); border-left: 3px solid var(--saffron); padding: 8px 10px; margin-top: 10px; border-radius: 0 2px 2px 0; }
+    .ficha-moves { margin-top: 12px; }
+    .ficha-moves li { display: flex; gap: 10px; padding: 9px 0; border-top: 1px dashed #D8D0BC; }
+    .move-num { flex: none; width: 22px; height: 22px; border-radius: 999px; background: var(--ink); color: var(--paper); font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .ficha-moves strong { display: block; font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: 14px; color: var(--ink); }
+    .ficha-moves p { font-size: 13px; line-height: 1.55; color: var(--graphite); margin-top: 2px; }
+    .ficha-status { margin-top: 10px; font-size: 12px; font-weight: 600; }
+    .status-ok { color: #23562A; }
+    .status-canonical { color: var(--graphite-soft); font-weight: 400; }
+
+    /* Superficies */
+    .paper-card { background: var(--paper); border: 1px solid var(--line); border-radius: 3px; box-shadow: 0 1px 3px rgba(27, 42, 65, 0.06); }
+    .panel-card { background: var(--card); border: 1px solid var(--line); border-radius: 3px; padding: 14px 16px; }
+    .panel-title { font-family: 'Fraunces', Georgia, serif; font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+
+    /* Controles */
+    .btn-primary { background: var(--ink); color: var(--paper); font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 4px; }
+    .btn-primary:hover { background: var(--ink-soft); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-ghost { border: 1px solid #CDC4AC; background: #fff; color: var(--graphite); font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 4px; }
+    .btn-ghost:hover { border-color: var(--saffron-strong); color: var(--saffron-strong); }
+    .mini { font-size: 11px; font-weight: 600; color: var(--saffron-strong); padding: 2px 8px; border: 1px solid #E0D5B8; border-radius: 4px; background: #fff; }
+    .mini:hover { background: #F8F0DC; }
+    .mini-danger { color: #8A2B1D; border-color: #E2B7AE; }
+    .mini-danger:hover { background: #FBEAE7; }
+    .icon-btn { width: 30px; height: 30px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--graphite); }
+    .icon-btn:hover { background: #EFE9DA; }
+    .input { width: 100%; border: 1px solid #CDC4AC; background: #fff; border-radius: 4px; padding: 8px 10px; font-size: 14px; color: var(--ink); }
+    .input:focus { outline: none; border-color: var(--saffron-strong); box-shadow: 0 0 0 2px rgba(201, 137, 10, 0.25); }
+    textarea.input { line-height: 1.5; }
+    .hint { color: var(--graphite-soft); font-size: 12px; line-height: 1.55; }
+    .error { color: #8A2B1D; font-size: 13px; line-height: 1.5; }
+    .empty { color: var(--graphite-soft); font-size: 13px; line-height: 1.55; }
+    .divider { display: flex; align-items: center; gap: 10px; margin: 14px 0 10px; color: var(--graphite-soft); font-size: 12px; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+    /* Pestañas de actividades */
+    .tab { flex: none; padding: 8px 12px; font-size: 13px; font-weight: 600; color: #B9C4D8; border-bottom: 2px solid transparent; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tab:hover { color: #fff; }
+    .tab-active { color: #fff; border-bottom-color: #D99A2B; }
+    .tab-action { flex: none; margin-left: auto; padding: 8px 12px; font-size: 13px; font-weight: 600; color: #D99A2B; border: 1px solid #3D5172; border-radius: 4px; margin-top: 4px; margin-bottom: 4px; }
+    .tab-action:hover { background: var(--ink-soft); color: #fff; }
+
+    /* Botón flotante junto a la selección */
+    .floating-btn { position: absolute; z-index: 20; background: var(--ink); color: #fff; font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 6px; box-shadow: 0 4px 12px rgba(27, 42, 65, 0.35); font-family: 'Karla', sans-serif; letter-spacing: 0.02em; }
+    .floating-btn:hover { background: var(--ink-soft); }
+
+    /* Avisos y notificaciones */
+    .notice { font-size: 13px; padding: 10px 12px; border-radius: 4px; border: 1px solid; display: flex; gap: 8px; align-items: flex-start; justify-content: space-between; }
+    .notice-error { background: #FBEAE7; border-color: #E2B7AE; color: #7C2419; }
+    .notice-warn { background: #F8E9C4; border-color: #E3CC8D; color: #6B4E00; }
+    .notice-info { background: #E4EDF8; border-color: #B2C9E4; color: #21405F; }
+    .notice-success { background: #E4F3E5; border-color: #ADD0B1; color: #23562A; }
+    .toast { background: var(--ink); color: var(--paper); font-size: 13px; padding: 10px 16px; border-radius: 6px; box-shadow: 0 6px 18px rgba(27, 42, 65, 0.3); max-width: min(92vw, 420px); border-left: 3px solid #D99A2B; transition: opacity 0.3s; }
+    .toast-info { border-left-color: #7FA0C8; }
+    .toast-ok { border-left-color: #7BBF84; }
+    .toast-out { opacity: 0; }
+
+    /* Picker de falacias */
+    .picker-quote { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; line-height: 1.6; background: var(--paper); border: 1px solid var(--line); border-left: 3px solid var(--saffron); padding: 9px 11px; border-radius: 0 3px 3px 0; color: var(--ink); }
+    .picker-cat-name { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--graphite-soft); margin: 12px 0 6px; }
+    .pick-option { display: block; width: 100%; text-align: left; border: 1px solid var(--line); background: #fff; border-radius: 4px; padding: 9px 11px; margin-bottom: 8px; }
+    .pick-option:hover { border-color: var(--saffron); background: #FDF9EE; }
+    .pick-option:focus-visible { outline: 2px solid var(--saffron-strong); outline-offset: 1px; }
+    .pick-alias { display: block; font-size: 12px; font-weight: 600; color: var(--ink); margin-top: 2px; }
+    .pick-def { display: block; font-size: 12px; line-height: 1.45; color: var(--graphite); margin-top: 2px; }
+    .feedback { border-radius: 4px; padding: 11px 13px; margin-bottom: 10px; }
+    .feedback-error { background: #FBEAE7; border: 1px solid #E2B7AE; color: #7C2419; }
+    .feedback-error h3 { font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: 15px; margin-bottom: 6px; }
+    .feedback-error p { font-size: 13px; line-height: 1.55; margin-top: 6px; }
+    .feedback-error .pista { font-style: italic; color: #8A3A2C; }
+
+    /* Modales */
+    .modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-start; justify-content: center; padding: 4vh 16px 16px; overflow-y: auto; }
+    .modal.hidden { display: none; }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(27, 42, 65, 0.55); }
+    .modal-panel { position: relative; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 18px 50px rgba(27, 42, 65, 0.35); padding: 18px; max-height: 88vh; overflow-y: auto; }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body class="font-body text-graphite antialiased">
+  <a href="#contenido" class="skip-link">Saltar al contenido</a>
+
+  <header class="bg-ink text-paper">
+    <div class="max-w-7xl mx-auto px-4 pt-5 pb-4 flex items-center gap-3 flex-wrap">
+      <svg class="h-9 w-9 flex-none" viewBox="0 0 24 24" fill="none" stroke="#D99A2B" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M9 3v18"></path>
+        <circle cx="9" cy="12" r="5.5"></circle>
+        <path d="M14.5 12h5.5"></path>
+      </svg>
+      <div class="min-w-0">
+        <h1 class="font-display text-xl md:text-2xl font-semibold leading-tight">Detector y clasificador de falacias</h1>
+        <p class="text-[11px] uppercase tracking-[0.18em] text-paper/60 mt-0.5">Filosofía y lógica · Lectura crítica</p>
+      </div>
+    </div>
+    <nav aria-label="Actividades" class="border-t border-ink-soft">
+      <div class="max-w-7xl mx-auto px-4 flex items-center gap-1 overflow-x-auto tab-scroll py-1">
+        <div id="tabs" class="flex items-center gap-1 min-w-0"></div>
+        <button type="button" id="btn-load" class="tab-action">Cargar actividad</button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="contenido" class="max-w-7xl mx-auto px-4 py-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] items-start">
+    <section aria-label="Texto de la actividad" class="min-w-0">
+      <div id="notice" class="hidden notice mb-3" role="status"></div>
+      <article class="paper-card">
+        <header class="border-b border-line px-5 md:px-8 pt-5 pb-4">
+          <h2 id="reader-title" class="font-display text-2xl md:text-3xl font-semibold text-ink leading-tight"></h2>
+          <p id="reader-context" class="mt-1 font-mono text-[11px] uppercase tracking-[0.14em] text-graphite-soft"></p>
+          <p class="mt-3 text-[13px] leading-relaxed text-graphite">Seleccione con el cursor el fragmento que contiene una falacia y presione «Clasificar». Las marcas no pueden superponerse.</p>
+        </header>
+        <div id="reader-zone" class="relative px-5 md:px-8 py-6">
+          <div id="reader-text"></div>
+        </div>
+      </article>
+    </section>
+
+    <aside id="panel" aria-label="Panel de análisis" class="min-w-0 space-y-4">
+      <button type="button" id="panel-toggle" class="lg:hidden btn-ghost w-full text-center">Ocultar panel de análisis</button>
+
+      <section class="panel-card" aria-label="Puntaje">
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="panel-title mb-0">Aciertos</h3>
+          <span id="score-done" class="hidden inline-flex items-center gap-1 text-[11px] font-bold text-[#23562A] bg-[#D9ECDA] border border-[#ADD0B1] rounded-full px-2.5 py-1">
+            <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"></path></svg>
+            Completado
+          </span>
+        </div>
+        <p class="mt-1 font-mono text-3xl text-ink font-semibold"><span id="score-num">0</span> <span class="text-base text-graphite-soft">de</span> <span id="score-total">0</span></p>
+        <div class="mt-2 h-1.5 rounded-full bg-paper-deep overflow-hidden"><div id="score-bar" class="h-full bg-saffron-strong rounded-full transition-all duration-300" style="width:0%"></div></div>
+        <p class="mt-2 hint">Clasifique correctamente todas las falacias de la guía para completar la actividad.</p>
+      </section>
+
+      <section class="panel-card" aria-label="Leyenda de falacias">
+        <h3 class="panel-title">Leyenda de falacias</h3>
+        <ul id="legend" class="space-y-1.5"></ul>
+      </section>
+
+      <section class="panel-card" aria-label="Marcas del estudiante">
+        <h3 class="panel-title">Marcas</h3>
+        <ul id="marks-list" class="hidden divide-y divide-line/60"></ul>
+        <p id="marks-empty" class="empty">No hay marcas todavía. Seleccione un fragmento del texto para comenzar el análisis.</p>
+      </section>
+
+      <section aria-label="Ficha de desmontaje">
+        <div id="ficha"></div>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="bg-ink text-paper/70 mt-6">
+    <div class="max-w-7xl mx-auto px-4 py-5 flex flex-wrap items-center justify-between gap-3">
+      <p class="text-[12px]">Herramienta de aula para Filosofía y Lógica · Selección, clasificación y análisis de falacias no formales.</p>
+      <button type="button" id="btn-teacher" class="text-[12px] font-semibold text-paper/50 hover:text-[#D99A2B] underline underline-offset-4 decoration-dotted">Modo docente</button>
+    </div>
+  </footer>
+
+  <!-- Modal: picker de falacias -->
+  <div id="picker-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="picker-title">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-panel max-w-lg">
+      <div class="modal-head">
+        <h2 id="picker-title" class="font-display text-xl font-semibold text-ink">Clasificar fragmento</h2>
+        <button type="button" class="icon-btn" data-close-modal aria-label="Cerrar">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </button>
+      </div>
+      <blockquote id="picker-quote" class="picker-quote"></blockquote>
+      <div id="picker-feedback" class="hidden"></div>
+      <div id="picker-options"></div>
+      <div id="picker-teacher-form" class="hidden">
+        <p class="hint mb-3">Los campos se precargan con la plantilla de la falacia elegida. Puede editarlos o usar la plantilla tal cual.</p>
+        <label class="block text-[12px] font-bold text-ink mt-2 mb-1" for="pf-premisa">Premisa explícita</label>
+        <textarea id="pf-premisa" class="input textarea" rows="2"></textarea>
+        <label class="block text-[12px] font-bold text-ink mt-2 mb-1" for="pf-salto">Salto lógico inválido</label>
+        <textarea id="pf-salto" class="input textarea" rows="2"></textarea>
+        <label class="block text-[12px] font-bold text-ink mt-2 mb-1" for="pf-reform">Reformulación válida</label>
+        <textarea id="pf-reform" class="input textarea" rows="2"></textarea>
+        <div class="mt-3 flex flex-wrap gap-2 justify-end">
+          <button type="button" id="btn-pf-back" class="btn-ghost">Volver</button>
+          <button type="button" id="btn-pf-template" class="btn-ghost">Usar plantilla estándar</button>
+          <button type="button" id="btn-pf-save" class="btn-primary">Guardar respuesta</button>
+        </div>
+      </div>
+      <div id="picker-footer" class="hidden mt-3 flex flex-wrap gap-2 justify-end">
+        <button type="button" id="picker-retry" class="btn-ghost">Reintentar</button>
+        <button type="button" id="picker-ver" class="btn-primary">Ver análisis correcto</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: modo docente -->
+  <div id="teach-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="teach-title">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-panel max-w-2xl">
+      <div class="modal-head">
+        <h2 id="teach-title" class="font-display text-xl font-semibold text-ink">Modo docente</h2>
+        <button type="button" class="icon-btn" data-close-modal aria-label="Cerrar">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </button>
+      </div>
+
+      <div id="teach-pin">
+        <p class="hint mb-3">Herramienta para docentes: cree actividades con textos de actualidad, marque las falacias esperadas y genere un código para distribuirlas.</p>
+        <label class="block text-[12px] font-bold text-ink mb-1" for="pin-input">PIN de acceso</label>
+        <div class="flex gap-2">
+          <input id="pin-input" type="text" value="docente" class="input max-w-[200px]" aria-describedby="pin-hint">
+          <button type="button" id="pin-enter" class="btn-primary">Entrar</button>
+        </div>
+        <p id="pin-hint" class="hint mt-1">PIN de acceso: docente</p>
+        <p id="pin-error" class="hidden error mt-1">PIN incorrecto. Intente nuevamente.</p>
+      </div>
+
+      <div id="teach-body" class="hidden">
+        <section id="teach-step1">
+          <h3 class="font-display text-base font-semibold text-ink mb-1">1. Texto de la actividad</h3>
+          <label class="block text-[12px] font-bold text-ink mt-3 mb-1" for="teach-title-input">Título de la actividad</label>
+          <input id="teach-title-input" type="text" class="input" placeholder="Ej.: Editorial del diario de hoy">
+          <label class="block text-[12px] font-bold text-ink mt-3 mb-1" for="teach-text-input">Texto de la actividad</label>
+          <textarea id="teach-text-input" class="input textarea" rows="8" placeholder="Pegue aquí el texto en prosa. Separe los párrafos con una línea en blanco."></textarea>
+          <p class="hint mt-1">Cada párrafo separado por una línea en blanco se convertirá en un párrafo del lector. La selección de fragmentos funciona dentro de un mismo párrafo.</p>
+          <p id="teach-step1-error" class="hidden error mt-2"></p>
+          <div class="mt-3 flex flex-wrap gap-2 justify-end">
+            <button type="button" id="teach-cancel" class="btn-ghost">Cancelar</button>
+            <button type="button" id="teach-continue" class="btn-primary">Continuar</button>
+          </div>
+        </section>
+
+        <section id="teach-step2" class="hidden">
+          <h3 class="font-display text-base font-semibold text-ink mb-1">2. Marcar las falacias</h3>
+          <p class="hint mb-2">Seleccione con el cursor el fragmento que contiene una falacia y presione «Asignar falacia». Elija el tipo y complete la ficha si lo desea. Si no completa la ficha, se usará la plantilla estándar de la falacia.</p>
+          <div id="teach-preview-zone" class="relative bg-paper border border-line rounded-[3px] px-5 py-4 max-h-[300px] overflow-y-auto">
+            <div id="teach-preview-text"></div>
+          </div>
+          <p id="teach-warn" class="hidden error mt-2"></p>
+          <p id="teach-answers-count" class="mt-3 text-[12px] font-bold text-ink">0 fragmentos marcados</p>
+          <ul id="teach-answers" class="mt-1 divide-y divide-line/60"></ul>
+          <p id="teach-answers-empty" class="empty mt-2">Todavía no marcó ningún fragmento.</p>
+          <p id="teach-step2-error" class="hidden error mt-2"></p>
+          <div class="mt-3 flex flex-wrap gap-2 justify-between">
+            <button type="button" id="teach-back1" class="btn-ghost">Volver</button>
+            <button type="button" id="teach-generate" class="btn-primary">Generar código de actividad</button>
+          </div>
+        </section>
+
+        <section id="teach-step3" class="hidden">
+          <h3 class="font-display text-base font-semibold text-ink mb-1">3. Actividad generada</h3>
+          <p class="hint mb-3">Comparta el código para que sus estudiantes carguen la actividad, o exporte el JSON para distribuirla en otros dispositivos.</p>
+          <div class="flex flex-wrap items-center gap-3 bg-paper border border-line rounded-[3px] px-4 py-3">
+            <span id="teach-code" class="font-mono text-2xl font-semibold tracking-wider text-ink">FAL-XXXX</span>
+            <button type="button" id="btn-copy-code" class="btn-ghost">Copiar código</button>
+          </div>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <button type="button" id="btn-copy-json" class="btn-ghost">Copiar JSON</button>
+            <button type="button" id="btn-download-json" class="btn-ghost">Descargar JSON</button>
+          </div>
+          <div class="mt-4 flex flex-wrap gap-2 justify-between">
+            <button type="button" id="teach-new" class="btn-ghost">Crear otra actividad</button>
+            <button type="button" id="teach-close" class="btn-primary">Cerrar</button>
+          </div>
+        </section>
+
+        <section id="teach-saved-sec" class="mt-5 pt-4 border-t border-line">
+          <h3 class="font-display text-base font-semibold text-ink mb-1">Actividades guardadas en este dispositivo</h3>
+          <ul id="teach-saved" class="divide-y divide-line/60"></ul>
+          <p id="teach-saved-empty" class="empty mt-2">Todavía no hay actividades guardadas.</p>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: cargar actividad -->
+  <div id="load-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="load-title">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-panel max-w-md">
+      <div class="modal-head">
+        <h2 id="load-title" class="font-display text-xl font-semibold text-ink">Cargar actividad</h2>
+        <button type="button" class="icon-btn" data-close-modal aria-label="Cerrar">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </button>
+      </div>
+      <label class="block text-[12px] font-bold text-ink mb-1" for="load-code-input">Código de actividad</label>
+      <div class="flex gap-2">
+        <input id="load-code-input" type="text" class="input font-mono tracking-wider max-w-[180px]" placeholder="FAL-XXXX">
+        <button type="button" id="btn-load-submit" class="btn-primary">Cargar</button>
+      </div>
+      <p class="hint mt-1">Ingrese el código generado por el modo docente.</p>
+      <div class="divider"><span>Importar actividad</span></div>
+      <label class="block text-[12px] font-bold text-ink mb-1" for="load-json-input">JSON exportado</label>
+      <textarea id="load-json-input" class="input textarea font-mono text-xs" rows="4" placeholder="Pegue aquí el JSON exportado por el modo docente…"></textarea>
+      <button type="button" id="btn-import" class="btn-ghost mt-2">Importar</button>
+      <p id="load-error" class="hidden error mt-2"></p>
+    </div>
+  </div>
+
+  <div id="toasts" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[70] space-y-2 w-max max-w-[92vw]" aria-live="polite"></div>
+
+  <script>
+  (function () {
+    'use strict';
+
+    /* ================= Utilidades ================= */
+    function $(sel, root) { return (root || document).querySelector(sel); }
+    function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+    function uid() { return 'm' + Math.random().toString(36).slice(2, 10); }
+    function truncate(s, n) { return s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s; }
+    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+    function lsGet(key) { try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; } }
+    function lsSet(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch (e) { return false; } }
+    function lsDel(key) { try { localStorage.removeItem(key); } catch (e) {} }
+    function copyText(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text).then(function () { return true; }).catch(function () { return legacyCopy(text); });
+      }
+      return Promise.resolve(legacyCopy(text));
+    }
+    function legacyCopy(text) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      return ok;
+    }
+
+    /* ================= Registro de falacias ================= */
+    var FALLACY_KEYS = ['adHominem', 'adBaculum', 'adPopulum', 'strawman', 'falseDilemma', 'postHoc'];
+    var CATEGORIES = ['Ataques personales', 'Apelaciones indebidas', 'Razonamiento defectuoso'];
+    var FALLACIES = {
+      adHominem: {
+        name: 'Ad hominem', alias: 'Ataque a la persona', category: 'Ataques personales', hue: 'rose',
+        definition: 'Descalifica el argumento atacando a la persona que lo sostiene —su carácter, sus motivos o su historia— en lugar de responder a su contenido.',
+        whyNot: 'En este fragmento no hay un ataque personal que descalifique a quien argumenta: el error está en otro lugar del razonamiento.',
+        hint: 'El problema está en la persona que defiende la idea, no en la idea misma.',
+        template: {
+          premisa: 'La persona que sostiene la idea tiene un defecto o un interés personal.',
+          salto: 'De la conducta o los motivos de una persona no se sigue que su argumento sea falso: la validez de una idea no depende de quién la sostiene.',
+          reformulacion: 'Evaluar el argumento por sus propios méritos: ¿la evidencia que presenta respalda la conclusión?'
+        }
+      },
+      adBaculum: {
+        name: 'Ad baculum', alias: 'Apelación al miedo', category: 'Apelaciones indebidas', hue: 'violet',
+        definition: 'Intenta convencer mediante el miedo o la amenaza de consecuencias negativas, en lugar de ofrecer razones.',
+        whyNot: 'Este fragmento no genera miedo ni amenaza consecuencias: la presión que usa es de otro tipo o el error es estructural.',
+        hint: 'El peso del argumento está en el miedo o la amenaza de consecuencias.',
+        template: {
+          premisa: 'Si no se acepta la conclusión, ocurrirá una consecuencia grave o temible.',
+          salto: 'Que una consecuencia sea temible no demuestra que la conclusión sea verdadera: el miedo no es evidencia.',
+          reformulacion: 'Sustituir la amenaza por razones: presentar datos y argumentos que muestren por qué la conclusión es la opción más razonable.'
+        }
+      },
+      adPopulum: {
+        name: 'Ad populum', alias: 'Apelación a la mayoría', category: 'Apelaciones indebidas', hue: 'amber',
+        definition: 'Afirma que algo es verdadero o bueno porque mucha gente lo cree, lo usa o lo elige.',
+        whyNot: 'Este fragmento no apela a la mayoría: no menciona cuánta gente cree, usa o elige algo.',
+        hint: 'El peso del argumento está en cuánta gente hace o cree lo mismo.',
+        template: {
+          premisa: 'Muchas personas creen, usan o eligen X.',
+          salto: 'La cantidad de personas que aceptan X no prueba que X sea verdadero o conveniente: la verdad no se decide por votación.',
+          reformulacion: 'Apoyar X con evidencia independiente: estudios, datos o razones que valgan aunque nadie más esté de acuerdo.'
+        }
+      },
+      strawman: {
+        name: 'Hombre de paja', alias: 'Distorsión del argumento', category: 'Razonamiento defectuoso', hue: 'teal',
+        definition: 'Presenta una versión distorsionada o exagerada del argumento contrario y la refuta, en lugar de responder al argumento real.',
+        whyNot: 'Este fragmento no distorsiona una posición ajena: no hay un argumento contrario reformulado de manera injusta.',
+        hint: 'Se describe mal lo que el otro realmente propuso.',
+        template: {
+          premisa: 'El oponente sostiene una posición distorsionada, más débil o extrema.',
+          salto: 'Refutar esa versión distorsionada no refuta la posición real del oponente: la refutación debe dirigirse al argumento tal como fue formulado.',
+          reformulacion: 'Exponer con precisión la posición contraria y responder a su mejor versión, citando sus términos exactos.'
+        }
+      },
+      falseDilemma: {
+        name: 'Falso dilema', alias: 'Falsa dicotomía', category: 'Razonamiento defectuoso', hue: 'blue',
+        definition: 'Presenta solo dos opciones posibles cuando existen alternativas intermedias o adicionales.',
+        whyNot: 'Este fragmento no reduce las opciones a dos: no presenta una disyuntiva forzada entre solo dos caminos.',
+        hint: 'Se presentan solo dos caminos cuando hay más opciones.',
+        template: {
+          premisa: 'Solo existen dos opciones: A o B.',
+          salto: 'Reducir el campo a dos opciones esconde alternativas intermedias o complementarias: la conclusión depende de una premisa que no está justificada.',
+          reformulacion: 'Enumerar y evaluar todas las opciones plausibles antes de elegir, y justificar por qué se descartan las demás.'
+        }
+      },
+      postHoc: {
+        name: 'Post hoc ergo propter hoc', alias: 'Falsa causa', category: 'Razonamiento defectuoso', hue: 'green',
+        definition: 'Concluye que un hecho causó otro solo porque ocurrió antes en el tiempo.',
+        whyNot: 'Este fragmento no deduce una causa de una simple sucesión temporal: no hay un antes y un después presentados como causa y efecto.',
+        hint: 'Se confunde la sucesión temporal con la relación de causa y efecto.',
+        template: {
+          premisa: 'A ocurrió antes que B.',
+          salto: 'Que A preceda a B no demuestra que A cause B: pueden coincidir por azar o existir una tercera causa común.',
+          reformulacion: 'Mostrar el mecanismo causal y descartar explicaciones alternativas antes de afirmar la relación.'
+        }
+      }
+    };
+
+    /* ================= Actividades incorporadas (16 fragmentos, 6 tipos) ================= */
+    var BUILTIN_ACTIVITIES = [{"id":"falacias-1","title":"Debate electoral: mano a mano por la intendencia","context":"Debate televisado · Programa político, canal de aire","paragraphs":["MODERADOR: Señoras y señores, bienvenidos al debate por la intendencia. Cada candidato contará con dos minutos por bloque. Comenzamos con la economía municipal: ¿cómo financiarán los proyectos prometidos?","CARLA MÉNDEZ: Gracias, moderador. Nuestro plan se financia con una reforma del impuesto inmobiliario y con la eliminación de partidas duplicadas. Es un plan realista y auditado.","RICARDO SOSA: Es curioso que hable de auditorías, porque su gestión anterior terminó con denuncias por contratos sobrepreciados. Una persona que no puede rendir cuentas de su propia gestión no tiene autoridad para hablar de finanzas municipales.","CARLA MÉNDEZ: Las denuncias fueron desestimadas por la justicia, y usted lo sabe. Pero vamos a lo importante: mi propuesta reduce el gasto político un veinte por ciento. ¿Qué propone usted?","RICARDO SOSA: Ella propone lo mismo de siempre: subir impuestos. Su reforma inmobiliaria es, en el fondo, un aumento encubierto para todos los vecinos.","CARLA MÉNDEZ: No es cierto, y la propuesta está publicada. Tampoco ha dicho cómo financiará sus promesas.","RICARDO SOSA: Mi equipo demostró que se puede gobernar con menos recursos: en la provincia vecina redujimos el déficit sin tocar un solo impuesto.","CARLA MÉNDEZ: Eso fue posible gracias a un crédito internacional, no a su gestión. ¿Acepta o no un debate cara a cara sobre los números?","RICARDO SOSA: Mire, yo no vine a hacer cálculos de contador. La señora Méndez es una burócrata de escritorio que nunca trabajó en un barrio; no entiende lo que es vivir con miedo.","CARLA MÉNDEZ: Eso es descalificarme a mí porque no puede descalificar mi plan. Para cerrar: o implementamos la reforma que proponemos, o el municipio seguirá gastando de más y recortando servicios.","MODERADOR: Cerramos el bloque económico. Gracias a los dos candidatos."],"answers":[{"paraIndex":2,"start":129,"end":245,"fallacy":"adHominem","ficha":{"premisa":"La gestión anterior de Méndez terminó con denuncias por contratos sobrepreciados, de modo que no puede rendir cuentas y carece de autoridad para hablar de finanzas.","salto":"Aunque las denuncias fueran ciertas, de ahí no se sigue que su plan financiero sea malo: la calidad de una propuesta se evalúa por su contenido y su evidencia, no por la reputación de quien la presenta.","reformulacion":"Analizar el plan de Méndez por sus propios méritos: si la reforma inmobiliaria es viable, si las partidas duplicadas existen y si los números cierran, y responder a eso."}},{"paraIndex":4,"start":14,"end":151,"fallacy":"strawman","ficha":{"premisa":"La propuesta de Méndez consiste, en el fondo, en subir impuestos: un aumento encubierto para todos los vecinos.","salto":"Méndez propuso una reforma con dos partes: reordenar el impuesto inmobiliario y eliminar partidas duplicadas. Presentarla como un simple aumento encubierto la distorsiona, y refutar esa versión no responde al plan real.","reformulacion":"Citar los términos exactos de la propuesta y objetar sus puntos concretos: qué partidas se eliminarían y cómo afectaría el reordenamiento a cada sector."}},{"paraIndex":8,"start":61,"end":179,"fallacy":"adHominem","ficha":{"premisa":"Méndez es una funcionaria de escritorio, ajena a la vida de barrio, y por eso no entiende la inseguridad.","salto":"Aunque esa descripción fuera cierta, de ella no se sigue que sus propuestas de seguridad sean incorrectas: se descalifica a la persona para no discutir sus ideas ni responder la pregunta sobre el financiamiento.","reformulacion":"Responder a la pregunta concreta (cómo financiar las promesas) presentando el propio plan y sus fuentes de recursos."}},{"paraIndex":9,"start":92,"end":196,"fallacy":"falseDilemma","ficha":{"premisa":"Solo hay dos caminos: aprobar esta reforma o seguir con gasto excesivo y recortes de servicios.","salto":"Existen alternativas intermedias: otras reformas, ajustes parciales, auditorías o cambios en la priorización del gasto. El dilema las esconde y obliga a elegir entre dos opciones que no son las únicas.","reformulacion":"Presentar la reforma como una opción entre varias y justificar por qué es la mejor con datos, admitiendo explícitamente las alternativas."}}]},{"id":"falacias-2","title":"Publicidad: SegurVida, la protección que su familia merece","context":"Guion publicitario radial · Productora audiovisual","paragraphs":["VOZ EN OFF: ¿Su familia está preparada para lo inesperado? Cada año, miles de hogares pierden sus bienes en un incendio, un robo o una inundación. ¿Va a esperar a que le pase a usted para decidir?","VOZ EN OFF: Con SegurVida, la protección que su familia merece, usted duerme tranquilo sabiendo que estamos a un llamado de distancia. Miles de familias ya eligieron SegurVida y ninguna se arrepintió.","VOZ EN OFF: Porque hay dos caminos: contratar SegurVida hoy, o quedarse sin protección el día que la necesite. Llame ya al 0800-SEGURVIDA; la llamada es gratuita y el asesoramiento, inmediato."],"answers":[{"paraIndex":0,"start":59,"end":196,"fallacy":"adBaculum","ficha":{"premisa":"Los siniestros ocurren con frecuencia y cualquiera puede sufrirlos, así que hay que decidir ya.","salto":"Que los riesgos existan no prueba que este seguro sea la única respuesta adecuada: el miedo al desastre se usa para empujar la compra sin comparar coberturas ni costos.","reformulacion":"Explicar qué cubre la póliza, cuánto cuesta y por qué conviene frente a las alternativas del mercado."}},{"paraIndex":1,"start":135,"end":200,"fallacy":"adPopulum","ficha":{"premisa":"Muchas familias ya contrataron SegurVida y ninguna se arrepintió.","salto":"Que muchos lo hayan elegido no demuestra que sea el mejor seguro: la cantidad de clientes no dice nada sobre coberturas, precios ni siniestros no cubiertos.","reformulacion":"Mostrar condiciones concretas de la póliza, estadísticas de satisfacción con metodología conocida y comparación de precios."}},{"paraIndex":2,"start":19,"end":109,"fallacy":"falseDilemma","ficha":{"premisa":"Solo existen dos posibilidades: contratar SegurVida hoy o quedarse sin protección.","salto":"No contratar esta póliza no equivale a quedar sin protección: existen otras aseguradoras, otros productos y otras formas de previsión. El dilema es falso.","reformulacion":"Presentar la oferta como una alternativa más y explicar sus ventajas frente a otras opciones del mercado."}}]},{"id":"falacias-3","title":"Hilo en redes: ¿la homeopatía funciona?","context":"Hilo de discusión en una red social · Usuarios A, B, C y D","paragraphs":["@usuarioA: Tengo tos desde hace tres semanas y la médica me recetó un jarabe que no me hizo nada. Una amiga me recomendó una tintura homeopática. Tomé la tintura y a los dos días se me pasó. La homeopatía funciona.","@usuarioB: Claro que funciona, es medicina natural de verdad. Yo la uso desde hace años y nunca me enfermé gravemente.","@usuarioC: Ojo, @usuarioB: usted repite lo que dice porque está pagado por la farmacéutica que vende esos frasquitos. No le crean.","@usuarioA: Yo investigué bastante antes de probarla y en mi grupo de natación la usan todos: mi compañera de pileta, la profesora, el de la boletería... Todo el grupo la usa y les va de maravilla.","@usuarioD: Antes de opinar, les dejo un dato: la homeopatía no tiene ensayos clínicos que demuestren eficacia por encima del placebo. La ciencia se hace con estudios, no con anécdotas.","@usuarioA: Bueno, la ciencia también se equivoca. Cada uno con lo suyo; yo no le hago mal a nadie."],"answers":[{"paraIndex":0,"start":146,"end":190,"fallacy":"postHoc","ficha":{"premisa":"La tos desapareció dos días después de tomar la tintura, por lo tanto la tintura la curó.","salto":"La sucesión temporal no prueba causalidad: la tos pudo ceder por el tiempo, por el descanso o por cualquier otro factor. Sin mecanismo ni comparación controlada, la atribución es injustificada.","reformulacion":"Sostener la eficacia con evidencia controlada: ensayos clínicos que comparen la tintura contra un placebo en grupos equivalentes."}},{"paraIndex":2,"start":27,"end":116,"fallacy":"adHominem","ficha":{"premisa":"El usuario B defiende la homeopatía porque recibe dinero de la industria farmacéutica.","salto":"Aunque tuviera un interés económico, eso no refuta sus argumentos: la validez de una afirmación se juzga por su evidencia, no por los motivos de quien la dice. Además, la acusación no está probada.","reformulacion":"Responder con datos: señalar estudios o falencias en la evidencia presentada por B, sin suponer sus intenciones."}},{"paraIndex":3,"start":54,"end":196,"fallacy":"adPopulum","ficha":{"premisa":"Todo el grupo de natación usa homeopatía y a todos les va de maravilla, así que funciona.","salto":"Que un grupo pequeño la use y crea que le va bien no prueba su eficacia: los testimonios no controlan el efecto placebo, la evolución natural ni el sesgo de selección.","reformulacion":"Presentar estudios comparativos que midan resultados reales y descarten el efecto placebo."}}]},{"id":"falacias-4","title":"Artículo de opinión: Menos presupuesto, más inseguridad","context":"Columna de opinión · Sección local, diario de la ciudad","paragraphs":["Desde que el municipio recortó el presupuesto de seguridad en marzo, la delincuencia subió un treinta por ciento. La relación es evidente: menos policías, más robos.","La intendenta defiende el recorte diciendo que el dinero se reasigna a programas sociales. Pero lo que en realidad quiere es dejar las calles sin vigilancia para que la ciudad caiga en manos de los delincuentes.","No podemos seguir dando vueltas: o destinamos más recursos a la policía, o construimos más cárceles. No hay una tercera opción.","Los vecinos de mi barrio lo saben mejor que nadie: hace dos meses me robaron el auto a dos cuadras de casa. Cada semana escuchamos sirenas.","Ningún programa social paga la angustia de una familia que tiene miedo de salir a la calle. En lugar de recortar, la intendenta debería explicar por qué su prioridad no es la seguridad."],"answers":[{"paraIndex":0,"start":0,"end":113,"fallacy":"postHoc","ficha":{"premisa":"El recorte presupuestario de marzo fue seguido por un aumento del treinta por ciento en la delincuencia, así que el recorte lo causó.","salto":"La coincidencia temporal no basta: el aumento pudo deberse a la crisis económica, a cambios estacionales o a otros factores. Falta evidencia del mecanismo causal y faltan datos comparativos.","reformulacion":"Comparar la evolución de la delincuencia con y sin recortes en ciudades similares, controlando otras variables, antes de atribuir la causa."}},{"paraIndex":1,"start":96,"end":210,"fallacy":"strawman","ficha":{"premisa":"La intendenta, al reasignar los fondos, busca deliberadamente desproteger la ciudad y entregarla a los delincuentes.","salto":"La intendenta propuso reasignar el dinero a programas sociales; atribuirle la intención de dejar las calles sin vigilancia distorsiona su propuesta y refuta una versión que ella no sostuvo.","reformulacion":"Citar la propuesta oficial y discutirla: ¿los programas sociales reemplazan o complementan la seguridad? ¿Qué evidencia hay sobre su efecto en la delincuencia?"}},{"paraIndex":2,"start":33,"end":127,"fallacy":"falseDilemma","ficha":{"premisa":"Solo hay dos respuestas posibles: destinar más recursos a la policía o construir más cárceles.","salto":"Existen otras medidas (prevención social, iluminación, justicia más rápida, programas de empleo) que el dilema omite; forzar la disyuntiva esconde esas opciones.","reformulacion":"Plantear el problema de la inseguridad con su abanico real de medidas y evaluar combinaciones y costos de cada una."}}]},{"id":"falacias-5","title":"Discurso de campaña: el cierre de la lista «Futuro ya»","context":"Discurso de cierre de campaña · Acto partidario","paragraphs":["Vecinas y vecinos: el pueblo quiere cambio, y el pueblo siempre tiene razón. Lo vemos en cada caminata, en cada conversación de almacén: todos quieren lo mismo que nosotros.","No voy a mentirles: si no cambiamos el rumbo ahora, la ciudad va a la ruina. Las arcas están vacías, las escuelas se caen y los comercios cierran. Si seguimos así, nuestros hijos no tendrán futuro.","Por eso el desafío es claro: o votan nuestro plan de transformación, o seguimos en el fracaso de siempre. No hay término medio, no hay atajos.","Nuestro plan es simple: industria, escuela y trabajo. Empezamos por el empleo joven y terminamos con los privilegios de siempre.","El domingo no eligen a un partido: eligen entre el futuro y la ruina. Los espero en la escuela 4 a las dieciocho. ¡Futuro ya!"],"answers":[{"paraIndex":0,"start":19,"end":75,"fallacy":"adPopulum","ficha":{"premisa":"La mayoría de la gente quiere cambio y, como el pueblo siempre tiene razón, el cambio que proponemos es correcto.","salto":"Que mucha gente quiera un cambio no demuestra que este plan sea el correcto: la popularidad de una demanda no es evidencia de la calidad de una propuesta.","reformulacion":"Defender el plan con sus contenidos: qué medidas concretas propone y qué resultados espera, más allá de lo que la gente desee."}},{"paraIndex":1,"start":20,"end":75,"fallacy":"adBaculum","ficha":{"premisa":"Si no se adopta este plan, la ciudad entrará en la ruina.","salto":"La amenaza de ruina no prueba que este plan sea el adecuado: el miedo al futuro no reemplaza el análisis de las medidas concretas ni de sus consecuencias.","reformulacion":"Explicar con números por qué la situación actual es insostenible y cómo cada medida del plan revierte cada problema."}},{"paraIndex":2,"start":29,"end":142,"fallacy":"falseDilemma","ficha":{"premisa":"Solo hay dos opciones: votar este plan o seguir en el fracaso de siempre.","salto":"Otros partidos y otros planes son alternativas reales que el dilema borra: presentar la elección como un solo plan contra el fracaso elimina opciones legítimas.","reformulacion":"Comparar el plan propio con los de los otros candidatos, señalar diferencias concretas y admitir que hay más de dos resultados posibles."}}]}];
+
+    /* ================= Estado ================= */
+    var state = {
+      activities: {},        // actividades del docente por código
+      activity: null,        // actividad activa
+      currentId: null,
+      answers: [],           // respuestas esperadas de la actividad activa
+      marks: [],             // marcas del estudiante
+      picker: null,          // contexto del picker
+      teacher: null,         // borrador del modo docente
+      panelCollapsed: false,
+      wasCompleted: false
+    };
+
+    /* ================= Persistencia ================= */
+    function progressKey(id) { return 'falacias-progress-' + id; }
+    function saveTeacherStore() {
+      var list = Object.keys(state.activities).map(function (k) { return state.activities[k]; });
+      lsSet('falacias-activities', list);
+    }
+    function loadTeacherStore() {
+      var list = lsGet('falacias-activities');
+      if (Array.isArray(list)) {
+        list.forEach(function (a) { if (a && a.id) state.activities[a.id] = a; });
+      }
+    }
+    function persist() {
+      if (!state.currentId) return;
+      lsSet(progressKey(state.currentId), { marks: state.marks });
+      lsSet('falacias-last', state.currentId);
+    }
+    function restoreMarks(id) {
+      var d = lsGet(progressKey(id));
+      var act = getActivity(id);
+      state.marks = [];
+      if (d && Array.isArray(d.marks)) {
+        state.marks = d.marks.filter(function (m) {
+          if (!m || typeof m !== 'object') return false;
+          var para = act && act.paragraphs[m.paraIndex];
+          return typeof m.paraIndex === 'number' && typeof m.start === 'number' && typeof m.end === 'number' &&
+                 typeof m.fallacy === 'string' && FALLACIES[m.fallacy] && para &&
+                 m.start >= 0 && m.end <= para.length && m.start < m.end;
+        });
+      }
+      state.marks.sort(byPosition);
+    }
+
+    /* ================= Consultas de actividades ================= */
+    function availableIds() {
+      return BUILTIN_ACTIVITIES.map(function (a) { return a.id; })
+        .concat(Object.keys(state.activities).sort());
+    }
+    function getActivity(id) {
+      for (var i = 0; i < BUILTIN_ACTIVITIES.length; i++) {
+        if (BUILTIN_ACTIVITIES[i].id === id) return BUILTIN_ACTIVITIES[i];
+      }
+      return state.activities[id] || null;
+    }
+    function shortTitle(title) {
+      var parts = title.split(':');
+      return parts[0].trim();
+    }
+    function byPosition(a, b) { return a.paraIndex - b.paraIndex || a.start - b.start; }
+    function paraText(paraIndex) { return state.activity.paragraphs[paraIndex] || ''; }
+    function answerText(a) { return paraText(a.paraIndex).slice(a.start, a.end); }
+    function getMark(id) {
+      for (var i = 0; i < state.marks.length; i++) { if (state.marks[i].id === id) return state.marks[i]; }
+      return null;
+    }
+
+    /* ================= Motor de selección: rango a desplazamientos ================= */
+    function getParagraphEl(node, container) {
+      while (node && node !== container && node.nodeType === 1) {
+        if (node.classList && node.classList.contains('para')) return node;
+        node = node.parentNode;
+      }
+      return null;
+    }
+    function textNodeOffset(paraEl, target) {
+      var walker = document.createTreeWalker(paraEl, NodeFilter.SHOW_TEXT);
+      var pos = 0, tn;
+      while ((tn = walker.nextNode())) {
+        if (tn === target) return pos;
+        pos += tn.textContent.length;
+      }
+      return -1;
+    }
+    function offsetOfNode(paraEl, node, offset) {
+      if (node.nodeType === 3) return textNodeOffset(paraEl, node) + offset;
+      if (node.nodeType === 1) {
+        var inner = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+        var texts = [], t;
+        while ((t = inner.nextNode())) texts.push(t);
+        if (!texts.length) return -1;
+        if (offset >= node.childNodes.length) {
+          var last = texts[texts.length - 1];
+          return textNodeOffset(paraEl, last) + last.textContent.length;
+        }
+        return textNodeOffset(paraEl, texts[0]);
+      }
+      return -1;
+    }
+    function getSelectionOffsets(container) {
+      var sel = window.getSelection();
+      if (!sel || sel.isCollapsed || sel.rangeCount === 0) return null;
+      var range = sel.getRangeAt(0);
+      var para = getParagraphEl(range.startContainer, container);
+      if (!para || getParagraphEl(range.endContainer, container) !== para) return null;
+      var start = offsetOfNode(para, range.startContainer, range.startOffset);
+      var end = offsetOfNode(para, range.endContainer, range.endOffset);
+      if (start < 0 || end < 0 || start >= end) return null;
+      var text = para.textContent;
+      if (end > text.length) return null;
+      return { paraIndex: parseInt(para.getAttribute('data-para-index'), 10), start: start, end: end };
+    }
+    function makeSelectionEngine(container, opts) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'floating-btn';
+      btn.textContent = opts.label;
+      btn.setAttribute('aria-label', opts.ariaLabel || opts.label);
+      btn.style.display = 'none';
+      container.appendChild(btn);
+      var offsets = null;
+
+      function hide() { btn.style.display = 'none'; }
+      function maybeShow() {
+        offsets = getSelectionOffsets(container);
+        if (!offsets) { hide(); return; }
+        var sel = window.getSelection();
+        var range = sel.getRangeAt(0);
+        var rect = range.getBoundingClientRect();
+        var cRect = container.getBoundingClientRect();
+        var left = rect.left - cRect.left + rect.width / 2;
+        var top = rect.bottom - cRect.top + 8;
+        btn.style.left = clamp(left - btn.offsetWidth / 2, 8, container.clientWidth - btn.offsetWidth - 8) + 'px';
+        btn.style.top = (top + container.scrollTop) + 'px';
+        btn.style.display = '';
+      }
+
+      container.addEventListener('mouseup', function () { window.setTimeout(maybeShow, 0); });
+      container.addEventListener('keyup', maybeShow);
+      window.addEventListener('scroll', hide, true);
+      window.addEventListener('resize', hide);
+
+      btn.addEventListener('click', function () {
+        hide();
+        if (offsets) opts.onPick(offsets);
+      });
+      return { hide: hide };
+    }
+
+    /* ================= Renderizado ================= */
+    function renderReader() {
+      var act = state.activity;
+      $('#reader-title').textContent = act.title;
+      $('#reader-context').textContent = act.context;
+      var marksByPara = {};
+      state.marks.forEach(function (m) {
+        (marksByPara[m.paraIndex] = marksByPara[m.paraIndex] || []).push(m);
+      });
+      Object.keys(marksByPara).forEach(function (k) { marksByPara[k].sort(byPosition); });
+      $('#reader-text').innerHTML = act.paragraphs.map(function (text, i) {
+        var marks = marksByPara[i] || [];
+        var parts = [];
+        var cursor = 0;
+        marks.forEach(function (m) {
+          if (m.start > cursor) parts.push({ t: text.slice(cursor, m.start) });
+          parts.push({ mark: m, t: text.slice(m.start, m.end) });
+          cursor = m.end;
+        });
+        if (cursor < text.length) parts.push({ t: text.slice(cursor) });
+        var inner = parts.map(function (p) {
+          if (p.mark) {
+            return '<mark class="hl hl-' + FALLACIES[p.mark.fallacy].hue + '" data-mark-id="' + p.mark.id +
+              '" tabindex="0" role="button" aria-label="Marca de falacia: ' + esc(FALLACIES[p.mark.fallacy].name) + '">' +
+              esc(p.t) + '</mark>';
+          }
+          return esc(p.t);
+        }).join('');
+        return '<div class="para relative" data-para-index="' + i + '">' +
+          '<span class="para-num hidden md:block absolute -left-9 top-1 font-mono text-[11px] text-graphite-soft select-none" aria-hidden="true">' + (i + 1) + '</span>' +
+          '<p class="para-text leading-7 text-[15.5px] text-graphite">' + inner + '</p>' +
+          '</div>';
+      }).join('');
+    }
+
+    function renderTabs() {
+      var ids = availableIds();
+      $('#tabs').innerHTML = ids.map(function (id) {
+        var act = getActivity(id);
+        var label = /^FAL-/.test(id) ? id : shortTitle(act.title);
+        return '<button type="button" class="tab' + (id === state.currentId ? ' tab-active' : '') +
+          '" data-act-id="' + id + '" title="' + esc(act.title) + '">' + esc(label) + '</button>';
+      }).join('');
+    }
+
+    function renderLegend() {
+      $('#legend').innerHTML = FALLACY_KEYS.map(function (k) {
+        var f = FALLACIES[k];
+        return '<li class="flex items-center gap-2">' +
+          '<span class="swatch swatch-' + f.hue + '" aria-hidden="true"></span>' +
+          '<span class="text-[13px] font-semibold text-ink">' + esc(f.name) + '</span>' +
+          '<span class="text-[11px] text-graphite-soft">' + esc(f.alias) + '</span>' +
+          '</li>';
+      }).join('');
+    }
+
+    function markStatus(mark) {
+      if (mark.correct === true) return { text: 'Correcta', cls: 'text-[#23562A]' };
+      if (mark.correct === false) {
+        return { text: 'Incorrecta · ' + mark.attempts + (mark.attempts === 1 ? ' intento' : ' intentos'), cls: 'text-[#8A2B1D]' };
+      }
+      return { text: 'Anotación personal', cls: 'text-graphite-soft' };
+    }
+
+    function renderMarksList() {
+      var sorted = state.marks.slice().sort(byPosition);
+      $('#marks-list').innerHTML = sorted.map(function (m) {
+        var f = FALLACIES[m.fallacy];
+        var st = markStatus(m);
+        return '<li class="py-3">' +
+          '<div class="flex items-center justify-between gap-2">' +
+            '<span class="chip chip-' + f.hue + '">' + esc(f.name) + '</span>' +
+            '<span class="font-mono text-[11px] text-graphite-soft">§' + (m.paraIndex + 1) + '</span>' +
+          '</div>' +
+          '<p class="mt-1 font-mono text-xs leading-5 text-graphite">“' + esc(truncate(paraText(m.paraIndex).slice(m.start, m.end), 72)) + '”</p>' +
+          '<p class="mt-1 text-[11px] font-semibold ' + st.cls + '">' + st.text + '</p>' +
+          '<div class="mt-2 flex flex-wrap gap-2">' +
+            '<button type="button" class="mini" data-act="view" data-id="' + m.id + '">Ver ficha</button>' +
+            '<button type="button" class="mini" data-act="edit" data-id="' + m.id + '">Cambiar etiqueta</button>' +
+            '<button type="button" class="mini mini-danger" data-act="remove" data-id="' + m.id + '">Quitar</button>' +
+          '</div>' +
+          '</li>';
+      }).join('');
+      var hasMarks = sorted.length > 0;
+      $('#marks-list').classList.toggle('hidden', !hasMarks);
+      $('#marks-empty').classList.toggle('hidden', hasMarks);
+      $('#panel-toggle').textContent = state.panelCollapsed ? 'Mostrar panel de análisis' : 'Ocultar panel de análisis';
+    }
+
+    function renderScoreboard() {
+      var expected = state.answers.length;
+      var correct = state.marks.filter(function (m) { return m.correct === true; }).length;
+      $('#score-num').textContent = correct;
+      $('#score-total').textContent = expected;
+      $('#score-bar').style.width = expected ? Math.round(correct / expected * 100) + '%' : '0%';
+      var done = expected > 0 && correct === expected;
+      $('#score-done').classList.toggle('hidden', !done);
+      if (done && !state.wasCompleted) {
+        toast('Actividad completada. Clasificó correctamente todas las falacias de la guía.');
+      }
+      state.wasCompleted = done;
+    }
+
+    function fichaEmptyState() {
+      return '<div class="panel-card">' +
+        '<h3 class="panel-title">Ficha de desmontaje</h3>' +
+        '<p class="empty">La ficha de desmontaje aparecerá aquí cuando clasifique una falacia correctamente o cuando solicite ver el análisis.</p>' +
+        '</div>';
+    }
+
+    function renderFicha(data) {
+      var el = $('#ficha');
+      if (!data) { el.innerHTML = fichaEmptyState(); return; }
+      var f = FALLACIES[data.fallacy];
+      el.innerHTML =
+        '<div class="ficha">' +
+          '<div class="ficha-corner" aria-hidden="true"></div>' +
+          '<div class="ficha-inner">' +
+            '<div class="flex items-center justify-between gap-2">' +
+              '<span class="chip chip-' + f.hue + '">' + esc(f.name) + '</span>' +
+              '<span class="font-mono text-[10px] uppercase tracking-wider text-graphite-soft">Ficha de desmontaje</span>' +
+            '</div>' +
+            '<h3 class="mt-2 font-display text-lg font-semibold text-ink">Tres movimientos del análisis</h3>' +
+            '<blockquote class="ficha-quote">' + esc(data.quote) + '</blockquote>' +
+            '<ol class="ficha-moves">' +
+              '<li><span class="move-num" aria-hidden="true">1</span><div><strong>Premisa explícita</strong><p>' + esc(data.premisa) + '</p></div></li>' +
+              '<li><span class="move-num" aria-hidden="true">2</span><div><strong>Salto lógico inválido</strong><p>' + esc(data.salto) + '</p></div></li>' +
+              '<li><span class="move-num" aria-hidden="true">3</span><div><strong>Reformulación válida</strong><p>' + esc(data.reformulacion) + '</p></div></li>' +
+            '</ol>' +
+            (data.statusNote ? '<p class="ficha-status ' + (data.statusClass || 'status-canonical') + '">' + esc(data.statusNote) + '</p>' : '') +
+          '</div>' +
+        '</div>';
+    }
+
+    function fichaForAnswer(answer, mark) {
+      var ficha = answer.ficha || FALLACIES[answer.fallacy].template;
+      var statusNote = null, statusClass = 'status-canonical';
+      if (mark && mark.correct === true) {
+        statusClass = 'status-ok';
+        statusNote = mark.attempts > 0
+          ? 'Clasificación correcta · Se corrigió en ' + (mark.attempts + 1) + ' intentos.'
+          : 'Clasificación correcta al primer intento.';
+      } else if (mark && mark.correct === false) {
+        statusNote = 'Análisis canónico de la actividad.';
+      }
+      return {
+        fallacy: answer.fallacy,
+        quote: answerText(answer),
+        premisa: ficha.premisa, salto: ficha.salto, reformulacion: ficha.reformulacion,
+        statusNote: statusNote, statusClass: statusClass
+      };
+    }
+
+    function showFichaForMark(mark) {
+      var answer = findExactAnswer(mark.paraIndex, mark.start, mark.end);
+      if (answer) {
+        renderFicha(fichaForAnswer(answer, mark));
+      } else {
+        var tpl = FALLACIES[mark.fallacy].template;
+        renderFicha({
+          fallacy: mark.fallacy,
+          quote: paraText(mark.paraIndex).slice(mark.start, mark.end),
+          premisa: tpl.premisa, salto: tpl.salto, reformulacion: tpl.reformulacion,
+          statusNote: 'Anotación personal: análisis según la plantilla estándar de la falacia.'
+        });
+      }
+      revealFicha();
+    }
+
+    function revealFicha() {
+      if (state.panelCollapsed) {
+        state.panelCollapsed = false;
+        $('#panel').classList.remove('hidden');
+        $('#panel-toggle').textContent = 'Ocultar panel de análisis';
+      }
+      if (window.matchMedia('(max-width: 1023px)').matches) {
+        var f = $('#ficha');
+        if (f) f.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    function renderAll() {
+      renderReader();
+      renderTabs();
+      renderMarksList();
+      renderScoreboard();
+      renderFicha(null);
+    }
+
+    /* ================= Validación: respuesta esperada ================= */
+    function findExactAnswer(paraIndex, start, end) {
+      for (var i = 0; i < state.answers.length; i++) {
+        var a = state.answers[i];
+        if (a.paraIndex === paraIndex && a.start === start && a.end === end) return a;
+      }
+      return null;
+    }
+    function findExpectedAnswer(paraIndex, start, end) {
+      var exact = findExactAnswer(paraIndex, start, end);
+      if (exact) return { answer: exact, snapped: false, ambiguous: false };
+      var cands = [];
+      state.answers.forEach(function (a) {
+        if (a.paraIndex !== paraIndex) return;
+        var inside = a.start >= start && a.end <= end;
+        var contains = a.start <= start && a.end >= end;
+        if (inside || contains) cands.push(a);
+      });
+      if (cands.length === 1) return { answer: cands[0], snapped: true, ambiguous: false };
+      if (cands.length > 1) return { answer: null, snapped: false, ambiguous: true };
+      return { answer: null, snapped: false, ambiguous: false };
+    }
+
+    /* ================= Avisos y notificaciones ================= */
+    var noticeTimer = null;
+    function notice(msg, kind) {
+      var el = $('#notice');
+      el.className = 'notice mb-3 notice-' + (kind || 'info');
+      el.innerHTML = '<span>' + esc(msg) + '</span>' +
+        '<button type="button" class="icon-btn flex-none -my-1 -mr-1" data-dismiss-notice aria-label="Cerrar aviso">' +
+        '<svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>';
+      if (noticeTimer) window.clearTimeout(noticeTimer);
+      noticeTimer = window.setTimeout(function () { el.classList.add('hidden'); }, 7000);
+    }
+    function hideNotice() { $('#notice').classList.add('hidden'); }
+
+    function teachWarn(msg) {
+      var el = $('#teach-warn');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      window.setTimeout(function () { el.classList.add('hidden'); }, 6000);
+    }
+
+    function toast(msg, kind) {
+      var box = $('#toasts');
+      var el = document.createElement('div');
+      el.className = 'toast toast-' + (kind || 'ok');
+      el.setAttribute('role', 'status');
+      el.textContent = msg;
+      box.appendChild(el);
+      window.setTimeout(function () {
+        el.classList.add('toast-out');
+        window.setTimeout(function () { el.remove(); }, 350);
+      }, 4200);
+    }
+
+    /* ================= Picker de falacias ================= */
+    function renderPickerOptions() {
+      $('#picker-options').innerHTML = CATEGORIES.map(function (cat) {
+        var items = FALLACY_KEYS.filter(function (k) { return FALLACIES[k].category === cat; });
+        return '<div class="picker-cat">' +
+          '<p class="picker-cat-name">' + esc(cat) + '</p>' +
+          items.map(function (k) {
+            var f = FALLACIES[k];
+            return '<button type="button" class="pick-option" data-fallacy="' + k + '">' +
+              '<span class="chip chip-' + f.hue + '">' + esc(f.name) + '</span>' +
+              '<span class="pick-alias">' + esc(f.alias) + '</span>' +
+              '<span class="pick-def">' + esc(f.definition) + '</span>' +
+              '</button>';
+          }).join('') +
+          '</div>';
+      }).join('');
+    }
+
+    function pickerQuoteText(ctx) {
+      var paras = ctx.mode === 'teacher' ? state.teacher.paragraphs : state.activity.paragraphs;
+      return (paras[ctx.paraIndex] || '').slice(ctx.start, ctx.end);
+    }
+
+    function openPicker(ctx) {
+      state.picker = ctx;
+      var title = 'Clasificar fragmento';
+      if (ctx.mode === 'teacher') title = ctx.answerIndex != null ? 'Editar respuesta' : 'Asignar falacia';
+      else if (ctx.markId) title = 'Cambiar etiqueta';
+      $('#picker-title').textContent = title;
+      $('#picker-quote').textContent = '“' + pickerQuoteText(ctx) + '”';
+      $('#picker-feedback').classList.add('hidden');
+      $('#picker-teacher-form').classList.add('hidden');
+      $('#picker-footer').classList.add('hidden');
+      $('#picker-options').classList.remove('hidden');
+      renderPickerOptions();
+      openModal($('#picker-modal'));
+    }
+
+    function closePicker() { closeModal($('#picker-modal')); }
+
+    /* Selección de una falacia en el picker */
+    function onPickOption(e) {
+      var btn = e.target.closest ? e.target.closest('.pick-option') : null;
+      if (!btn) return;
+      var fallacyId = btn.getAttribute('data-fallacy');
+      var ctx = state.picker;
+      if (!ctx) return;
+      if (ctx.mode === 'teacher') showTeacherFichaForm(fallacyId);
+      else handleStudentPick(fallacyId);
+    }
+
+    /* ----- Flujo del estudiante ----- */
+    function handleStudentPick(fallacyId) {
+      var ctx = state.picker;
+      var expected = findExpectedAnswer(ctx.paraIndex, ctx.start, ctx.end);
+      if (expected.ambiguous) {
+        closePicker();
+        notice('El fragmento seleccionado incluye más de una falacia de la guía. Seleccione cada una por separado.', 'warn');
+        return;
+      }
+      var answer = expected.answer;
+      var mark = ctx.markId ? getMark(ctx.markId) : null;
+      if (!mark) {
+        mark = { id: uid(), paraIndex: ctx.paraIndex, start: ctx.start, end: ctx.end, fallacy: fallacyId, correct: null, attempts: 0 };
+        if (answer) { mark.paraIndex = answer.paraIndex; mark.start = answer.start; mark.end = answer.end; }
+        state.marks.push(mark);
+        ctx.markId = mark.id; /* permite «Ver análisis correcto» en el primer intento fallido */
+      } else {
+        mark.fallacy = fallacyId;
+        mark.correct = null;
+      }
+      if (answer) {
+        if (fallacyId === answer.fallacy) {
+          mark.correct = true;
+        } else {
+          mark.correct = false;
+          mark.attempts += 1;
+        }
+      }
+      persist();
+      renderAll();
+      if (answer && mark.correct === true) {
+        closePicker();
+        toast('Clasificación correcta. Se muestra la ficha de desmontaje.');
+        showFichaForMark(mark);
+      } else if (answer && mark.correct === false) {
+        showWrongFeedback(fallacyId, answer, mark);
+      } else {
+        closePicker();
+        toast('El fragmento no coincide con una falacia de la guía. Se guarda como anotación personal y no cuenta en el puntaje.', 'info');
+      }
+    }
+
+    function showWrongFeedback(chosenId, answer, mark) {
+      var chosen = FALLACIES[chosenId];
+      var actual = FALLACIES[answer.fallacy];
+      $('#picker-feedback').innerHTML =
+        '<div class="feedback feedback-error" role="alert">' +
+          '<h3>Clasificación incorrecta</h3>' +
+          '<p>«' + esc(chosen.name) + '» no es la falacia presente en este fragmento.</p>' +
+          '<p>Recuerde: ' + esc(chosen.definition) + '</p>' +
+          '<p>' + esc(chosen.whyNot) + '</p>' +
+          '<p class="pista">Pista: ' + esc(actual.hint) + '</p>' +
+        '</div>';
+      $('#picker-feedback').classList.remove('hidden');
+      $('#picker-options').classList.add('hidden');
+      $('#picker-footer').classList.remove('hidden');
+    }
+
+    /* ----- Flujo del docente: ficha personalizada ----- */
+    function showTeacherFichaForm(fallacyId) {
+      var ctx = state.picker;
+      ctx.fallacyId = fallacyId;
+      var tpl = FALLACIES[fallacyId].template;
+      var existing = null;
+      if (ctx.answerIndex != null) {
+        var a = state.teacher.answers[ctx.answerIndex];
+        if (a && a.ficha) existing = a.ficha;
+      }
+      $('#pf-premisa').value = existing ? existing.premisa : tpl.premisa;
+      $('#pf-salto').value = existing ? existing.salto : tpl.salto;
+      $('#pf-reform').value = existing ? existing.reformulacion : tpl.reformulacion;
+      $('#picker-options').classList.add('hidden');
+      $('#picker-teacher-form').classList.remove('hidden');
+      $('#pf-premisa').focus();
+    }
+
+    function saveTeacherAnswer(useTemplate) {
+      var ctx = state.picker;
+      if (!ctx || !ctx.fallacyId) return;
+      var ficha = null;
+      if (!useTemplate) {
+        var tpl = FALLACIES[ctx.fallacyId].template;
+        var p = $('#pf-premisa').value.trim();
+        var s = $('#pf-salto').value.trim();
+        var r = $('#pf-reform').value.trim();
+        if (p || s || r) {
+          ficha = { premisa: p || tpl.premisa, salto: s || tpl.salto, reformulacion: r || tpl.reformulacion };
+        }
+      }
+      var ans = { paraIndex: ctx.paraIndex, start: ctx.start, end: ctx.end, fallacy: ctx.fallacyId, ficha: ficha };
+      if (ctx.answerIndex != null) state.teacher.answers[ctx.answerIndex] = ans;
+      else state.teacher.answers.push(ans);
+      closePicker();
+      renderTeacher();
+    }
+
+    /* ================= Cambio de actividad ================= */
+    function switchActivity(id, silent) {
+      var act = getActivity(id);
+      if (!act) return;
+      persist();
+      state.activity = act;
+      state.currentId = act.id;
+      state.answers = Array.isArray(act.answers) ? act.answers : [];
+      restoreMarks(act.id);
+      renderAll();
+      if (!silent) toast('Actividad cargada: ' + act.title, 'info');
+    }
+
+    /* ================= Modo docente ================= */
+    function genCode() {
+      var alpha = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      var existing = availableIds();
+      var code;
+      do {
+        code = 'FAL-';
+        for (var i = 0; i < 4; i++) code += alpha[Math.floor(Math.random() * alpha.length)];
+      } while (existing.indexOf(code) >= 0);
+      return code;
+    }
+    function normalizeCode(id) {
+      return (typeof id === 'string' && /^FAL-[A-Z0-9]{4}$/.test(id)) ? id : genCode();
+    }
+    function validFicha(f) {
+      if (f && typeof f === 'object' && typeof f.premisa === 'string' && typeof f.salto === 'string' && typeof f.reformulacion === 'string') {
+        return { premisa: f.premisa, salto: f.salto, reformulacion: f.reformulacion };
+      }
+      return null;
+    }
+    function parseActivityJson(text) {
+      var obj;
+      try { obj = JSON.parse(text); } catch (e) { throw new Error('El texto pegado no es un JSON válido.'); }
+      if (!obj || typeof obj !== 'object' || Array.isArray(obj)) throw new Error('El JSON no corresponde a una actividad válida.');
+      if (typeof obj.title !== 'string' || !obj.title.trim()) throw new Error('La actividad no tiene un título válido.');
+      if (!Array.isArray(obj.paragraphs) || !obj.paragraphs.length || obj.paragraphs.some(function (p) { return typeof p !== 'string'; })) {
+        throw new Error('La actividad no tiene párrafos válidos.');
+      }
+      if (!Array.isArray(obj.answers)) throw new Error('La actividad no tiene respuestas (answers).');
+      var answers = obj.answers.map(function (a, i) {
+        if (!a || typeof a !== 'object' || typeof a.paraIndex !== 'number' || typeof a.start !== 'number' ||
+            typeof a.end !== 'number' || typeof a.fallacy !== 'string' || !FALLACIES[a.fallacy]) {
+          throw new Error('La respuesta ' + (i + 1) + ' no es válida.');
+        }
+        var p = obj.paragraphs[a.paraIndex];
+        if (typeof p !== 'string' || a.start < 0 || a.end > p.length || a.start >= a.end) {
+          throw new Error('Los límites de la respuesta ' + (i + 1) + ' no coinciden con el texto.');
+        }
+        return { paraIndex: a.paraIndex, start: a.start, end: a.end, fallacy: a.fallacy, ficha: validFicha(a.ficha) };
+      });
+      return {
+        id: normalizeCode(obj.id),
+        title: obj.title.trim(),
+        context: typeof obj.context === 'string' && obj.context ? obj.context : 'Actividad importada por el docente',
+        paragraphs: obj.paragraphs.slice(),
+        answers: answers
+      };
+    }
+
+    function renderTeacher() {
+      var t = state.teacher;
+      $('#teach-step1').classList.toggle('hidden', t.step !== 1);
+      $('#teach-step2').classList.toggle('hidden', t.step !== 2);
+      $('#teach-step3').classList.toggle('hidden', t.step !== 3);
+      if (t.step >= 2) {
+        $('#teach-preview-text').innerHTML = t.paragraphs.map(function (text, i) {
+          return '<div class="para relative" data-para-index="' + i + '">' +
+            '<span class="hidden md:block absolute -left-7 top-1 font-mono text-[11px] text-graphite-soft select-none" aria-hidden="true">' + (i + 1) + '</span>' +
+            '<p class="para-text leading-6 text-[14px] text-graphite mb-3">' + esc(text) + '</p>' +
+            '</div>';
+        }).join('');
+        $('#teach-answers-count').textContent = t.answers.length + (t.answers.length === 1 ? ' fragmento marcado' : ' fragmentos marcados');
+        $('#teach-answers').innerHTML = t.answers.map(function (a, i) {
+          var f = FALLACIES[a.fallacy];
+          var quote = t.paragraphs[a.paraIndex].slice(a.start, a.end);
+          return '<li class="py-3">' +
+            '<div class="flex items-center justify-between gap-2">' +
+              '<span class="chip chip-' + f.hue + '">' + esc(f.name) + '</span>' +
+              '<span class="font-mono text-[11px] text-graphite-soft">§' + (a.paraIndex + 1) + '</span>' +
+            '</div>' +
+            '<p class="mt-1 font-mono text-xs leading-5 text-graphite">“' + esc(truncate(quote, 80)) + '”</p>' +
+            '<p class="mt-1 text-[11px] text-graphite-soft">' + (a.ficha ? 'Ficha personalizada' : 'Plantilla estándar') + '</p>' +
+            '<div class="mt-2 flex gap-2">' +
+              '<button type="button" class="mini" data-act="edit" data-i="' + i + '">Editar</button>' +
+              '<button type="button" class="mini mini-danger" data-act="remove" data-i="' + i + '">Quitar</button>' +
+            '</div>' +
+            '</li>';
+        }).join('');
+        var has = t.answers.length > 0;
+        $('#teach-answers').classList.toggle('hidden', !has);
+        $('#teach-answers-empty').classList.toggle('hidden', has);
+      }
+      renderTeacherSaved();
+    }
+
+    function renderTeacherSaved() {
+      var codes = Object.keys(state.activities).sort();
+      $('#teach-saved').innerHTML = codes.map(function (code) {
+        var a = state.activities[code];
+        return '<li class="py-3 flex flex-wrap items-center gap-2">' +
+          '<span class="font-mono text-[13px] font-semibold text-ink">' + esc(code) + '</span>' +
+          '<span class="min-w-0 flex-1 text-[12px] text-graphite truncate">' + esc(a.title) + ' · ' + a.answers.length + (a.answers.length === 1 ? ' falacia' : ' falacias') + '</span>' +
+          '<button type="button" class="mini" data-code="' + code + '" data-act="load">Cargar</button>' +
+          '<button type="button" class="mini mini-danger" data-code="' + code + '" data-act="del">Eliminar</button>' +
+          '</li>';
+      }).join('');
+      var has = codes.length > 0;
+      $('#teach-saved').classList.toggle('hidden', !has);
+      $('#teach-saved-empty').classList.toggle('hidden', has);
+    }
+
+    function exportJson(act) {
+      return JSON.stringify({
+        version: 1,
+        id: act.id,
+        title: act.title,
+        context: act.context,
+        paragraphs: act.paragraphs,
+        answers: act.answers.map(function (a) { return { paraIndex: a.paraIndex, start: a.start, end: a.end, fallacy: a.fallacy, ficha: a.ficha }; })
+      }, null, 2);
+    }
+
+    function downloadJson(act) {
+      var blob = new Blob([exportJson(act)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = act.id + '.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    }
+
+    function openTeacherModal() {
+      state.teacher = null;
+      $('#teach-body').classList.add('hidden');
+      $('#teach-pin').classList.remove('hidden');
+      $('#pin-input').value = 'docente';
+      $('#pin-error').classList.add('hidden');
+      renderTeacherSaved();
+      openModal($('#teach-modal'));
+      $('#pin-input').focus();
+    }
+
+    function startTeacherDraft() {
+      var title = $('#teach-title-input').value.trim();
+      var text = $('#teach-text-input').value;
+      var err = $('#teach-step1-error');
+      if (!title) { err.textContent = 'Ingrese un título para la actividad.'; err.classList.remove('hidden'); return; }
+      var paras = text.split(/\n+/).map(function (s) { return s.trim(); }).filter(Boolean);
+      if (!paras.length) { err.textContent = 'Pegue el texto de la actividad: se necesita al menos un párrafo.'; err.classList.remove('hidden'); return; }
+      err.classList.add('hidden');
+      state.teacher = { title: title, paragraphs: paras, answers: [], step: 2 };
+      renderTeacher();
+    }
+
+    function generateActivity() {
+      var err = $('#teach-step2-error');
+      if (!state.teacher.answers.length) {
+        err.textContent = 'Marque al menos un fragmento antes de generar el código.';
+        err.classList.remove('hidden');
+        return;
+      }
+      err.classList.add('hidden');
+      var answers = state.teacher.answers.slice().sort(byPosition);
+      var code = genCode();
+      var act = {
+        id: code,
+        title: state.teacher.title,
+        context: 'Actividad creada por el docente · Código ' + code,
+        paragraphs: state.teacher.paragraphs.slice(),
+        answers: answers
+      };
+      state.activities[code] = act;
+      saveTeacherStore();
+      state.teacher.lastCode = code;
+      state.teacher.step = 3;
+      $('#teach-code').textContent = code;
+      renderTeacher();
+    }
+
+    function importActivityText(text) {
+      var act;
+      try { act = parseActivityJson(text); } catch (e) {
+        $('#load-error').textContent = e.message;
+        $('#load-error').classList.remove('hidden');
+        return;
+      }
+      if (state.activities[act.id]) {
+        var overwrite = window.confirm('Ya existe una actividad con el código ' + act.id + '. ¿Desea reemplazarla?');
+        if (!overwrite) return;
+      }
+      state.activities[act.id] = act;
+      saveTeacherStore();
+      $('#load-error').classList.add('hidden');
+      closeModal($('#load-modal'));
+      switchActivity(act.id);
+      toast('Actividad importada: ' + act.title + ' (' + act.id + ')', 'info');
+    }
+
+    /* ================= Modales ================= */
+    var openModals = [];
+    function firstFocusable(el) {
+      return $$('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])', el)
+        .filter(function (n) { return !n.disabled && n.getAttribute('aria-hidden') !== 'true' && n.offsetParent !== null; })[0] || null;
+    }
+    function openModal(el) {
+      el.classList.remove('hidden');
+      if (openModals.indexOf(el) < 0) openModals.push(el);
+      document.body.classList.add('overflow-hidden');
+      var f = firstFocusable(el);
+      if (f) f.focus();
+    }
+    function closeModal(el) {
+      var i = openModals.indexOf(el);
+      if (i >= 0) openModals.splice(i, 1);
+      el.classList.add('hidden');
+      if (!openModals.length) document.body.classList.remove('overflow-hidden');
+    }
+    function trapFocusIn(el, e) {
+      if (e.key !== 'Tab' || el.classList.contains('hidden')) return;
+      var f = $$('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])', el)
+        .filter(function (n) { return !n.disabled && n.getAttribute('aria-hidden') !== 'true' && n.offsetParent !== null; });
+      if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+
+    /* ================= Inicialización ================= */
+    function init() {
+      loadTeacherStore();
+
+      var readerEngine = makeSelectionEngine($('#reader-zone'), {
+        label: 'Clasificar',
+        onPick: function (offsets) {
+          for (var i = 0; i < state.marks.length; i++) {
+            var m = state.marks[i];
+            if (m.paraIndex === offsets.paraIndex && offsets.start < m.end && offsets.end > m.start) {
+              notice('El fragmento seleccionado se superpone con una marca existente. Quite o ajuste la marca existente antes de clasificar.', 'warn');
+              return;
+            }
+          }
+          openPicker({ mode: 'student', paraIndex: offsets.paraIndex, start: offsets.start, end: offsets.end });
+        }
+      });
+
+      var teachEngine = makeSelectionEngine($('#teach-preview-zone'), {
+        label: 'Asignar falacia',
+        ariaLabel: 'Asignar falacia al fragmento seleccionado',
+        onPick: function (offsets) {
+          if (!state.teacher) return;
+          for (var i = 0; i < state.teacher.answers.length; i++) {
+            var a = state.teacher.answers[i];
+            if (a.paraIndex === offsets.paraIndex && offsets.start < a.end && offsets.end > a.start) {
+              teachWarn('El fragmento seleccionado se superpone con una respuesta existente. Quite o ajuste la respuesta existente antes de asignar.');
+              return;
+            }
+          }
+          openPicker({ mode: 'teacher', paraIndex: offsets.paraIndex, start: offsets.start, end: offsets.end });
+        }
+      });
+
+      /* Pestañas */
+      $('#tabs').addEventListener('click', function (e) {
+        var btn = e.target.closest('.tab');
+        if (!btn) return;
+        switchActivity(btn.getAttribute('data-act-id'));
+      });
+
+      /* Marcas: clic para ver la ficha */
+      $('#reader-text').addEventListener('click', function (e) {
+        var el = e.target.closest ? e.target.closest('mark.hl') : null;
+        if (!el) return;
+        var m = getMark(el.getAttribute('data-mark-id'));
+        if (m) showFichaForMark(m);
+      });
+
+      /* Lista de marcas */
+      $('#marks-list').addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-act]');
+        if (!btn) return;
+        var m = getMark(btn.getAttribute('data-id'));
+        if (!m) return;
+        var act = btn.getAttribute('data-act');
+        if (act === 'view') showFichaForMark(m);
+        else if (act === 'edit') {
+          openPicker({ mode: 'student', paraIndex: m.paraIndex, start: m.start, end: m.end, markId: m.id });
+        } else if (act === 'remove') {
+          state.marks = state.marks.filter(function (x) { return x.id !== m.id; });
+          persist(); renderAll();
+          toast('Marca quitada.', 'info');
+        }
+      });
+
+      /* Picker */
+      $('#picker-options').addEventListener('click', onPickOption);
+      $('#picker-retry').addEventListener('click', function () {
+        $('#picker-feedback').classList.add('hidden');
+        $('#picker-footer').classList.add('hidden');
+        $('#picker-options').classList.remove('hidden');
+      });
+      $('#picker-ver').addEventListener('click', function () {
+        var ctx = state.picker;
+        if (!ctx || !ctx.markId) { closePicker(); return; }
+        var mark = getMark(ctx.markId);
+        closePicker();
+        if (mark) showFichaForMark(mark);
+      });
+      $('#btn-pf-back').addEventListener('click', function () {
+        $('#picker-teacher-form').classList.add('hidden');
+        $('#picker-options').classList.remove('hidden');
+      });
+      $('#btn-pf-template').addEventListener('click', function () { saveTeacherAnswer(true); });
+      $('#btn-pf-save').addEventListener('click', function () { saveTeacherAnswer(false); });
+
+      /* Modo docente */
+      $('#btn-teacher').addEventListener('click', openTeacherModal);
+      $('#pin-enter').addEventListener('click', function () {
+        if ($('#pin-input').value.trim().toLowerCase() === 'docente') {
+          $('#pin-error').classList.add('hidden');
+          $('#teach-pin').classList.add('hidden');
+          $('#teach-body').classList.remove('hidden');
+          $('#teach-step1-error').classList.add('hidden');
+          state.teacher = null;
+          renderTeacherSaved();
+          $('#teach-title-input').focus();
+        } else {
+          $('#pin-error').classList.remove('hidden');
+        }
+      });
+      $('#pin-input').addEventListener('input', function () { $('#pin-error').classList.add('hidden'); });
+      $('#teach-cancel').addEventListener('click', function () { closeModal($('#teach-modal')); });
+      $('#teach-continue').addEventListener('click', startTeacherDraft);
+      $('#teach-back1').addEventListener('click', function () {
+        state.teacher.step = 1;
+        renderTeacher();
+      });
+      $('#teach-generate').addEventListener('click', generateActivity);
+      $('#teach-new').addEventListener('click', function () {
+        state.teacher = { title: '', paragraphs: [], answers: [], step: 1 };
+        $('#teach-title-input').value = '';
+        $('#teach-text-input').value = '';
+        $('#teach-step2-error').classList.add('hidden');
+        renderTeacher();
+      });
+      $('#teach-close').addEventListener('click', function () { closeModal($('#teach-modal')); });
+      $('#btn-copy-code').addEventListener('click', function () {
+        copyText($('#teach-code').textContent).then(function (ok) {
+          toast(ok ? 'Código copiado.' : 'No se pudo copiar automáticamente: seleccione el código y cópielo manualmente.', 'info');
+        });
+      });
+      $('#btn-copy-json').addEventListener('click', function () {
+        if (!state.teacher || !state.teacher.lastCode) return;
+        var act = state.activities[state.teacher.lastCode];
+        if (!act) return;
+        copyText(exportJson(act)).then(function (ok) {
+          toast(ok ? 'JSON copiado.' : 'No se pudo copiar automáticamente.', 'info');
+        });
+      });
+      $('#btn-download-json').addEventListener('click', function () {
+        if (!state.teacher || !state.teacher.lastCode) return;
+        var act = state.activities[state.teacher.lastCode];
+        if (act) downloadJson(act);
+      });
+      $('#teach-answers').addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-act]');
+        if (!btn || !state.teacher) return;
+        var i = parseInt(btn.getAttribute('data-i'), 10);
+        if (btn.getAttribute('data-act') === 'edit') {
+          var a = state.teacher.answers[i];
+          if (a) openPicker({ mode: 'teacher', paraIndex: a.paraIndex, start: a.start, end: a.end, answerIndex: i });
+        } else if (btn.getAttribute('data-act') === 'remove') {
+          state.teacher.answers.splice(i, 1);
+          renderTeacher();
+        }
+      });
+      $('#teach-saved').addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-act]');
+        if (!btn) return;
+        var code = btn.getAttribute('data-code');
+        if (btn.getAttribute('data-act') === 'load') {
+          closeModal($('#teach-modal'));
+          switchActivity(code);
+        } else if (btn.getAttribute('data-act') === 'del') {
+          if (!window.confirm('¿Eliminar la actividad ' + code + '?')) return;
+          delete state.activities[code];
+          saveTeacherStore();
+          renderTeacherSaved();
+          if (state.currentId === code) switchActivity(BUILTIN_ACTIVITIES[0].id);
+        }
+      });
+
+      /* Cargar / importar actividad */
+      $('#btn-load').addEventListener('click', function () {
+        $('#load-error').classList.add('hidden');
+        $('#load-code-input').value = '';
+        $('#load-json-input').value = '';
+        openModal($('#load-modal'));
+        $('#load-code-input').focus();
+      });
+      $('#btn-load-submit').addEventListener('click', function () {
+        var code = $('#load-code-input').value.trim().toUpperCase();
+        var err = $('#load-error');
+        if (!code) { err.textContent = 'Ingrese un código de actividad.'; err.classList.remove('hidden'); return; }
+        if (!state.activities[code]) {
+          err.textContent = 'No se encontró ninguna actividad con el código ' + code + '.';
+          err.classList.remove('hidden');
+          return;
+        }
+        err.classList.add('hidden');
+        closeModal($('#load-modal'));
+        switchActivity(code);
+      });
+      $('#btn-import').addEventListener('click', function () {
+        importActivityText($('#load-json-input').value);
+      });
+
+      /* Panel colapsable (móvil) */
+      $('#panel-toggle').addEventListener('click', function () {
+        state.panelCollapsed = !state.panelCollapsed;
+        $('#panel').classList.toggle('hidden', state.panelCollapsed);
+        this.textContent = state.panelCollapsed ? 'Mostrar panel de análisis' : 'Ocultar panel de análisis';
+      });
+
+      /* Aviso inline */
+      $('#notice').addEventListener('click', function (e) {
+        if (e.target.closest('[data-dismiss-notice]')) hideNotice();
+      });
+
+      /* Esc cierra modales; cierre por fondo; foco atrapado */
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && openModals.length) closeModal(openModals[openModals.length - 1]);
+      });
+      document.addEventListener('click', function (e) {
+        var t = e.target.closest('[data-close-modal]');
+        if (t) { var m = t.closest('.modal'); if (m) closeModal(m); }
+      });
+      ['picker-modal', 'teach-modal', 'load-modal'].forEach(function (id) {
+        var m = document.getElementById(id);
+        m.addEventListener('keydown', function (e) { trapFocusIn(m, e); });
+      });
+
+      /* Verificación en tiempo de ejecución de los fragmentos incorporados */
+      BUILTIN_ACTIVITIES.forEach(function (act) {
+        (act.answers || []).forEach(function (a) {
+          var p = act.paragraphs[a.paraIndex] || '';
+          if (p.slice(a.start, a.end).length === 0) {
+            console.warn('[falacias] Fragmento vacío en ' + act.id + ' párrafo ' + a.paraIndex);
+          }
+        });
+      });
+
+      /* Actividad inicial */
+      var last = lsGet('falacias-last');
+      var ids = availableIds();
+      if (last && ids.indexOf(last) >= 0) switchActivity(last, true);
+      else switchActivity(BUILTIN_ACTIVITIES[0].id, true);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+  </script>
+</body>
+</html>

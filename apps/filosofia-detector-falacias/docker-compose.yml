@@ -1,0 +1,9 @@
+services:
+  filosofia-detector-falacias:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: filosofia-detector-falacias
+    ports:
+      - "8088:80"
+    restart: unless-stopped

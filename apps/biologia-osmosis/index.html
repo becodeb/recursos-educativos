@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visualizador de Transporte Celular y Ósmosis · Laboratorio de Biología</title>
+<meta name="description" content="Simulación interactiva de membrana semipermeable: observe la ósmosis en tiempo real, regule gradientes de soluto y desafíe a salvar una célula en estado crítico.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%2314B8A6'/%3E%3Ccircle cx='12' cy='12' r='3.5' fill='%23ffffff' opacity='.7'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        ink: '#0E2A33',
+        mist: '#F1F7F5',
+        foam: '#E3EFEB',
+        aqua: '#14B8A6',
+        aquaDeep: '#0E8F83',
+        salt: '#F59E0B',
+        blood: '#E2504F',
+        vein: '#9DB4AD',
+        cytosol: '#FFF8E8',
+        wall: '#C9A97B',
+      },
+      fontFamily: {
+        display: ['"Bricolage Grotesque"', 'sans-serif'],
+        sans: ['"Instrument Sans"', 'sans-serif'],
+        mono: ['"Space Mono"', 'monospace'],
+      },
+    },
+  },
+};
+</script>
+<style>
+  html { scrollbar-gutter: stable; }
+  body {
+    background-image:
+      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(20, 184, 166, 0.10), transparent),
+      radial-gradient(ellipse 60% 40% at 90% 110%, rgba(20, 184, 166, 0.07), transparent);
+  }
+  .reveal { animation: fadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+  .land-pop { animation: landPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+  @keyframes landPop {
+    from { opacity: 0; transform: scale(0.92); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .ring-focus:focus-visible { outline: 3px solid rgba(20, 184, 166, 0.65); outline-offset: 2px; }
+  input[type="range"].slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 9999px;
+    background: linear-gradient(to right, #0E8F83 var(--fill, 50%), #E3EFEB var(--fill, 50%));
+    cursor: pointer;
+  }
+  input[type="range"].slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 9999px;
+    background: #0E2A33;
+    border: 3px solid #14B8A6;
+    box-shadow: 0 1px 4px rgba(14, 42, 51, 0.35);
+  }
+  input[type="range"].slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 9999px;
+    background: #0E2A33;
+    border: 3px solid #14B8A6;
+    box-shadow: 0 1px 4px rgba(14, 42, 51, 0.35);
+  }
+  #gaugeNeedle { transform-origin: 72px 72px; transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1); }
+  .tab-active { background: #0E2A33; color: #F1F7F5; box-shadow: 0 2px 8px rgba(14, 42, 51, 0.25); }
+  .preset-on { background: #0E8F83; border-color: #0E8F83; color: #F1F7F5; }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal, .land-pop { animation: none; }
+    #gaugeNeedle { transition: none; }
+  }
+</style>
+</head>
+<body class="min-h-screen bg-mist text-ink font-sans antialiased selection:bg-aqua/25">
+
+<header class="sticky top-0 z-40 border-b border-vein/40 bg-mist/85 backdrop-blur">
+  <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 sm:px-6">
+    <div class="flex items-center gap-3">
+      <svg viewBox="0 0 40 40" class="h-9 w-9" aria-hidden="true">
+        <circle cx="20" cy="20" r="18" fill="#E3EFEB"/>
+        <circle cx="20" cy="20" r="12" fill="#14B8A6"/>
+        <circle cx="16" cy="16" r="3" fill="#fff" opacity=".75"/>
+        <path d="M20 10a10 10 0 0 1 10 10" stroke="#0E8F83" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      </svg>
+      <div>
+        <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-aquaDeep">Laboratorio de Biología</p>
+        <h1 class="font-display text-lg font-bold leading-tight sm:text-xl">Transporte Celular y Ósmosis</h1>
+      </div>
+    </div>
+
+    <nav class="ml-auto flex items-center gap-2" role="tablist" aria-label="Modo de trabajo">
+      <button id="tabSim" role="tab" aria-selected="true" aria-controls="simPanel"
+              class="ring-focus tab-active rounded-full px-4 py-2 text-sm font-semibold transition-colors">
+        Simulación
+      </button>
+      <button id="tabChallenge" role="tab" aria-selected="false" aria-controls="challengePanel"
+              class="ring-focus rounded-full px-4 py-2 text-sm font-semibold text-ink/70 transition-colors hover:bg-foam">
+        Desafío: Salvá la célula
+      </button>
+      <button id="btnReset" class="ring-focus rounded-full border border-vein/60 px-4 py-2 text-sm font-semibold text-ink/70 transition-colors hover:border-ink/40 hover:text-ink">
+        Restablecer
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main class="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+
+  <section id="simPanel" class="grid gap-5 lg:grid-cols-5">
+    <div class="reveal rounded-2xl border border-vein/40 bg-white p-4 shadow-sm sm:p-5 lg:col-span-3">
+      <div class="relative">
+        <canvas id="cellCanvas" aria-label="Simulación de membrana semipermeable: partículas de agua y soluto a ambos lados de la bicapa" class="h-[340px] w-full rounded-xl sm:h-[440px]" tabindex="0"></canvas>
+        <div id="badgeLysis" class="land-pop absolute left-4 top-4 hidden rounded-full bg-blood px-4 py-1.5 font-display text-sm font-bold text-white shadow-md" role="status">LISIS</div>
+        <div id="badgeRisk" class="land-pop absolute left-4 top-4 hidden rounded-full border-2 border-blood bg-white px-4 py-1 font-display text-sm font-bold text-blood shadow-md" role="status">Riesgo de lisis</div>
+        <div id="badgeCren" class="land-pop absolute left-4 top-4 hidden rounded-full bg-salt px-4 py-1.5 font-display text-sm font-bold text-white shadow-md" role="status">Crenación</div>
+        <div id="badgeTurg" class="land-pop absolute left-4 top-4 hidden rounded-full bg-aquaDeep px-4 py-1.5 font-display text-sm font-bold text-white shadow-md" role="status">Turgencia</div>
+      </div>
+      <p id="flowText" aria-live="polite" class="mt-3 text-center font-mono text-sm font-bold text-aquaDeep">⇄ Equilibrio: no hay flujo neto</p>
+      <div class="mt-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-vein/30 pt-4 text-xs text-ink/70">
+        <span class="flex items-center gap-2"><span class="inline-block h-3 w-3 rounded-full bg-aqua"></span> Agua (H₂O) — atraviesa la membrana</span>
+        <span class="flex items-center gap-2"><span class="inline-block h-3 w-3 rounded-full bg-salt ring-2 ring-salt/40"></span> Soluto — no atraviesa la membrana</span>
+        <span class="flex items-center gap-2"><span class="inline-block h-2.5 w-6 rounded-sm bg-[#3E8E8C]"></span> Bicapa fosfolipídica</span>
+      </div>
+    </div>
+
+    <aside class="reveal space-y-5 lg:col-span-2" style="animation-delay: 80ms">
+      <div class="rounded-2xl border border-vein/40 bg-white p-5 shadow-sm">
+        <h2 class="font-display text-base font-bold">Medio extracelular</h2>
+        <div class="mt-3 grid grid-cols-3 gap-2" role="group" aria-label="Medio predeterminado">
+          <button id="presetHipo" class="ring-focus rounded-xl border-2 border-vein/50 px-2 py-2.5 text-center transition-all hover:border-aqua hover:shadow-sm">
+            <span class="block text-xs font-semibold text-aquaDeep">Hipotónico</span>
+            <span class="block font-mono text-[11px] text-ink/60">menos soluto</span>
+          </button>
+          <button id="presetIso" class="ring-focus preset-on rounded-xl border-2 border-aquaDeep px-2 py-2.5 text-center transition-all">
+            <span class="block text-xs font-semibold">Isotónico</span>
+            <span class="block font-mono text-[11px] opacity-70">en equilibrio</span>
+          </button>
+          <button id="presetHiper" class="ring-focus rounded-xl border-2 border-vein/50 px-2 py-2.5 text-center transition-all hover:border-salt hover:shadow-sm">
+            <span class="block text-xs font-semibold text-salt">Hipertónico</span>
+            <span class="block font-mono text-[11px] text-ink/60">más soluto</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-vein/40 bg-white p-5 shadow-sm">
+        <h2 class="font-display text-base font-bold">Concentración de soluto</h2>
+        <div class="mt-4 space-y-5">
+          <div>
+            <div class="flex items-baseline justify-between">
+              <label for="sliderIn" class="text-sm font-semibold">Intracelular</label>
+              <span class="font-mono text-sm font-bold text-aquaDeep"><span id="readoutIn">300</span> mOsm/L</span>
+            </div>
+            <input id="sliderIn" type="range" min="0" max="600" step="10" value="300" aria-label="Concentración de soluto intracelular"
+                   class="slider mt-2 w-full" style="--fill:50%">
+          </div>
+          <div>
+            <div class="flex items-baseline justify-between">
+              <label for="sliderOut" class="text-sm font-semibold">Extracelular</label>
+              <span class="font-mono text-sm font-bold text-salt"><span id="readoutOut">300</span> mOsm/L</span>
+            </div>
+            <input id="sliderOut" type="range" min="0" max="600" step="10" value="300" aria-label="Concentración de soluto extracelular"
+                   class="slider mt-2 w-full" style="--fill:50%">
+          </div>
+          <p class="text-xs leading-relaxed text-ink/60">El agua fluye siempre hacia el lado con más soluto. El soluto no puede cruzar la membrana: por eso se forman los gradientes.</p>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-vein/40 bg-white p-5 shadow-sm">
+        <div class="flex items-baseline justify-between">
+          <h2 class="font-display text-base font-bold">Presión osmótica</h2>
+          <span class="font-mono text-xs text-ink/50">π = Δ·2,47 kPa</span>
+        </div>
+        <svg id="gauge" viewBox="0 0 144 88" class="mx-auto mt-2 w-full max-w-[250px]" role="img" aria-label="Manómetro de presión osmótica">
+          <g id="gaugeArcs"></g>
+          <g id="gaugeTicks"></g>
+          <g id="gaugeNeedle">
+            <line x1="72" y1="72" x2="72" y2="22" stroke="#0E2A33" stroke-width="3.5" stroke-linecap="round"/>
+            <circle cx="72" cy="72" r="6" fill="#0E2A33"/>
+            <circle cx="72" cy="72" r="2.5" fill="#14B8A6"/>
+          </g>
+        </svg>
+        <p class="text-center font-mono text-lg font-bold text-ink" aria-live="polite"><span id="pressureReadout">π ≈ 0 kPa</span></p>
+        <p class="text-center font-mono text-xs text-ink/50"><span id="diffReadout">Δ soluto: 0 mOsm/L</span></p>
+        <div class="mt-4">
+          <div class="flex items-baseline justify-between text-xs">
+            <span class="font-semibold">Volumen celular</span>
+            <span class="font-mono font-bold"><span id="volumeText">100</span> %</span>
+          </div>
+          <div class="mt-1.5 h-2 overflow-hidden rounded-full bg-foam">
+            <div id="volumeBar" class="h-full rounded-full bg-aqua transition-all duration-300" style="width:100%"></div>
+          </div>
+        </div>
+        <p id="statusText" aria-live="polite" class="mt-4 rounded-xl bg-foam/70 px-4 py-3 text-sm leading-relaxed">Isotónico: la célula está en equilibrio.</p>
+      </div>
+
+      <details class="rounded-2xl border border-vein/40 bg-white p-5 shadow-sm">
+        <summary class="cursor-pointer font-display text-base font-bold text-aquaDeep ring-focus rounded">¿Cómo funciona?</summary>
+        <div class="mt-3 space-y-2 text-sm leading-relaxed text-ink/80">
+          <p><strong>Ósmosis:</strong> el agua atraviesa la membrana semipermeable hacia el lado con mayor concentración de soluto, porque allí hay menos agua libre.</p>
+          <p><strong>Medio hipotónico:</strong> hay menos soluto afuera → entra agua → turgencia; si es excesiva, <em>lisis</em> (la membrana se rompe).</p>
+          <p><strong>Medio isotónico:</strong> igual concentración → equilibrio.</p>
+          <p><strong>Medio hipertónico:</strong> hay más soluto afuera → sale agua → <em>crenación</em> (animal) o <em>plasmólisis</em> (vegetal).</p>
+          <p class="text-xs text-ink/60">Las células vegetales tienen pared celular rígida: pueden llenarse de agua (turgencia) sin estallar.</p>
+        </div>
+      </details>
+    </aside>
+  </section>
+
+  <section id="challengePanel" class="hidden">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-aquaDeep">Desafío</p>
+        <h2 class="font-display text-2xl font-extrabold">Salvá la célula</h2>
+      </div>
+      <p class="font-mono text-sm font-bold" aria-live="polite">Células salvadas: <span id="scoreText" class="text-aquaDeep">0 / 3</span></p>
+    </div>
+
+    <div id="caseGrid" class="grid gap-4 md:grid-cols-3">
+      <div class="reveal rounded-2xl border border-vein/40 bg-white p-5 shadow-sm md:col-span-3">
+        <p class="text-sm leading-relaxed text-ink/70">Llega un caso clínico a la guardia. Analizá los datos de laboratorio, calculá qué solución intravenosa restaura el equilibrio osmótico y aplicala antes de que sea tarde.</p>
+      </div>
+    </div>
+
+    <div id="scenarioPanel" class="hidden">
+      <div class="rounded-2xl border border-vein/40 bg-white p-6 shadow-sm">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div class="max-w-xl">
+            <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-aquaDeep">Caso clínico</p>
+            <h3 id="scenarioTitle" class="mt-1 font-display text-xl font-bold"></h3>
+            <p id="scenarioStory" class="mt-2 text-sm leading-relaxed text-ink/80"></p>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="rounded-xl bg-foam/70 px-4 py-3">
+              <p class="font-mono text-[10px] uppercase tracking-wider text-ink/50">Intracelular</p>
+              <p id="labIn" class="font-mono text-lg font-bold text-aquaDeep"></p>
+            </div>
+            <div class="rounded-xl bg-foam/70 px-4 py-3">
+              <p class="font-mono text-[10px] uppercase tracking-wider text-ink/50">Extracelular</p>
+              <p id="labOut" class="font-mono text-lg font-bold text-salt"></p>
+            </div>
+          </div>
+        </div>
+        <div id="optionList" class="mt-6 grid gap-3 sm:grid-cols-3" role="group" aria-label="Opciones de solución intravenosa"></div>
+        <p id="runStatus" class="mt-4 hidden text-center font-mono text-sm font-bold text-aquaDeep" aria-live="polite">Observá cómo responde la célula…</p>
+      </div>
+
+      <div id="verdictPanel" class="land-pop mt-5 hidden rounded-2xl border-2 bg-white p-6 shadow-md" style="border-color:var(--verdict,#0E8F83)">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-ink/50">Resultado</p>
+            <h3 id="verdictTitle" class="mt-1 font-display text-2xl font-extrabold" style="color:var(--verdict,#0E8F83)"></h3>
+            <p id="verdictBody" class="mt-2 max-w-xl text-sm leading-relaxed text-ink/80"></p>
+          </div>
+          <div class="flex gap-3">
+            <button id="btnRetry" class="ring-focus rounded-full border border-vein/60 px-5 py-2.5 text-sm font-semibold transition-colors hover:border-ink/40">Reintentar</button>
+            <button id="btnNext" class="ring-focus rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-mist transition-opacity hover:opacity-85">Siguiente caso</button>
+          </div>
+        </div>
+        <div id="whyBox" class="mt-4 rounded-xl bg-cytosol px-5 py-4 text-sm leading-relaxed text-ink/85 border border-salt/30"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="mx-auto max-w-6xl px-4 pb-8 pt-2 sm:px-6">
+  <p class="border-t border-vein/30 pt-4 text-center font-mono text-xs text-ink/50">Recurso educativo interactivo · Biología celular</p>
+</footer>
+
+<noscript><p class="p-6 text-center font-semibold">Esta simulación requiere JavaScript activado.</p></noscript>
+
+<script>
+(function () {
+  'use strict';
+
+  var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var SPEED = REDUCED ? 0.25 : 1;
+  var K = 0.0006;
+  var LYSIS_AT = 1.24;
+  var MAX_VOL = 1.35;
+  var MIN_VOL = 0.55;
+
+  var state = {
+    mode: 'sim',
+    soluteIn: 300,
+    soluteOut: 300,
+    volume: 1,
+    lysed: false,
+    challenge: null,
+    challengePhase: 'list',
+    runEnd: 0,
+    solved: 0,
+    caseIndex: 0
+  };
+
+  var SOLUTIONS = [
+    { id: 'suero', name: 'Suero fisiológico 0,9 %', osm: 308, desc: '≈ isotónico' },
+    { id: 'agua', name: 'Agua destilada', osm: 0, desc: 'fuertemente hipotónica' },
+    { id: 'gluc', name: 'Solución glucosada hipertónica', osm: 500, desc: 'hipertónica' }
+  ];
+
+  var CASES = [
+    {
+      id: 'eritrocito',
+      title: 'Glóbulo rojo deshidratado',
+      story: 'Un paciente con diarrea severa llega a la guardia. Sus glóbulos rojos están crenados: perdieron agua y el interior concentró solutos. Administrá la solución intravenosa que lo recupere sin romper la célula.',
+      inside: 420, outside: 300, startVol: 0.62, wall: false,
+      window: [1.0, 1.25],
+      why: 'El suero fisiológico (≈308 mOsm/L) es apenas hipotónico respecto del interior (420 mOsm/L): el agua entra con lentitud y la célula vuelve al equilibrio sin estallar. El agua destilada provoca lisis: la entrada brusca de agua rompe la membrana. La solución glucosada hipertónica (500 mOsm/L) no alcanza: el agua sigue saliendo y la célula permanece crenada.'
+    },
+    {
+      id: 'planta',
+      title: 'Planta marchita (plasmólisis)',
+      story: 'Una planta de tomate fue regada con agua salina. El suelo está a 600 mOsm/L y sus células perdieron agua: la membrana se despegó de la pared celular. Devolvele la turgencia.',
+      inside: 300, outside: 600, startVol: 0.62, wall: true,
+      window: [1.12, 1.35],
+      why: 'Las células vegetales necesitan turgencia: la pared celular exige un medio hipotónico. El agua destilada (0 mOsm/L) entra con fuerza y restaura la turgencia; la pared evita la lisis. El suero (308 mOsm/L) es apenas hipertónico: la planta sigue flácida. La glucosada agrava la plasmólisis.'
+    },
+    {
+      id: 'hinchada',
+      title: 'Célula hinchada al borde de la lisis',
+      story: 'Una célula renal acumuló desechos: su interior llegó a 420 mOsm/L y arrastra agua sin parar. Está hinchada y a punto de romperse. Sacale el exceso de agua sin dañarla.',
+      inside: 420, outside: 300, startVol: 1.18, wall: false,
+      window: [0.90, 1.00],
+      why: 'La solución glucosada hipertónica (500 mOsm/L) saca agua de la célula y la devuelve a un tamaño sano. El suero (308 mOsm/L) sigue siendo hipotónico respecto del interior: la célula permanece hinchada. El agua destilada es el desastre total: lisis inmediata.'
+    }
+  ];
+
+  var canvas = document.getElementById('cellCanvas');
+  var ctx = canvas.getContext('2d');
+  var W = 0, H = 0, DPR = 1;
+  var CELL = { cx: 0, cy: 0, rx: 150, ry: 165 };
+
+  var particles = [];
+  var fragments = [];
+  var burstTime = 0;
+  var time = 0;
+
+  var dom = {
+    tabSim: document.getElementById('tabSim'),
+    tabChallenge: document.getElementById('tabChallenge'),
+    simPanel: document.getElementById('simPanel'),
+    challengePanel: document.getElementById('challengePanel'),
+    btnReset: document.getElementById('btnReset'),
+    sliderIn: document.getElementById('sliderIn'),
+    sliderOut: document.getElementById('sliderOut'),
+    readoutIn: document.getElementById('readoutIn'),
+    readoutOut: document.getElementById('readoutOut'),
+    presetHipo: document.getElementById('presetHipo'),
+    presetIso: document.getElementById('presetIso'),
+    presetHiper: document.getElementById('presetHiper'),
+    needle: document.getElementById('gaugeNeedle'),
+    gaugeArcs: document.getElementById('gaugeArcs'),
+    gaugeTicks: document.getElementById('gaugeTicks'),
+    pressure: document.getElementById('pressureReadout'),
+    diffReadout: document.getElementById('diffReadout'),
+    volumeText: document.getElementById('volumeText'),
+    volumeBar: document.getElementById('volumeBar'),
+    statusText: document.getElementById('statusText'),
+    flowText: document.getElementById('flowText'),
+    badgeLysis: document.getElementById('badgeLysis'),
+    badgeRisk: document.getElementById('badgeRisk'),
+    badgeCren: document.getElementById('badgeCren'),
+    badgeTurg: document.getElementById('badgeTurg'),
+    caseGrid: document.getElementById('caseGrid'),
+    scenarioPanel: document.getElementById('scenarioPanel'),
+    scenarioTitle: document.getElementById('scenarioTitle'),
+    scenarioStory: document.getElementById('scenarioStory'),
+    labIn: document.getElementById('labIn'),
+    labOut: document.getElementById('labOut'),
+    optionList: document.getElementById('optionList'),
+    runStatus: document.getElementById('runStatus'),
+    verdictPanel: document.getElementById('verdictPanel'),
+    verdictTitle: document.getElementById('verdictTitle'),
+    verdictBody: document.getElementById('verdictBody'),
+    whyBox: document.getElementById('whyBox'),
+    btnRetry: document.getElementById('btnRetry'),
+    btnNext: document.getElementById('btnNext'),
+    scoreText: document.getElementById('scoreText')
+  };
+
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  function cellRadii() {
+    return { rx: CELL.rx * state.volume, ry: CELL.ry * state.volume };
+  }
+
+  function isInsideCell(x, y) {
+    var r = cellRadii();
+    var dx = (x - CELL.cx) / r.rx, dy = (y - CELL.cy) / r.ry;
+    return dx * dx + dy * dy <= 0.80;
+  }
+
+  function ellipseRadiusAt(angle) {
+    var r = cellRadii();
+    var c = Math.cos(angle), s = Math.sin(angle);
+    return r.rx * r.ry / Math.sqrt((r.ry * c) * (r.ry * c) + (r.rx * s) * (r.rx * s));
+  }
+
+  function randPosInside() {
+    var r = cellRadii();
+    for (var i = 0; i < 40; i++) {
+      var a = Math.random() * Math.PI * 2;
+      var rr = Math.sqrt(Math.random()) * 0.8;
+      var x = CELL.cx + Math.cos(a) * r.rx * rr;
+      var y = CELL.cy + Math.sin(a) * r.ry * rr;
+      if (isInsideCell(x, y)) return { x: x, y: y };
+    }
+    return { x: CELL.cx, y: CELL.cy };
+  }
+
+  function randPosOutside() {
+    for (var i = 0; i < 60; i++) {
+      var x = Math.random() * W, y = Math.random() * H;
+      if (!isInsideCell(x, y)) return { x: x, y: y };
+    }
+    return { x: 8, y: 8 };
+  }
+
+  function makeParticle(kind, side) {
+    var p = { kind: kind, side: side, free: false, vx: 0, vy: 0 };
+    var pos = side === 'in' ? randPosInside() : randPosOutside();
+    p.x = pos.x; p.y = pos.y;
+    return p;
+  }
+
+  function soluteCount(osm) { return Math.round(osm * 0.18); }
+
+  function buildParticles() {
+    particles = [];
+    fragments = [];
+    for (var i = 0; i < 64; i++) particles.push(makeParticle('water', 'in'));
+    for (i = 0; i < 76; i++) particles.push(makeParticle('water', 'out'));
+    var nIn = soluteCount(state.soluteIn);
+    var nOut = soluteCount(state.soluteOut);
+    for (i = 0; i < nIn; i++) particles.push(makeParticle('solute', 'in'));
+    for (i = 0; i < nOut; i++) particles.push(makeParticle('solute', 'out'));
+  }
+
+  function rebuildSolutes() {
+    var wantIn = soluteCount(state.soluteIn);
+    var wantOut = soluteCount(state.soluteOut);
+    var inSolute = particles.filter(function (p) { return p.kind === 'solute' && p.side === 'in'; });
+    var outSolute = particles.filter(function (p) { return p.kind === 'solute' && p.side === 'out'; });
+    while (inSolute.length > wantIn) { particles.splice(particles.indexOf(inSolute.pop()), 1); }
+    while (inSolute.length < wantIn) { var p = makeParticle('solute', 'in'); particles.push(p); inSolute.push(p); }
+    while (outSolute.length > wantOut) { particles.splice(particles.indexOf(outSolute.pop()), 1); }
+    while (outSolute.length < wantOut) { var q = makeParticle('solute', 'out'); particles.push(q); outSolute.push(q); }
+  }
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    var rect = canvas.getBoundingClientRect();
+    W = rect.width;
+    H = rect.height;
+    canvas.width = W * DPR;
+    canvas.height = H * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    CELL.cx = W / 2;
+    CELL.cy = H / 2;
+    CELL.rx = Math.min(W, H) * 0.30;
+    CELL.ry = Math.min(W, H) * 0.33;
+  }
+
+  function burst() {
+    state.lysed = true;
+    burstTime = time;
+    fragments = [];
+    var n = 26;
+    for (var i = 0; i < n; i++) {
+      var a = (i / n) * Math.PI * 2;
+      var r = cellRadii();
+      fragments.push({
+        x: CELL.cx + Math.cos(a) * r.rx,
+        y: CELL.cy + Math.sin(a) * r.ry,
+        vx: (Math.cos(a) + (Math.random() - 0.5)) * 2.2 * SPEED,
+        vy: (Math.sin(a) + (Math.random() - 0.5)) * 2.2 * SPEED,
+        rot: a, vr: (Math.random() - 0.5) * 0.15, len: 10 + Math.random() * 14
+      });
+    }
+    particles.forEach(function (p) {
+      if (p.side === 'in') {
+        p.free = true;
+        p.vx += (Math.random() - 0.5) * 2 * SPEED;
+        p.vy += (Math.random() - 0.5) * 2 * SPEED;
+      }
+    });
+    updateOverlays();
+  }
+
+  function stepParticles() {
+    var diff = state.soluteIn - state.soluteOut;
+    var bias = clamp(diff / 300, -1, 1);
+    var pCross = 0.025 * Math.abs(bias) * SPEED;
+
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      p.vx += (Math.random() - 0.5) * 0.7 * SPEED;
+      p.vy += (Math.random() - 0.5) * 0.7 * SPEED;
+      p.vx *= 0.94;
+      p.vy *= 0.94;
+      p.x += p.vx * 0.8;
+      p.y += p.vy * 0.8;
+
+      if (p.kind === 'water' && !p.free) {
+        var inside = isInsideCell(p.x, p.y);
+        var angle = Math.atan2(p.y - CELL.cy, p.x - CELL.cx);
+        var edgeR = ellipseRadiusAt(angle);
+        var dist = Math.sqrt((p.x - CELL.cx) * (p.x - CELL.cx) + (p.y - CELL.cy) * (p.y - CELL.cy)) - edgeR;
+        if (Math.abs(dist) < 20 && Math.random() < pCross) {
+          if (inside && bias < 0) {
+            p.side = 'out';
+            p.x = CELL.cx + Math.cos(angle) * (edgeR + 8);
+            p.y = CELL.cy + Math.sin(angle) * (edgeR + 8);
+            p.vx = Math.cos(angle) * 1.6 * SPEED;
+            p.vy = Math.sin(angle) * 1.6 * SPEED;
+          } else if (!inside && bias > 0) {
+            p.side = 'in';
+            p.x = CELL.cx + Math.cos(angle) * (edgeR - 8);
+            p.y = CELL.cy + Math.sin(angle) * (edgeR - 8);
+            p.vx = -Math.cos(angle) * 1.6 * SPEED;
+            p.vy = -Math.sin(angle) * 1.6 * SPEED;
+          }
+        }
+      }
+
+      var inCell = isInsideCell(p.x, p.y);
+      if (!p.free) {
+        if (p.side === 'in' && !inCell) {
+          var a = Math.atan2(p.y - CELL.cy, p.x - CELL.cx);
+          p.x = CELL.cx + Math.cos(a) * cellRadii().rx * 0.86;
+          p.y = CELL.cy + Math.sin(a) * cellRadii().ry * 0.86;
+        } else if (p.side === 'out' && inCell) {
+          var b = Math.atan2(p.y - CELL.cy, p.x - CELL.cx);
+          p.x = CELL.cx + Math.cos(b) * (ellipseRadiusAt(b) + 6);
+          p.y = CELL.cy + Math.sin(b) * (ellipseRadiusAt(b) + 6);
+        }
+      }
+      if (p.x < 4 || p.x > W - 4) p.vx *= -0.9;
+      if (p.y < 4 || p.y > H - 4) p.vy *= -0.9;
+      p.x = clamp(p.x, 2, W - 2);
+      p.y = clamp(p.y, 2, H - 2);
+    }
+
+    if (state.lysed) {
+      fragments.forEach(function (f) {
+        f.x += f.vx; f.y += f.vy; f.rot += f.vr;
+      });
+    }
+  }
+
+  function stepVolume() {
+    if (state.lysed) return;
+    var diff = state.soluteIn - state.soluteOut;
+    var maxV = state.challenge && state.challenge.wall ? 1.28 : MAX_VOL;
+    var target = clamp(1 + K * diff, MIN_VOL, maxV);
+    var frozen = state.challenge && state.challengePhase === 'scenario';
+    if (!frozen) state.volume += (target - state.volume) * 0.03;
+    if (state.volume > LYSIS_AT && !state.challenge.wall) burst();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    var r = cellRadii();
+
+    var grad = ctx.createRadialGradient(CELL.cx, CELL.cy, 10, CELL.cx, CELL.cy, Math.max(r.rx, r.ry) * 1.35);
+    grad.addColorStop(0, '#EAF6F3');
+    grad.addColorStop(1, '#D9EEE9');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    if (!state.lysed) {
+      var cyt = ctx.createRadialGradient(CELL.cx - r.rx * 0.3, CELL.cy - r.ry * 0.3, 5, CELL.cx, CELL.cy, Math.max(r.rx, r.ry));
+      cyt.addColorStop(0, '#FFFDF4');
+      cyt.addColorStop(1, '#FBF0D0');
+      ctx.fillStyle = cyt;
+      ctx.beginPath();
+      ctx.ellipse(CELL.cx, CELL.cy, r.rx * 0.94, r.ry * 0.94, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    drawParticles();
+
+    if (state.lysed) {
+      drawFragments();
+    } else {
+      if (state.challenge && state.challenge.wall) drawWall(r);
+      drawMembrane(r);
+    }
+  }
+
+  function drawParticles() {
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      if (p.kind === 'water') {
+        ctx.fillStyle = 'rgba(20,184,166,0.75)';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        ctx.beginPath();
+        ctx.arc(p.x - 0.8, p.y - 0.8, 0.9, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = '#F59E0B';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 5.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(120,72,0,0.55)';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.beginPath();
+        ctx.arc(p.x - 1.6, p.y - 1.8, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+
+  function ringPoint(angle, frac) {
+    var r = cellRadii();
+    var R = ellipseRadiusAt(angle);
+    var wobble = 1;
+    if (state.volume < 0.74) {
+      wobble = 1 + (0.74 - state.volume) * 0.9 * Math.sin(5 * angle + time * 0.002);
+    }
+    var rr = R * wobble * frac;
+    return { x: CELL.cx + Math.cos(angle) * rr, y: CELL.cy + Math.sin(angle) * rr };
+  }
+
+  function drawWall(r) {
+    ctx.strokeStyle = '#C9A97B';
+    ctx.lineWidth = 10;
+    ctx.setLineDash([3, 7]);
+    ctx.beginPath();
+    ctx.ellipse(CELL.cx, CELL.cy, r.rx * 1.14, r.ry * 1.14, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  function drawMembrane(r) {
+    var nHeads = 46;
+    var poreAngles = [0.6, Math.PI / 2 + 0.3, Math.PI + 0.9, Math.PI * 1.7];
+
+    for (var i = 0; i < nHeads; i++) {
+      var a = (i / nHeads) * Math.PI * 2;
+      if (isPore(a, poreAngles)) continue;
+      var outer = ringPoint(a, 1);
+      var inner = ringPoint(a, 0.82);
+      var sway = Math.sin(time * 0.001 + i * 0.7) * 1.4;
+      ctx.fillStyle = '#3E8E8C';
+      ctx.beginPath();
+      ctx.arc(outer.x, outer.y, 3.4 + sway * 0.06, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.beginPath();
+      ctx.arc(inner.x, inner.y, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(110,100,70,0.55)';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(outer.x, outer.y);
+      ctx.lineTo(inner.x, inner.y);
+      ctx.stroke();
+    }
+
+    for (var k = 0; k < poreAngles.length; k++) {
+      var pa = poreAngles[k];
+      var pt = ringPoint(pa, 1);
+      ctx.fillStyle = 'rgba(20,184,166,0.45)';
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function isPore(angle, pores) {
+    for (var i = 0; i < pores.length; i++) {
+      var d = Math.abs(normalizeAngle(angle - pores[i]));
+      if (d < 0.35) return true;
+    }
+    return false;
+  }
+
+  function normalizeAngle(a) {
+    while (a > Math.PI) a -= Math.PI * 2;
+    while (a < -Math.PI) a += Math.PI * 2;
+    return a;
+  }
+
+  function drawFragments() {
+    var alive = [];
+    fragments.forEach(function (f) {
+      ctx.strokeStyle = '#3E8E8C';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(f.x, f.y, f.len * 0.6, f.rot, f.rot + 1.6);
+      ctx.stroke();
+      if (f.x > -60 && f.x < W + 60 && f.y > -60 && f.y < H + 60) alive.push(f);
+    });
+    fragments = alive;
+  }
+
+  function updateOverlays() {
+    dom.badgeLysis.classList.toggle('hidden', !state.lysed);
+    dom.badgeRisk.classList.toggle('hidden', state.lysed || state.volume < 1.14);
+    dom.badgeCren.classList.toggle('hidden', state.lysed || state.volume > 0.74);
+    dom.badgeTurg.classList.toggle('hidden', state.lysed || state.volume < 1.12);
+  }
+
+  function updateGauge() {
+    var diff = state.soluteIn - state.soluteOut;
+    var g = clamp(diff / 300, -1, 1);
+    dom.needle.setAttribute('transform', 'rotate(' + (-55 * g).toFixed(1) + ' 72 72)');
+    dom.pressure.textContent = state.lysed ? 'π — membrana rota' : 'π ≈ ' + Math.round(Math.abs(diff) * 2.47) + ' kPa';
+    var sign = diff > 0 ? '+' : diff < 0 ? '−' : '';
+    dom.diffReadout.textContent = 'Δ soluto: ' + sign + Math.abs(diff) + ' mOsm/L';
+    var volPct = Math.round(state.volume * 100);
+    dom.volumeText.textContent = state.lysed ? '—' : volPct;
+    dom.volumeBar.style.width = clamp(volPct, 4, 100) + '%';
+    dom.volumeBar.className = 'h-full rounded-full transition-all duration-300 ' +
+      (state.volume > LYSIS_AT - 0.08 ? 'bg-blood' : state.volume > 1.12 ? 'bg-salt' : state.volume < 0.74 ? 'bg-salt' : 'bg-aqua');
+  }
+
+  function updateStatus() {
+    if (state.lysed) {
+      dom.statusText.textContent = 'LISIS: entró demasiada agua y la membrana se rompió. Restablecé para volver a empezar.';
+      dom.flowText.textContent = '✕ La membrana se rompió';
+      return;
+    }
+    var diff = state.soluteIn - state.soluteOut;
+    if (Math.abs(diff) < 25) {
+      dom.statusText.textContent = 'Isotónico: igual concentración a ambos lados, la célula está en equilibrio.';
+      dom.flowText.textContent = '⇄ Equilibrio: no hay flujo neto';
+    } else if (diff > 0) {
+      dom.flowText.textContent = '→ El agua entra a la célula';
+      dom.statusText.textContent = state.volume >= 1.12
+        ? 'Mucha agua entrando: la célula está al límite. ¡Cuidado con la lisis!'
+        : 'Medio hipotónico: hay menos soluto afuera, el agua entra y la célula se hincha.';
+    } else {
+      dom.flowText.textContent = '← El agua sale de la célula';
+      dom.statusText.textContent = state.volume <= 0.74
+        ? (state.challenge && state.challenge.wall ? 'Plasmólisis: la célula perdió agua y la membrana se despegó de la pared.' : 'Crenación: la célula perdió mucha agua y se arrugó.')
+        : 'Medio hipertónico: hay más soluto afuera, el agua sale y la célula se encoge.';
+    }
+  }
+
+  function loop() {
+    time++;
+    if (!state.lysed && state.volume > LYSIS_AT - 0.03 && state.soluteIn - state.soluteOut > 180) burst();
+    stepParticles();
+    stepVolume();
+    draw();
+    updateGauge();
+    updateOverlays();
+    updateStatus();
+    if (state.challenge && state.challengePhase === 'run' && time > state.runEnd) finishCase();
+    requestAnimationFrame(loop);
+  }
+
+  function setSolute(kind, value) {
+    if (kind === 'in') { state.soluteIn = value; dom.sliderIn.value = value; dom.readoutIn.textContent = value; dom.sliderIn.style.setProperty('--fill', (value / 600) * 100 + '%'); }
+    else { state.soluteOut = value; dom.sliderOut.value = value; dom.readoutOut.textContent = value; dom.sliderOut.style.setProperty('--fill', (value / 600) * 100 + '%'); }
+    if (state.lysed) resetSim();
+    else rebuildSolutes();
+  }
+
+  function resetSim() {
+    state.lysed = false;
+    state.volume = 1;
+    fragments = [];
+    buildParticles();
+    updateGauge();
+    updateOverlays();
+  }
+
+  function setPreset(name) {
+    var map = { hipo: { out: 100, label: 'Hipotónico' }, iso: { out: 300, label: 'Isotónico' }, hiper: { out: 600, label: 'Hipertónico' } };
+    var p = map[name];
+    setSolute('out', p.out);
+    var presets = [dom.presetHipo, dom.presetIso, dom.presetHiper];
+    presets.forEach(function (b) { b.classList.remove('preset-on'); });
+    var btn = { hipo: dom.presetHipo, iso: dom.presetIso, hiper: dom.presetHiper }[name];
+    btn.classList.add('preset-on');
+  }
+
+  function setMode(mode) {
+    state.mode = mode;
+    var sim = mode === 'sim';
+    dom.simPanel.classList.toggle('hidden', !sim);
+    dom.challengePanel.classList.toggle('hidden', sim);
+    dom.tabSim.classList.toggle('tab-active', sim);
+    dom.tabChallenge.classList.toggle('tab-active', !sim);
+    dom.tabSim.setAttribute('aria-selected', sim ? 'true' : 'false');
+    dom.tabChallenge.setAttribute('aria-selected', sim ? 'false' : 'true');
+    if (!sim) {
+      state.challenge = null;
+      state.challengePhase = 'list';
+      renderCaseList();
+    } else {
+      state.challenge = null;
+      if (state.lysed) resetSim();
+    }
+    requestAnimationFrame(resize);
+  }
+
+  function renderCaseList() {
+    dom.caseGrid.innerHTML = '';
+    var intro = document.createElement('p');
+    intro.className = 'reveal rounded-2xl border border-vein/40 bg-white p-5 text-sm leading-relaxed text-ink/70 shadow-sm md:col-span-3';
+    intro.textContent = 'Llegan tres casos a la guardia. Analizá los datos de laboratorio, calculá qué solución intravenosa restaura el equilibrio osmótico y aplicala antes de que sea tarde.';
+    dom.caseGrid.appendChild(intro);
+
+    CASES.forEach(function (c, idx) {
+      var btn = document.createElement('button');
+      btn.className = 'ring-focus land-pop rounded-2xl border-2 border-vein/50 bg-white p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-aqua hover:shadow-md';
+      btn.style.animationDelay = (idx * 90) + 'ms';
+      var dot = document.createElement('span');
+      dot.className = 'mb-3 block h-4 w-4 rounded-full';
+      dot.style.background = c.wall ? '#C9A97B' : '#14B8A6';
+      var h = document.createElement('h3');
+      h.className = 'font-display text-lg font-bold';
+      h.textContent = c.title;
+      var p = document.createElement('p');
+      p.className = 'mt-1 text-xs leading-relaxed text-ink/60';
+      p.textContent = c.wall ? 'Célula vegetal · pared celular presente' : 'Célula animal · sin pared celular';
+      var tag = document.createElement('span');
+      tag.className = 'mt-4 inline-block rounded-full bg-ink px-4 py-1.5 text-xs font-semibold text-mist';
+      tag.textContent = 'Atender caso';
+      btn.appendChild(dot); btn.appendChild(h); btn.appendChild(p); btn.appendChild(tag);
+      btn.addEventListener('click', function () { startCase(idx); });
+      dom.caseGrid.appendChild(btn);
+    });
+    dom.scenarioPanel.classList.add('hidden');
+    dom.verdictPanel.classList.add('hidden');
+    dom.scoreText.textContent = state.solved + ' / 3';
+  }
+
+  function startCase(idx) {
+    state.caseIndex = idx;
+    state.challenge = CASES[idx];
+    state.challengePhase = 'scenario';
+    state.soluteIn = state.challenge.inside;
+    state.soluteOut = state.challenge.outside;
+    state.volume = state.challenge.startVol;
+    state.lysed = false;
+    fragments = [];
+    buildParticles();
+
+    dom.scenarioTitle.textContent = state.challenge.title;
+    dom.scenarioStory.textContent = state.challenge.story;
+    dom.labIn.textContent = state.challenge.inside + ' mOsm/L';
+    dom.labOut.textContent = state.challenge.outside + ' mOsm/L';
+    dom.verdictPanel.classList.add('hidden');
+    dom.runStatus.classList.add('hidden');
+    dom.optionList.innerHTML = '';
+
+    SOLUTIONS.forEach(function (s) {
+      var btn = document.createElement('button');
+      btn.className = 'ring-focus rounded-2xl border-2 border-vein/50 bg-white p-4 text-left transition-all hover:border-aqua hover:shadow-md';
+      btn.dataset.id = s.id;
+      var h = document.createElement('span');
+      h.className = 'block font-display text-sm font-bold';
+      h.textContent = s.name;
+      var o = document.createElement('span');
+      o.className = 'mt-1 block font-mono text-xs text-aquaDeep';
+      o.textContent = s.osm + ' mOsm/L · ' + s.desc;
+      btn.appendChild(h); btn.appendChild(o);
+      btn.addEventListener('click', function () { applySolution(s.id); });
+      dom.optionList.appendChild(btn);
+    });
+
+    dom.caseGrid.classList.add('hidden');
+    dom.scenarioPanel.classList.remove('hidden');
+    updateStatus();
+    updateGauge();
+    updateOverlays();
+  }
+
+  function applySolution(id) {
+    var sol = SOLUTIONS.filter(function (s) { return s.id === id; })[0];
+    state.soluteOut = sol.osm;
+    state.challengePhase = 'run';
+    state.runEnd = time + 420 * (REDUCED ? 2 : 1);
+    dom.optionList.querySelectorAll('button').forEach(function (b) {
+      b.disabled = true;
+      b.classList.remove('border-vein/50');
+      b.classList.add(b.dataset.id === id ? 'border-aquaDeep bg-foam/60' : 'opacity-40');
+      if (b.dataset.id === id) b.classList.add('preset-on');
+    });
+    dom.runStatus.textContent = 'Administraste ' + sol.name + ' (' + sol.osm + ' mOsm/L). Observá cómo responde la célula…';
+    dom.runStatus.classList.remove('hidden');
+  }
+
+  function finishCase() {
+    state.challengePhase = 'result';
+    var c = state.challenge;
+    var title, body, color;
+    if (state.lysed) {
+      title = 'Lisis celular';
+      color = '#E2504F';
+      body = 'La célula explotó: la solución dejó entrar demasiada agua y la membrana no resistió. Revisá la osmolaridad que administraste y volvé a intentarlo.';
+    } else if (state.volume > c.window[1]) {
+      title = 'Sigue hinchada';
+      color = '#F59E0B';
+      body = 'La solución no sacó suficiente agua: la célula permanece por encima de su tamaño sano y sigue en riesgo.';
+    } else if (state.volume < c.window[0]) {
+      title = 'No recuperó el equilibrio';
+      color = '#F59E0B';
+      body = 'La célula quedó por debajo de su tamaño sano: la solución no le devolvió el agua que necesita.';
+    } else {
+      title = '¡Célula salvada!';
+      color = '#0E8F83';
+      state.solved++;
+      body = 'La célula volvió a un volumen sano y estable. Analizá la explicación para entender por qué esta era la solución correcta.';
+    }
+    dom.verdictPanel.style.setProperty('--verdict', color);
+    dom.verdictTitle.textContent = title;
+    dom.verdictTitle.style.color = color;
+    dom.verdictBody.textContent = body;
+    dom.whyBox.textContent = c.why;
+    dom.verdictPanel.classList.remove('hidden');
+    dom.scoreText.textContent = state.solved + ' / 3';
+    dom.optionList.querySelectorAll('button').forEach(function (b) { b.disabled = false; });
+  }
+
+  dom.btnRetry.addEventListener('click', function () { startCase(state.caseIndex); });
+  dom.btnNext.addEventListener('click', function () {
+    var next = (state.caseIndex + 1) % CASES.length;
+    if (next === 0) renderCaseList();
+    else startCase(next);
+  });
+
+  dom.tabSim.addEventListener('click', function () { setMode('sim'); });
+  dom.tabChallenge.addEventListener('click', function () { setMode('challenge'); });
+  dom.btnReset.addEventListener('click', function () {
+    setSolute('in', 300);
+    setSolute('out', 300);
+    resetSim();
+    setPreset('iso');
+  });
+
+  dom.sliderIn.addEventListener('input', function () {
+    setSolute('in', parseInt(this.value, 10));
+    setPreset('iso');
+  });
+  dom.sliderOut.addEventListener('input', function () {
+    setSolute('out', parseInt(this.value, 10));
+    setPreset('iso');
+  });
+  dom.presetHipo.addEventListener('click', function () { setPreset('hipo'); });
+  dom.presetIso.addEventListener('click', function () { setPreset('iso'); });
+  dom.presetHiper.addEventListener('click', function () { setPreset('hiper'); });
+
+  function buildGauge() {
+    var cx = 72, cy = 72, R = 66;
+    function pt(deg) {
+      var rad = deg * Math.PI / 180;
+      return { x: cx + R * Math.cos(rad), y: cy - R * Math.sin(rad) };
+    }
+    function arc(fromDeg, toDeg, color) {
+      var a = pt(fromDeg), b = pt(toDeg);
+      var d = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      d.setAttribute('d', 'M ' + a.x + ' ' + a.y + ' A ' + R + ' ' + R + ' 0 0 1 ' + b.x + ' ' + b.y);
+      d.setAttribute('stroke', color);
+      d.setAttribute('stroke-width', '9');
+      d.setAttribute('fill', 'none');
+      d.setAttribute('stroke-linecap', 'butt');
+      dom.gaugeArcs.appendChild(d);
+    }
+    arc(145, 114.75, '#F3B3B2');
+    arc(114.75, 97.7, '#F8D49A');
+    arc(97.7, 82.3, '#8FD9CF');
+    arc(82.3, 65.25, '#F8D49A');
+    arc(65.25, 35, '#F3B3B2');
+
+    for (var g = -1; g <= 1.001; g += 0.25) {
+      var deg = 90 - 55 * g;
+      var rad = deg * Math.PI / 180;
+      var r1 = pt(deg), r2 = pt(deg - 0.01);
+      var x1 = cx + 54 * Math.cos(rad), y1 = cy - 54 * Math.sin(rad);
+      var x2 = cx + 62 * Math.cos(rad), y2 = cy - 62 * Math.sin(rad);
+      var tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      tick.setAttribute('x1', x1); tick.setAttribute('y1', y1);
+      tick.setAttribute('x2', x2); tick.setAttribute('y2', y2);
+      tick.setAttribute('stroke', '#9DB4AD');
+      tick.setAttribute('stroke-width', '1.4');
+      dom.gaugeTicks.appendChild(tick);
+      var label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', cx + 39 * Math.cos(rad));
+      label.setAttribute('y', cy - 39 * Math.sin(rad) + 3);
+      label.setAttribute('text-anchor', 'middle');
+      label.setAttribute('font-size', '8.5');
+      label.setAttribute('font-family', "'Space Mono', monospace");
+      label.setAttribute('fill', '#9DB4AD');
+      label.textContent = Math.round(g * 300);
+      dom.gaugeTicks.appendChild(label);
+    }
+  }
+
+  function init() {
+    buildGauge();
+    resize();
+    buildParticles();
+    window.addEventListener('resize', resize);
+    updateGauge();
+    updateStatus();
+    updateOverlays();
+    requestAnimationFrame(loop);
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
