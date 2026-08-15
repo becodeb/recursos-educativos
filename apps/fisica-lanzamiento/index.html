@@ -15,8 +15,8 @@ tailwind.config = {
     extend: {
       colors: {
         ink: '#1B2330',
-        paper: '#F5F6F2',
-        line: '#E4E8EF',
+        paper: '#F4F5F1',
+        line: '#E3E7EF',
         blue: '#2B5CE6',
         green: '#1F7A5C',
         red: '#D64545',
@@ -39,10 +39,31 @@ tailwind.config = {
       linear-gradient(to bottom, rgba(27, 35, 48, 0.035) 1px, transparent 1px);
     background-size: 24px 24px;
   }
-  .swatch-theory { border-top: 2px dashed #2B5CE6; }
-  .swatch-real { background: #D64545; border-radius: 9999px; }
-  .swatch-disp { background: rgba(31, 122, 92, 0.2); border: 1.5px dashed rgba(31, 122, 92, 0.5); border-radius: 9999px; }
-  .swatch-target { background: #E08A00; }
+  .reveal { animation: fadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+  .land-pop {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: landPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  @keyframes landPop {
+    0% { transform: scale(0.3); opacity: 0; }
+    55% { transform: scale(1.25); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .target-pulse {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: targetPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes targetPulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.45); opacity: 0.95; }
+  }
+  svg text { user-select: none; }
   input.invalid { border-color: #D64545; background: #FDF1F1; }
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
@@ -57,138 +78,147 @@ tailwind.config = {
 </head>
 <body class="font-sans text-ink antialiased">
 
-<div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
 
-  <header class="border-b border-line pb-6 mb-8 flex flex-wrap items-start justify-between gap-4">
-    <div>
-      <p class="font-mono text-[11px] tracking-[0.22em] uppercase text-blue mb-2">Física · Cinemática · Trabajo práctico</p>
-      <h1 class="font-display text-3xl sm:text-4xl font-semibold tracking-tight">Registro y Análisis de Tiro Oblicuo</h1>
-      <p class="text-sm text-slate-500 mt-2 max-w-2xl leading-relaxed">Estación experimental para registrar alcances reales medidos con cinta métrica, compararlos con la parábola teórica y poner a prueba el cálculo de velocidad inicial.</p>
+  <header class="border-b border-line pb-7 mb-8 flex flex-wrap items-center justify-between gap-5">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 shrink-0 rounded-xl bg-white border border-line grid place-items-center shadow-sm" aria-hidden="true">
+        <svg viewBox="0 0 48 48" class="w-9 h-9">
+          <path d="M 12 40 C 17 12, 33 12, 40 37" fill="none" stroke="#2B5CE6" stroke-width="2.5" stroke-dasharray="1 7" stroke-linecap="round"/>
+          <circle cx="12" cy="40" r="4.5" fill="#D64545" stroke="#FFFFFF" stroke-width="1.5"/>
+          <circle cx="40" cy="37" r="3.5" fill="#E08A00"/>
+          <path d="M 9 45 L 42 45" stroke="#1B2330" stroke-opacity="0.15" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <p class="font-mono text-[11px] tracking-[0.22em] uppercase text-blue mb-1.5">Física · Cinemática · Trabajo práctico</p>
+        <h1 class="font-display text-2xl sm:text-[28px] font-semibold tracking-tight leading-tight">Registro y Análisis de Tiro Oblicuo</h1>
+      </div>
     </div>
-    <button id="btn-print" class="no-print border border-line bg-white rounded-md px-3 py-1.5 text-xs font-medium hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue/30 transition">Imprimir ficha</button>
+    <button id="btn-print" class="no-print h-10 border border-line bg-white rounded-lg px-4 text-xs font-medium hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue/30 transition">Imprimir ficha</button>
   </header>
 
-  <main class="grid lg:grid-cols-[360px_1fr] gap-6 items-start">
+  <p class="text-sm text-slate-500 mb-9 max-w-3xl leading-relaxed">Estación experimental para registrar alcances reales medidos con cinta métrica, compararlos con la parábola teórica y poner a prueba el cálculo de velocidad inicial.</p>
 
-    <div class="space-y-6">
+  <main class="grid lg:grid-cols-[380px_1fr] gap-6 items-start">
 
-      <section class="bg-white border border-line rounded-lg p-5">
-        <div class="flex items-baseline gap-2 mb-1">
-          <span class="font-mono text-[11px] text-blue">01</span>
-          <h2 class="font-display text-base font-semibold uppercase tracking-wide">Configuración de la estación</h2>
+    <div class="space-y-6 order-2 lg:order-1">
+
+      <section class="reveal bg-white border border-line rounded-xl shadow-sm p-5 sm:p-6">
+        <div class="flex items-center gap-3 mb-1">
+          <span class="w-7 h-7 shrink-0 rounded-md border border-line bg-paper grid place-items-center font-mono text-[11px] text-blue">01</span>
+          <h2 class="font-display text-[15px] font-semibold uppercase tracking-wide">Configuración de la estación</h2>
         </div>
-        <p class="text-[13px] text-slate-500 mb-4">Parámetros del lanzador y del aula.</p>
+        <p class="text-[13px] text-slate-500 mb-5 pl-10">Parámetros del lanzador y del aula.</p>
 
-        <div class="space-y-4">
+        <div class="space-y-5">
           <div>
-            <label for="in-h" class="block text-[12px] font-medium text-slate-600 mb-1">Altura de la mesa <span class="font-mono">h</span> (m)</label>
+            <label for="in-h" class="block text-[12px] font-medium text-slate-600 mb-1.5">Altura de la mesa <span class="font-mono">h</span> (m)</label>
             <div class="relative">
               <input id="in-h" type="number" inputmode="decimal" min="0.1" max="3" step="0.05" value="0.85"
-                class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue transition">
-              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">m</span>
+                class="h-10 w-full rounded-lg border border-slate-300 bg-white pl-3 pr-12 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue/25 focus:border-blue transition">
+              <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">m</span>
             </div>
-            <div class="flex gap-1.5 mt-2">
-              <button data-preset-h="0.75" class="chip rounded border border-line px-2.5 py-1 text-xs font-mono hover:border-blue hover:text-blue transition">0,75</button>
-              <button data-preset-h="0.85" class="chip rounded border border-line px-2.5 py-1 text-xs font-mono hover:border-blue hover:text-blue transition">0,85</button>
-              <button data-preset-h="1.00" class="chip rounded border border-line px-2.5 py-1 text-xs font-mono hover:border-blue hover:text-blue transition">1,00</button>
+            <div class="flex gap-2 mt-2">
+              <button data-preset-h="0.75" class="chip h-8 px-2.5 rounded-lg border border-line bg-white text-xs font-mono hover:border-blue hover:text-blue transition">0,75</button>
+              <button data-preset-h="0.85" class="chip h-8 px-2.5 rounded-lg border border-line bg-white text-xs font-mono hover:border-blue hover:text-blue transition">0,85</button>
+              <button data-preset-h="1.00" class="chip h-8 px-2.5 rounded-lg border border-line bg-white text-xs font-mono hover:border-blue hover:text-blue transition">1,00</button>
             </div>
-            <p id="err-h" class="hidden text-[12px] text-red mt-1">Ingrese una altura entre 0,1 y 3 m.</p>
+            <p id="err-h" class="hidden text-[12px] text-red mt-1.5">Ingrese una altura entre 0,1 y 3 m.</p>
           </div>
 
           <div>
-            <label for="in-theta" class="block text-[12px] font-medium text-slate-600 mb-1">Ángulo de tiro <span class="font-mono">θ</span> (°)</label>
+            <label for="in-theta" class="block text-[12px] font-medium text-slate-600 mb-1.5">Ángulo de tiro <span class="font-mono">θ</span> (°)</label>
             <div class="relative">
               <input id="in-theta" type="number" inputmode="decimal" min="0" max="89" step="1" value="30"
-                class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue transition">
-              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">°</span>
+                class="h-10 w-full rounded-lg border border-slate-300 bg-white pl-3 pr-12 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue/25 focus:border-blue transition">
+              <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">°</span>
             </div>
-            <div class="flex gap-1.5 mt-2">
-              <button data-preset-t="0" class="chip rounded border border-line px-2.5 py-1 text-xs font-mono hover:border-blue hover:text-blue transition">0°</button>
-              <button data-preset-t="15" class="chip rounded border border-line px-2.5 py-1 text-xs font-mono hover:border-blue hover:text-blue transition">15°</button>
-              <button data-preset-t="30" class="chip rounded border border-line px-2.5 py-1 text-xs font-mono hover:border-blue hover:text-blue transition">30°</button>
-              <button data-preset-t="45" class="chip rounded border border-line px-2.5 py-1 text-xs font-mono hover:border-blue hover:text-blue transition">45°</button>
+            <div class="flex gap-2 mt-2">
+              <button data-preset-t="0" class="chip h-8 px-2.5 rounded-lg border border-line bg-white text-xs font-mono hover:border-blue hover:text-blue transition">0°</button>
+              <button data-preset-t="15" class="chip h-8 px-2.5 rounded-lg border border-line bg-white text-xs font-mono hover:border-blue hover:text-blue transition">15°</button>
+              <button data-preset-t="30" class="chip h-8 px-2.5 rounded-lg border border-line bg-white text-xs font-mono hover:border-blue hover:text-blue transition">30°</button>
+              <button data-preset-t="45" class="chip h-8 px-2.5 rounded-lg border border-line bg-white text-xs font-mono hover:border-blue hover:text-blue transition">45°</button>
             </div>
-            <p id="err-theta" class="hidden text-[12px] text-red mt-1">El ángulo debe estar entre 0° y 89°.</p>
+            <p id="err-theta" class="hidden text-[12px] text-red mt-1.5">El ángulo debe estar entre 0° y 89°.</p>
           </div>
 
           <div>
-            <label for="in-g" class="block text-[12px] font-medium text-slate-600 mb-1">Gravedad <span class="font-mono">g</span> (m/s²)</label>
+            <label for="in-g" class="block text-[12px] font-medium text-slate-600 mb-1.5">Gravedad <span class="font-mono">g</span> (m/s²)</label>
             <div class="relative">
               <input id="in-g" type="number" inputmode="decimal" min="1" max="20" step="0.1" value="9.8"
-                class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue transition">
-              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">m/s²</span>
+                class="h-10 w-full rounded-lg border border-slate-300 bg-white pl-3 pr-12 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue/25 focus:border-blue transition">
+              <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">m/s²</span>
             </div>
-            <p id="err-g" class="hidden text-[12px] text-red mt-1">Ingrese una gravedad entre 1 y 20 m/s².</p>
+            <p id="err-g" class="hidden text-[12px] text-red mt-1.5">Ingrese una gravedad entre 1 y 20 m/s².</p>
           </div>
         </div>
       </section>
 
-      <section class="bg-white border border-line rounded-lg p-5">
-        <div class="flex items-baseline gap-2 mb-1">
-          <span class="font-mono text-[11px] text-blue">02</span>
-          <h2 class="font-display text-base font-semibold uppercase tracking-wide">Registro de ensayos</h2>
+      <section class="reveal bg-white border border-line rounded-xl shadow-sm p-5 sm:p-6" style="animation-delay:.06s">
+        <div class="flex items-center gap-3 mb-1">
+          <span class="w-7 h-7 shrink-0 rounded-md border border-line bg-paper grid place-items-center font-mono text-[11px] text-blue">02</span>
+          <h2 class="font-display text-[15px] font-semibold uppercase tracking-wide">Registro de ensayos</h2>
         </div>
-        <p class="text-[13px] text-slate-500 mb-4">Alcances horizontales medidos con cinta métrica en el piso, desde la base de la mesa.</p>
+        <p class="text-[13px] text-slate-500 mb-5 pl-10">Alcances horizontales medidos con cinta métrica en el piso, desde la base de la mesa.</p>
 
-        <div class="space-y-2">
-          <div class="grid grid-cols-[64px_1fr] gap-2 px-1 text-[11px] uppercase tracking-wide text-slate-400 font-medium">
-            <span>Ensayo</span>
-            <span>Alcance x (m)</span>
-          </div>
-          <div id="trials" class="space-y-2"></div>
-          <p id="err-x" class="hidden text-[12px] text-red mt-1">Los alcances deben ser mayores que 0. Revise las celdas marcadas.</p>
+        <div class="grid grid-cols-[76px_1fr] gap-3 px-1 pb-1 text-[11px] uppercase tracking-wide text-slate-400 font-medium">
+          <span class="pl-3">Ensayo</span>
+          <span>Alcance x (m)</span>
         </div>
+        <div id="trials" class="space-y-2"></div>
+        <p id="err-x" class="hidden text-[12px] text-red mt-1.5">Los alcances deben ser mayores que 0. Revise las celdas marcadas.</p>
 
         <div class="flex gap-2 mt-4">
-          <button id="btn-sample" class="border border-line bg-white rounded-md px-3 py-2 text-xs font-medium hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue/30 transition">Datos de ejemplo</button>
-          <button id="btn-clear" class="border border-line bg-white rounded-md px-3 py-2 text-xs font-medium hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue/30 transition">Limpiar ensayos</button>
+          <button id="btn-sample" class="h-9 px-3 rounded-lg border border-line bg-white text-xs font-medium hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue/30 transition">Datos de ejemplo</button>
+          <button id="btn-clear" class="h-9 px-3 rounded-lg border border-line bg-white text-xs font-medium hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue/30 transition">Limpiar ensayos</button>
         </div>
       </section>
 
-      <section class="bg-white border border-line rounded-lg p-5">
-        <div class="flex items-baseline gap-2 mb-1">
-          <span class="font-mono text-[11px] text-amber">04</span>
-          <h2 class="font-display text-base font-semibold uppercase tracking-wide">Desafío: acierto al blanco</h2>
+      <section class="reveal bg-white border border-line rounded-xl shadow-sm p-5 sm:p-6" style="animation-delay:.18s">
+        <div class="flex items-center gap-3 mb-1">
+          <span class="w-7 h-7 shrink-0 rounded-md border border-line bg-paper grid place-items-center font-mono text-[11px] text-amber">04</span>
+          <h2 class="font-display text-[15px] font-semibold uppercase tracking-wide">Desafío: acierto al blanco</h2>
         </div>
-        <p class="text-[13px] text-slate-500 mb-4">El docente fija la distancia del blanco en el piso. Calcule <span class="font-mono">v₀</span> con la ayuda y dispare virtualmente.</p>
+        <p class="text-[13px] text-slate-500 mb-5 pl-10">El docente fija el blanco; calcule <span class="font-mono">v₀</span> antes de disparar y obtenga su puntaje de precisión.</p>
 
         <div class="space-y-4">
           <div>
-            <label for="in-d" class="block text-[12px] font-medium text-slate-600 mb-1">Distancia del blanco <span class="font-mono">D</span> (m)</label>
+            <label for="in-d" class="block text-[12px] font-medium text-slate-600 mb-1.5">Distancia del blanco <span class="font-mono">D</span> (m)</label>
             <div class="relative">
               <input id="in-d" type="number" inputmode="decimal" min="0.5" max="30" step="0.05" value="3.5"
-                class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber/30 focus:border-amber transition">
-              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">m</span>
+                class="h-10 w-full rounded-lg border border-slate-300 bg-white pl-3 pr-12 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber/25 focus:border-amber transition">
+              <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">m</span>
             </div>
-            <p id="err-d" class="hidden text-[12px] text-red mt-1">Ingrese una distancia mayor que 0.</p>
+            <p id="err-d" class="hidden text-[12px] text-red mt-1.5">Ingrese una distancia mayor que 0.</p>
           </div>
 
           <div>
-            <label for="in-v0" class="block text-[12px] font-medium text-slate-600 mb-1">Velocidad estimada <span class="font-mono">v₀</span> (m/s)</label>
+            <label for="in-v0" class="block text-[12px] font-medium text-slate-600 mb-1.5">Velocidad estimada <span class="font-mono">v₀</span> (m/s)</label>
             <div class="relative">
-              <input id="in-v0" type="number" inputmode="decimal" min="0.1" max="30" step="0.05" placeholder="Ej: 4,2"
-                class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber/30 focus:border-amber transition">
-              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">m/s</span>
+              <input id="in-v0" type="number" inputmode="decimal" min="0.1" max="30" step="0.05" placeholder="Ej: 5,28"
+                class="h-10 w-full rounded-lg border border-slate-300 bg-white pl-3 pr-12 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber/25 focus:border-amber transition">
+              <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">m/s</span>
             </div>
-            <p id="err-v0" class="hidden text-[12px] text-red mt-1">Ingrese una velocidad mayor que 0.</p>
+            <p id="err-v0" class="hidden text-[12px] text-red mt-1.5">Ingrese una velocidad mayor que 0.</p>
           </div>
 
           <div class="flex gap-2">
-            <button id="btn-fire" class="flex-1 bg-amber text-white text-sm font-semibold rounded-md px-4 py-2.5 hover:bg-amber/90 active:scale-[0.99] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber/40">Disparar</button>
-            <button id="btn-retry" class="border border-line bg-white rounded-md px-4 py-2 text-xs font-medium hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue/30 transition">Nuevo intento</button>
+            <button id="btn-fire" class="h-10 flex-1 bg-amber text-white text-sm font-semibold rounded-lg px-4 hover:bg-amber/90 active:scale-[0.99] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber/40">Disparar</button>
+            <button id="btn-retry" class="h-10 px-4 rounded-lg border border-line bg-white text-xs font-medium hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue/30 transition">Nuevo intento</button>
           </div>
 
-          <div id="result" class="hidden border border-line bg-paper rounded-md px-4 py-3">
-            <p class="text-[11px] uppercase tracking-wide text-slate-400 font-medium mb-1">Puntaje de precisión</p>
+          <div id="result" aria-live="polite" class="hidden border border-line bg-paper rounded-lg px-4 py-3.5">
+            <p class="text-[11px] uppercase tracking-wider text-slate-400 font-medium mb-1.5">Puntaje de precisión</p>
             <div class="flex items-end gap-2">
               <span id="score-num" class="font-mono text-4xl font-semibold text-amber leading-none">0</span>
               <span class="text-xs text-slate-400 mb-1">/ 100</span>
             </div>
-            <p id="score-tier" class="text-sm font-medium mt-2"></p>
+            <p id="score-tier" class="text-sm font-medium mt-2.5"></p>
             <p id="score-detail" class="text-[12px] text-slate-500 mt-0.5"></p>
           </div>
 
-          <details class="border border-line rounded-md px-4 py-3">
+          <details class="rounded-lg border border-line px-4 py-3">
             <summary class="text-sm cursor-pointer text-slate-600 select-none">Ver ayuda de cálculo</summary>
             <div class="mt-3 font-mono text-[13px] text-slate-600 space-y-1.5">
               <p>v₀ = √( g·D² / (2·cos²θ·(h + D·tanθ)) )</p>
@@ -200,44 +230,47 @@ tailwind.config = {
 
     </div>
 
-    <section class="bg-white border border-line rounded-lg p-5">
-      <div class="flex items-baseline gap-2 mb-1">
-        <span class="font-mono text-[11px] text-blue">03</span>
-        <h2 class="font-display text-base font-semibold uppercase tracking-wide">Trayectoria y métricas</h2>
+    <section class="reveal bg-white border border-line rounded-xl shadow-sm p-5 sm:p-6 max-lg:order-1" style="animation-delay:.12s">
+      <div class="flex items-center gap-3 mb-1">
+        <span class="w-7 h-7 shrink-0 rounded-md border border-line bg-paper grid place-items-center font-mono text-[11px] text-blue">03</span>
+        <h2 class="font-display text-[15px] font-semibold uppercase tracking-wide">Trayectoria y métricas</h2>
       </div>
-      <p class="text-[13px] text-slate-500 mb-4">Vista lateral del aula: mesa de lanzamiento, parábola teórica, impactos reales y zona de dispersión.</p>
+      <p class="text-[13px] text-slate-500 mb-5 pl-10">Vista lateral del aula: mesa de lanzamiento, parábola teórica, impactos reales y zona de dispersión.</p>
 
-      <div class="border border-line rounded-md overflow-hidden bg-white">
-        <canvas id="scene" class="w-full aspect-[16/9] block" aria-label="Gráfico de la trayectoria del tiro oblicuo en el aula"></canvas>
+      <div class="rounded-lg border border-line overflow-hidden bg-white">
+        <svg id="scene" viewBox="0 0 1000 640" class="w-full block" role="img" aria-label="Gráfico de la trayectoria del tiro oblicuo en el aula">
+          <title>Trayectoria del tiro oblicuo</title>
+          <desc>Mesa de lanzamiento, parábola teórica, impactos reales con zona de dispersión y blanco del desafío.</desc>
+        </svg>
       </div>
 
       <div class="flex flex-wrap gap-x-5 gap-y-2 mt-4 text-[12px] text-slate-500">
-        <span class="inline-flex items-center gap-2"><span class="inline-block w-6 h-[3px] swatch-theory"></span>Parábola teórica</span>
-        <span class="inline-flex items-center gap-2"><span class="inline-block w-3 h-3 swatch-real"></span>Impactos reales</span>
-        <span class="inline-flex items-center gap-2"><span class="inline-block w-6 h-3 swatch-disp"></span>Zona ±σ</span>
-        <span class="inline-flex items-center gap-2"><span class="inline-block w-3 h-3 swatch-target"></span>Blanco (desafío)</span>
+        <span class="inline-flex items-center gap-2"><span class="inline-block w-6 h-[3px] rounded-full border-t-2 border-dashed border-blue"></span>Parábola teórica</span>
+        <span class="inline-flex items-center gap-2"><span class="inline-block w-3 h-3 rounded-full bg-red"></span>Impactos reales</span>
+        <span class="inline-flex items-center gap-2"><span class="inline-block w-6 h-3 rounded-full bg-green/20 border border-dashed border-green/50"></span>Zona ±σ</span>
+        <span class="inline-flex items-center gap-2"><span class="inline-block w-3 h-3 rounded-full bg-amber"></span>Blanco (desafío)</span>
       </div>
 
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
-        <div class="border border-line rounded-lg p-4">
-          <p class="text-[11px] uppercase tracking-wide text-slate-400 font-medium">Alcance promedio</p>
-          <p id="m-mean" class="font-mono text-2xl font-semibold mt-1">—</p>
-          <p class="text-[11px] text-slate-400 mt-1"><span id="m-count">0 de 5</span> ensayos</p>
+      <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 mt-5">
+        <div class="rounded-lg border border-line bg-white p-4">
+          <p class="text-[11px] uppercase tracking-wider text-slate-400 font-medium">Alcance promedio</p>
+          <p id="m-mean" class="font-mono text-[22px] font-semibold mt-2 leading-none">—</p>
+          <p class="text-[11px] text-slate-400 mt-2"><span id="m-count">0 de 5</span> ensayos</p>
         </div>
-        <div class="border border-line rounded-lg p-4">
-          <p class="text-[11px] uppercase tracking-wide text-slate-400 font-medium">Dispersión</p>
-          <p id="m-sigma" class="font-mono text-2xl font-semibold mt-1">—</p>
-          <p class="text-[11px] text-slate-400 mt-1">desviación σ</p>
+        <div class="rounded-lg border border-line bg-white p-4">
+          <p class="text-[11px] uppercase tracking-wider text-slate-400 font-medium">Dispersión</p>
+          <p id="m-sigma" class="font-mono text-[22px] font-semibold mt-2 leading-none">—</p>
+          <p class="text-[11px] text-slate-400 mt-2">desviación σ</p>
         </div>
-        <div class="border border-line rounded-lg p-4">
-          <p class="text-[11px] uppercase tracking-wide text-slate-400 font-medium">Error relativo</p>
-          <p id="m-err" class="font-mono text-2xl font-semibold mt-1">—</p>
-          <p class="text-[11px] text-slate-400 mt-1">vs. alcance teórico <span id="m-teo">—</span></p>
+        <div class="rounded-lg border border-line bg-white p-4">
+          <p class="text-[11px] uppercase tracking-wider text-slate-400 font-medium">Error relativo</p>
+          <p id="m-err" class="font-mono text-[22px] font-semibold mt-2 leading-none">—</p>
+          <p class="text-[11px] text-slate-400 mt-2">vs. alcance teórico <span id="m-teo">—</span></p>
         </div>
-        <div class="border border-line rounded-lg p-4">
-          <p class="text-[11px] uppercase tracking-wide text-slate-400 font-medium">Velocidad inicial</p>
-          <p id="m-v0" class="font-mono text-2xl font-semibold mt-1">—</p>
-          <p class="text-[11px] text-slate-400 mt-1">deducida de X̄</p>
+        <div class="rounded-lg border border-line bg-white p-4">
+          <p class="text-[11px] uppercase tracking-wider text-slate-400 font-medium">Velocidad inicial</p>
+          <p id="m-v0" class="font-mono text-[22px] font-semibold mt-2 leading-none">—</p>
+          <p class="text-[11px] text-slate-400 mt-2">deducida de X̄</p>
         </div>
       </div>
 
@@ -271,12 +304,350 @@ tailwind.config = {
     trials: $('#trials'), btnSample: $('#btn-sample'), btnClear: $('#btn-clear'),
     btnFire: $('#btn-fire'), btnRetry: $('#btn-retry'), btnPrint: $('#btn-print'),
     result: $('#result'), scoreNum: $('#score-num'), scoreTier: $('#score-tier'), scoreDetail: $('#score-detail'),
-    mMean: $('#m-mean'), mSigma: $('#m-sigma'), mErr: $('#m-err'), mTeo: $('#m-teo'), mCount: $('#m-count'),
-    canvas: $('#scene'),
+    mMean: $('#m-mean'), mSigma: $('#m-sigma'), mErr: $('#m-err'), mTeo: $('#m-teo'), mCount: $('#m-count'), mV0: $('#m-v0'),
   };
 
   var TRIALS = 5;
   var trialInputs = [];
+
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+  var VB = { w: 1000, h: 640 };
+  var YFLOOR = 590;
+  var RULER_Y = 606;
+  var ML = 64, MR = 28, MT = 34;
+  var TABLE_W = 0.55;
+  var BALL_R = 4.5;
+  var geom = { sx: 100, sy: 100, xMax: 4, yMax: 2 };
+  var S = {};
+
+  function svgEl(tag, attrs) {
+    var e = document.createElementNS(SVG_NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  function px(x) { return ML + x * geom.sx; }
+  function py(y) { return YFLOOR - y * geom.sy; }
+
+  function buildScene() {
+    var svg = $('#scene');
+    var root = [
+      { id: 'wall', tag: 'rect', a: { x: 0, y: 0, width: VB.w, height: YFLOOR, fill: '#F4F5F0' } },
+      { id: 'baseboard', tag: 'rect', a: { x: 0, y: YFLOOR - 4, width: VB.w, height: 4, fill: '#E1E4DA' } },
+      { id: 'floor', tag: 'rect', a: { x: 0, y: YFLOOR, width: VB.w, height: RULER_Y - YFLOOR, fill: '#E8EAE1' } },
+      { id: 'wallgrid', tag: 'g' },
+      { id: 'floorgrid', tag: 'g' },
+      { id: 'rulergroup', tag: 'g' },
+      { id: 'tableshadow', tag: 'ellipse', a: { fill: 'rgba(27,35,48,0.08)' } },
+      { id: 'tablelegl', tag: 'rect', a: { fill: '#8F6B4A' } },
+      { id: 'tablelegr', tag: 'rect', a: { fill: '#8F6B4A' } },
+      { id: 'tabletop', tag: 'rect', a: { rx: 0.5, fill: '#C89B6E' } },
+      { id: 'tabletoplight', tag: 'rect', a: { rx: 0.5, fill: '#DCAF85' } },
+      { id: 'tablelabel', tag: 'text', a: { 'font-size': 12, fill: '#94A3B8', 'font-family': "'IBM Plex Mono', monospace" } },
+      { id: 'hdim', tag: 'line', a: { stroke: 'rgba(27,35,48,0.35)', 'stroke-width': 1, 'stroke-dasharray': '3 3' } },
+      { id: 'hdimtickt', tag: 'line', a: { stroke: 'rgba(27,35,48,0.35)', 'stroke-width': 1 } },
+      { id: 'hdimtickb', tag: 'line', a: { stroke: 'rgba(27,35,48,0.35)', 'stroke-width': 1 } },
+      { id: 'hdimtext', tag: 'text', a: { 'font-size': 12, fill: '#64748B', 'font-family': "'IBM Plex Mono', monospace" } },
+      { id: 'ballshadow', tag: 'ellipse', a: { fill: 'rgba(27,35,48,0.18)' } },
+      { id: 'ballrest', tag: 'circle', a: { r: BALL_R, fill: '#2B5CE6', stroke: '#FFFFFF', 'stroke-width': 1.2 } },
+      { id: 'arrow', tag: 'line', a: { stroke: 'rgba(43,92,230,0.5)', 'stroke-width': 1.5, 'stroke-dasharray': '5 4' } },
+      { id: 'arrowhead', tag: 'polygon', a: { fill: 'rgba(43,92,230,0.5)' } },
+      { id: 'theory', tag: 'path', a: { fill: 'none', stroke: '#2B5CE6', 'stroke-width': 1.8, 'stroke-dasharray': '7 6', 'stroke-linecap': 'round', opacity: 0.78 } },
+      { id: 'theorytick', tag: 'rect', a: { fill: 'rgba(43,92,230,0.55)' } },
+      { id: 'impacts', tag: 'g' },
+      { id: 'disp', tag: 'ellipse', a: { fill: 'rgba(31,122,92,0.13)', stroke: 'rgba(31,122,92,0.45)', 'stroke-width': 1.3, 'stroke-dasharray': '4 4' } },
+      { id: 'displabel', tag: 'text', a: { 'font-size': 12, fill: 'rgba(31,122,92,0.85)', 'font-family': "'IBM Plex Mono', monospace" } },
+      { id: 'mean', tag: 'line', a: { stroke: 'rgba(43,92,230,0.5)', 'stroke-width': 1.2, 'stroke-dasharray': '5 5' } },
+      { id: 'meantext', tag: 'text', a: { 'font-size': 12, fill: '#2B5CE6', 'font-family': "'IBM Plex Mono', monospace" } },
+      { id: 'targetpole', tag: 'line', a: { stroke: '#E08A00', 'stroke-width': 2, 'stroke-linecap': 'round' } },
+      { id: 'targetflag', tag: 'polygon', a: { fill: '#E08A00' } },
+      { id: 'targetlabel', tag: 'text', a: { 'font-size': 12, fill: 'rgba(224,138,0,0.9)', 'font-family': "'IBM Plex Mono', monospace" } },
+      { id: 'targetpulse', tag: 'circle', a: { fill: 'none', stroke: 'rgba(224,138,0,0.6)', 'stroke-width': 1.5, 'class': 'target-pulse' } },
+      { id: 'shot', tag: 'path', a: { fill: 'none', stroke: '#E08A00', 'stroke-width': 2.2, 'stroke-linecap': 'round' } },
+      { id: 'shotgroup', tag: 'g', a: { opacity: 0 } },
+      { id: 'landing', tag: 'g', a: { opacity: 0 } },
+      { id: 'empty', tag: 'text', a: { 'font-size': 13, fill: 'rgba(27,35,48,0.45)', 'font-family': "'IBM Plex Sans', sans-serif", 'text-anchor': 'middle' } },
+    ];
+
+    root.forEach(function (item) {
+      var node = svgEl(item.tag, item.a || {});
+      node.id = item.id;
+      svg.appendChild(node);
+      S[item.id] = node;
+    });
+
+    S.shotgroup.appendChild(svgEl('circle', { id: 'shotball', r: BALL_R, fill: '#E08A00', stroke: '#FFFFFF', 'stroke-width': 1.2 }));
+    S.shotball = $('#shotball');
+
+    var ring = svgEl('circle', { id: 'landingring', r: 13, fill: 'none', stroke: 'rgba(224,138,0,0.85)', 'stroke-width': 2.2 });
+    ring.classList.add('land-pop');
+    S.landingring = ring;
+    S.landing.appendChild(ring);
+    S.landing.appendChild(svgEl('circle', { id: 'landingdot', r: 3.5, fill: '#E08A00' }));
+    S.landinglabel = svgEl('text', { id: 'landinglabel', 'font-size': 12, fill: 'rgba(224,138,0,0.9)', 'font-family': "'IBM Plex Mono', monospace", y: -20 });
+    S.landing.appendChild(S.landinglabel);
+
+    var rulerBg = svgEl('rect', { x: 0, y: RULER_Y, width: VB.w, height: VB.h - RULER_Y, fill: '#FFFFFF' });
+    svg.insertBefore(rulerBg, S.rulergroup);
+    var rulerLine = svgEl('line', { x1: 0, y1: RULER_Y, x2: VB.w, y2: RULER_Y, stroke: '#E3E7EF', 'stroke-width': 1.5 });
+    svg.insertBefore(rulerLine, S.rulergroup);
+    S.rulerM = svgEl('text', { 'font-size': 11, fill: '#94A3B8', 'font-family': "'IBM Plex Mono', monospace", 'text-anchor': 'end' });
+    S.rulerM.textContent = 'm';
+    S.rulergroup.appendChild(S.rulerM);
+
+    S.landing.style.opacity = 0;
+    S.shot.style.display = 'none';
+    S.empty.setAttribute('x', VB.w / 2);
+    S.empty.setAttribute('y', 310);
+  }
+
+  function clearGroup(node) {
+    while (node.firstChild) node.removeChild(node.firstChild);
+  }
+
+  function trajectoryScenePath(v0, theta, h, g, tMax) {
+    var steps = 120;
+    var cosT = Math.cos(rad(theta));
+    var sinT = Math.sin(rad(theta));
+    var off = BALL_R / geom.sy;
+    var parts = [];
+    for (var i = 0; i <= steps; i++) {
+      var t = tMax * i / steps;
+      var xp = v0 * cosT * t;
+      var yp = h + v0 * sinT * t - 0.5 * g * t * t + off;
+      var X = px(TABLE_W + xp);
+      var Y = py(yp);
+      parts.push((i === 0 ? 'M' : 'L') + X.toFixed(1) + ' ' + Y.toFixed(1));
+    }
+    return parts.join(' ');
+  }
+
+  function updateScene() {
+    var s = readStation();
+    var trials = readTrials();
+    var d = derived(s, trials);
+    var target = parseFloat(el.d.value);
+    var hasTarget = isFinite(target) && target > 0;
+    var shot = state.shot;
+    var invalid = !(isFinite(s.h) && s.h >= 0.1 && s.h <= 3 && isFinite(s.theta) && s.theta >= 0 && s.theta < 90 && isFinite(s.g) && s.g > 0);
+
+    $('#scene').classList.toggle('opacity-40', invalid);
+
+    var cands = [2];
+    if (d) cands.push(TABLE_W + d.mean + 3 * d.sigma, TABLE_W + d.xTeo);
+    if (hasTarget) cands.push(target);
+    if (shot) cands.push(TABLE_W + shot.xLand);
+    var xMax = Math.max.apply(null, cands) * 1.12;
+
+    var peaks = [s.h * 1.35];
+    if (d) peaks.push(peakY(d.v0, s.theta, s.h, s.g) * 1.2);
+    if (shot) peaks.push(peakY(shot.v0, s.theta, s.h, s.g) * 1.2);
+    var yMax = Math.max.apply(null, peaks.concat([1.4]));
+
+    geom.sx = (VB.w - ML - MR) / xMax;
+    geom.sy = (YFLOOR - MT) / yMax;
+    geom.xMax = xMax;
+    geom.yMax = yMax;
+
+    var topY = py(s.h);
+    var tlX = px(0);
+    var trX = px(TABLE_W);
+
+    S.tableshadow.setAttribute('cx', (tlX + trX) / 2);
+    S.tableshadow.setAttribute('cy', YFLOOR + 3);
+    S.tableshadow.setAttribute('rx', (trX - tlX) * 0.55);
+    S.tableshadow.setAttribute('ry', 4);
+
+    S.tablelegl.setAttribute('x', tlX + 7);
+    S.tablelegl.setAttribute('y', topY);
+    S.tablelegl.setAttribute('width', 5);
+    S.tablelegl.setAttribute('height', YFLOOR - topY);
+    S.tablelegr.setAttribute('x', trX - 12);
+    S.tablelegr.setAttribute('y', topY);
+    S.tablelegr.setAttribute('width', 5);
+    S.tablelegr.setAttribute('height', YFLOOR - topY);
+
+    S.tabletop.setAttribute('x', tlX);
+    S.tabletop.setAttribute('y', topY - 5);
+    S.tabletop.setAttribute('width', trX - tlX);
+    S.tabletop.setAttribute('height', 5);
+    S.tabletoplight.setAttribute('x', tlX);
+    S.tabletoplight.setAttribute('y', topY - 5);
+    S.tabletoplight.setAttribute('width', trX - tlX);
+    S.tabletoplight.setAttribute('height', 1.5);
+
+    S.tablelabel.setAttribute('x', tlX);
+    S.tablelabel.setAttribute('y', topY - 11);
+    S.tablelabel.setAttribute('text-anchor', 'start');
+    S.tablelabel.textContent = 'mesa';
+
+    var bx = trX + 1;
+    var by = topY - BALL_R;
+    S.ballshadow.setAttribute('cx', bx);
+    S.ballshadow.setAttribute('cy', topY + 2);
+    S.ballshadow.setAttribute('rx', 4);
+    S.ballshadow.setAttribute('ry', 1.5);
+    S.ballrest.setAttribute('cx', bx);
+    S.ballrest.setAttribute('cy', by);
+
+    var Xh = px(TABLE_W + 0.42);
+    S.hdim.setAttribute('x1', Xh);
+    S.hdim.setAttribute('y1', topY);
+    S.hdim.setAttribute('x2', Xh);
+    S.hdim.setAttribute('y2', YFLOOR);
+    S.hdimtickt.setAttribute('x1', Xh - 4);
+    S.hdimtickt.setAttribute('y1', topY);
+    S.hdimtickt.setAttribute('x2', Xh + 4);
+    S.hdimtickt.setAttribute('y2', topY);
+    S.hdimtickb.setAttribute('x1', Xh - 4);
+    S.hdimtickb.setAttribute('y1', YFLOOR);
+    S.hdimtickb.setAttribute('x2', Xh + 4);
+    S.hdimtickb.setAttribute('y2', YFLOOR);
+    S.hdimtext.setAttribute('x', Xh + 6);
+    S.hdimtext.setAttribute('y', (topY + YFLOOR) / 2 + 4);
+    S.hdimtext.setAttribute('text-anchor', 'start');
+    S.hdimtext.textContent = 'h';
+
+    var ang = rad(s.theta);
+    var aLen = Math.max(46, 0.3 * geom.sx);
+    var ex = bx + Math.cos(ang) * aLen;
+    var ey = by - Math.sin(ang) * aLen;
+    S.arrow.setAttribute('x1', bx);
+    S.arrow.setAttribute('y1', by);
+    S.arrow.setAttribute('x2', ex);
+    S.arrow.setAttribute('y2', ey);
+    var ppx = -Math.sin(ang);
+    var ppy = -Math.cos(ang);
+    S.arrowhead.setAttribute('points',
+      ex + ',' + ey + ' ' +
+      (ex - Math.cos(ang) * 9 + ppx * 4.5) + ',' + (ey + Math.sin(ang) * 9 + ppy * 4.5) + ' ' +
+      (ex - Math.cos(ang) * 9 - ppx * 4.5) + ',' + (ey + Math.sin(ang) * 9 - ppy * 4.5));
+
+    clearGroup(S.wallgrid);
+    for (var wx = 1; wx <= xMax; wx += 1) {
+      var wxp = px(wx);
+      if (wxp < ML + 10 || wxp > VB.w - MR) continue;
+      S.wallgrid.appendChild(svgEl('line', { x1: wxp, y1: 0, x2: wxp, y2: YFLOOR - 4, stroke: 'rgba(27,35,48,0.04)' }));
+    }
+
+    clearGroup(S.floorgrid);
+    for (var fx = 0.5; fx <= xMax; fx += 0.5) {
+      S.floorgrid.appendChild(svgEl('line', { x1: px(fx), y1: YFLOOR, x2: px(fx), y2: RULER_Y, stroke: 'rgba(27,35,48,0.07)' }));
+    }
+
+    clearGroup(S.rulergroup);
+    var minor = geom.sx * 0.1 >= 8 ? 0.1 : 0.5;
+    for (var rx = minor; rx <= xMax; rx += minor) {
+      var major = Math.abs(rx % 0.5) < 1e-9;
+      var rxp = px(rx);
+      S.rulergroup.appendChild(svgEl('line', {
+        x1: rxp, y1: RULER_Y, x2: rxp, y2: RULER_Y + (major ? 12 : 6),
+        stroke: 'rgba(27,35,48,0.45)', 'stroke-width': 1,
+      }));
+      if (major) {
+        var label = rx % 1 === 0 ? String(rx) : rx.toFixed(1).replace('.', ',');
+        var t = svgEl('text', {
+          'font-size': 11, fill: '#64748B', 'font-family': "'IBM Plex Mono', monospace", 'text-anchor': 'middle',
+          x: rxp, y: RULER_Y + 26,
+        });
+        t.textContent = label;
+        S.rulergroup.appendChild(t);
+      }
+    }
+    var mm = svgEl('text', { 'font-size': 11, fill: '#94A3B8', 'font-family': "'IBM Plex Mono', monospace", 'text-anchor': 'end', x: VB.w - 8, y: RULER_Y + 26 });
+    mm.textContent = 'm';
+    S.rulergroup.appendChild(mm);
+
+    if (d) {
+      S.theory.setAttribute('d', trajectoryScenePath(d.v0, s.theta, s.h, s.g, flightTime(d.v0, s.theta, s.h, s.g)));
+      S.theory.style.display = '';
+      S.theorytick.setAttribute('x', px(TABLE_W + d.xTeo) - 0.75);
+      S.theorytick.setAttribute('y', YFLOOR - 9);
+      S.theorytick.setAttribute('width', 1.5);
+      S.theorytick.setAttribute('height', 9);
+    } else {
+      S.theory.style.display = 'none';
+      S.theorytick.style.display = 'none';
+    }
+
+    clearGroup(S.impacts);
+    var valid = trials.filter(function (v) { return v !== null; });
+    valid.forEach(function (x) {
+      S.impacts.appendChild(svgEl('circle', {
+        cx: px(TABLE_W + x), cy: YFLOOR, r: BALL_R,
+        fill: '#D64545', stroke: '#FFFFFF', 'stroke-width': 1.5,
+      }));
+    });
+
+    if (d && d.sigma > 0.0005) {
+      S.disp.setAttribute('cx', px(TABLE_W + d.mean));
+      S.disp.setAttribute('cy', YFLOOR);
+      S.disp.setAttribute('rx', Math.max(d.sigma * geom.sx, 7));
+      S.disp.setAttribute('ry', 15);
+      S.disp.style.display = '';
+      S.displabel.setAttribute('x', px(TABLE_W + d.mean) + Math.max(d.sigma * geom.sx, 7) + 8);
+      S.displabel.setAttribute('y', YFLOOR - 14);
+      S.displabel.setAttribute('text-anchor', 'start');
+      S.displabel.textContent = 'σ';
+    } else {
+      S.disp.style.display = 'none';
+      S.displabel.style.display = 'none';
+    }
+
+    if (d) {
+      var mx = px(TABLE_W + d.mean);
+      S.mean.setAttribute('x1', mx);
+      S.mean.setAttribute('y1', YFLOOR);
+      S.mean.setAttribute('x2', mx);
+      S.mean.setAttribute('y2', YFLOOR - 52);
+      S.mean.style.display = '';
+      S.meantext.setAttribute('x', mx);
+      S.meantext.setAttribute('y', YFLOOR - 58);
+      S.meantext.setAttribute('text-anchor', 'middle');
+      S.meantext.textContent = 'X̄';
+    } else {
+      S.mean.style.display = 'none';
+      S.meantext.style.display = 'none';
+    }
+
+    if (hasTarget) {
+      var tx = px(target);
+      S.targetpole.setAttribute('x1', tx);
+      S.targetpole.setAttribute('y1', YFLOOR);
+      S.targetpole.setAttribute('x2', tx);
+      S.targetpole.setAttribute('y2', YFLOOR - 110);
+      S.targetflag.setAttribute('points', tx + ',' + (YFLOOR - 110) + ' ' + (tx + 16) + ',' + (YFLOOR - 105) + ' ' + tx + ',' + (YFLOOR - 100));
+      S.targetlabel.setAttribute('y', YFLOOR - 104);
+      S.targetpulse.setAttribute('cx', tx);
+      S.targetpulse.setAttribute('cy', YFLOOR);
+      if (tx > 900) {
+        S.targetlabel.setAttribute('x', tx - 20);
+        S.targetlabel.setAttribute('text-anchor', 'end');
+      } else {
+        S.targetlabel.setAttribute('x', tx + 20);
+        S.targetlabel.setAttribute('text-anchor', 'start');
+      }
+      S.targetlabel.textContent = 'Blanco';
+      S.targetpole.style.display = '';
+      S.targetflag.style.display = '';
+      S.targetlabel.style.display = '';
+      S.targetpulse.style.display = '';
+    } else {
+      S.targetpole.style.display = 'none';
+      S.targetflag.style.display = 'none';
+      S.targetlabel.style.display = 'none';
+      S.targetpulse.style.display = 'none';
+    }
+
+    var hasShot = shot && state.shotVisible;
+    if (hasShot) {
+      S.shot.setAttribute('d', trajectoryScenePath(shot.v0, s.theta, s.h, s.g, flightTime(shot.v0, s.theta, s.h, s.g)));
+    }
+
+    var showEmpty = !invalid && !d && !hasShot;
+    S.empty.style.display = showEmpty ? '' : 'none';
+    S.empty.textContent = 'Registre al menos un ensayo para trazar la parábola teórica.';
+  }
 
   function fallTime(h, g) { return Math.sqrt(2 * h / g); }
 
@@ -294,26 +665,14 @@ tailwind.config = {
     return h + vy * vy / (2 * g);
   }
 
-  function trajectory(v0, theta, h, g, tMax) {
-    var pts = [];
-    var steps = 140;
-    var cosT = Math.cos(rad(theta));
-    var sinT = Math.sin(rad(theta));
-    for (var i = 0; i <= steps; i++) {
-      var t = tMax * i / steps;
-      pts.push([v0 * cosT * t, h + v0 * sinT * t - 0.5 * g * t * t]);
-    }
-    return pts;
-  }
-
   function buildTrials() {
     trialInputs = [];
     el.trials.innerHTML = '';
     for (var i = 1; i <= TRIALS; i++) {
       var wrap = document.createElement('div');
-      wrap.className = 'grid grid-cols-[64px_1fr] gap-2 items-center';
+      wrap.className = 'grid grid-cols-[76px_1fr] gap-3 items-center';
       var label = document.createElement('span');
-      label.className = 'font-mono text-xs text-slate-500 pl-1';
+      label.className = 'font-mono text-xs text-slate-500 pl-3';
       label.textContent = 'Ensayo ' + i;
       var input = document.createElement('input');
       input.type = 'number';
@@ -322,7 +681,7 @@ tailwind.config = {
       input.max = '30';
       input.step = '0.01';
       input.placeholder = '0,00';
-      input.className = 'w-full rounded-md border border-slate-300 bg-white px-3 py-1.5 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue transition';
+      input.className = 'h-9 w-full rounded-lg border border-slate-300 bg-white pl-3 pr-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue/25 focus:border-blue transition';
       input.setAttribute('aria-label', 'Alcance del ensayo ' + i + ' en metros');
       input.addEventListener('input', onTrialInput);
       wrap.appendChild(label);
@@ -398,8 +757,27 @@ tailwind.config = {
     el.mErr.textContent = d ? fmt(d.errRel, 1) + ' %' : '—';
     el.mTeo.textContent = d ? fmt(d.xTeo, 2) + ' m' : '—';
     el.mCount.textContent = d ? d.count + ' de ' + TRIALS : '0 de ' + TRIALS;
-    el.mV0 = el.mV0 || $('#m-v0');
     el.mV0.textContent = d ? fmt(d.v0, 2) + ' m/s' : '—';
+  }
+
+  var countToken = 0;
+  function animateCount(node, targetValue) {
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) {
+      node.textContent = targetValue;
+      return;
+    }
+    var token = ++countToken;
+    var t0 = performance.now();
+    var dur = 600;
+    function frame(now) {
+      if (token !== countToken) return;
+      var p = Math.min(1, (now - t0) / dur);
+      var e = 1 - Math.pow(1 - p, 3);
+      node.textContent = Math.round(targetValue * e);
+      if (p < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
   }
 
   function updateScore(shot, target) {
@@ -408,7 +786,7 @@ tailwind.config = {
       return;
     }
     el.result.classList.remove('hidden');
-    el.scoreNum.textContent = shot.score;
+    animateCount(el.scoreNum, shot.score);
     var dx = Math.abs(shot.xLand - target);
     el.scoreDetail.textContent = 'Impacto a ' + fmt(shot.xLand, 2) + ' m — desvío ' + fmt(dx * 100, 0) + ' cm';
     var tier;
@@ -420,312 +798,94 @@ tailwind.config = {
     el.scoreTier.textContent = tier;
   }
 
-  function sizeCanvas() {
-    var rect = el.canvas.getBoundingClientRect();
-    var dpr = window.devicePixelRatio || 1;
-    el.canvas.width = Math.round(rect.width * dpr);
-    el.canvas.height = Math.round(rect.height * dpr);
-    var ctx = el.canvas.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    return { ctx: ctx, w: rect.width, h: rect.height };
+  var state = { shot: null, shotVisible: false };
+  var animToken = 0;
+
+  function clearShotFx() {
+    animToken++;
+    S.shotgroup.style.opacity = 0;
+    S.landing.style.opacity = 0;
+    S.landingring.classList.remove('land-pop');
+    S.shot.style.display = 'none';
   }
 
-  function drawScene(shotProgress, shot) {
-    var dims = sizeCanvas();
-    var ctx = dims.ctx;
-    var w = dims.w;
-    var h = dims.h;
-    var s = readStation();
-    var trials = readTrials();
-    var d = derived(s, trials);
-    var target = parseFloat(el.d.value);
-    var hasTarget = isFinite(target) && target > 0;
-    var invalidStation = !(isFinite(s.h) && s.h >= 0.1 && isFinite(s.theta) && s.theta >= 0 && s.theta < 90 && isFinite(s.g) && s.g > 0);
-    if (invalidStation || w === 0) return;
-
-    var xs = [2];
-    if (d) xs.push(d.mean + 3 * d.sigma, d.xTeo);
-    if (hasTarget) xs.push(target);
-    if (shot) xs.push(rangeTrue(shot.v0, s.theta, s.h, s.g));
-    var xMax = Math.max.apply(null, xs) * 1.12;
-
-    var peaks = [s.h * 1.3];
-    if (d) peaks.push(peakY(d.v0, s.theta, s.h, s.g) * 1.18);
-    if (shot) peaks.push(peakY(shot.v0, s.theta, s.h, s.g) * 1.18);
-    var yMax = Math.max.apply(null, peaks.concat([1.2]));
-
-    var mL = 46, mR = 26, mT = 20, mB = 40;
-    var sx = (w - mL - mR) / xMax;
-    var sy = (h - mT - mB) / yMax;
-    var yFloor = h - mB;
-    var px = function (x) { return mL + x * sx; };
-
-    ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = '#F1F3ED';
-    ctx.fillRect(0, 0, w, yFloor);
-    ctx.fillStyle = '#E7E9E1';
-    ctx.fillRect(0, yFloor, w, h - yFloor);
-
-    ctx.strokeStyle = 'rgba(27,35,48,0.06)';
-    ctx.lineWidth = 1;
-    for (var gx = 0; gx <= xMax; gx += 0.5) {
-      var gxp = px(gx);
-      ctx.beginPath();
-      ctx.moveTo(gxp, yFloor);
-      ctx.lineTo(gxp, h);
-      ctx.stroke();
-    }
-
-    var rulerY = h - 20;
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, rulerY, w, 20);
-    ctx.strokeStyle = 'rgba(27,35,48,0.25)';
-    ctx.strokeRect(0.5, rulerY + 0.5, w - 1, 19);
-    var minor = sx * 0.1 >= 6 ? 0.1 : 0.5;
-    ctx.strokeStyle = 'rgba(27,35,48,0.45)';
-    for (var rx = 0; rx <= xMax; rx += minor) {
-      var rxp = px(rx);
-      ctx.beginPath();
-      ctx.moveTo(rxp, rulerY);
-      ctx.lineTo(rxp, rulerY + (rx % 0.5 === 0 ? 9 : 5));
-      ctx.stroke();
-    }
-    ctx.fillStyle = 'rgba(27,35,48,0.55)';
-    ctx.font = '9px "IBM Plex Mono", monospace';
-    ctx.textAlign = 'center';
-    for (var rl = 0; rl <= xMax; rl += 0.5) {
-      var label = rl % 1 === 0 ? String(rl) : rl.toFixed(1).replace('.', ',');
-      ctx.fillText(label, px(rl), rulerY + 16);
-    }
-    ctx.fillText('m', w - mR + 4, rulerY + 16);
-
-    var T = px(0);
-    var wT = Math.max(30, 0.55 * sx);
-    var yTop = yFloor - s.h * sy;
-    ctx.fillStyle = '#8F6B4A';
-    ctx.fillRect(T + 5, yTop, 4, yFloor - yTop);
-    ctx.fillRect(T + wT - 9, yTop, 4, yFloor - yTop);
-    ctx.fillStyle = '#C89B6E';
-    ctx.fillRect(T, yTop - 5, wT, 6);
-    ctx.fillStyle = '#DCAF85';
-    ctx.fillRect(T, yTop - 5, wT, 1.5);
-    ctx.fillStyle = 'rgba(27,35,48,0.5)';
-    ctx.textAlign = 'left';
-    ctx.fillText('mesa', T, yTop - 11);
-
-    var Xh = T + wT + 14;
-    ctx.strokeStyle = 'rgba(27,35,48,0.4)';
-    ctx.setLineDash([3, 3]);
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(Xh, yTop);
-    ctx.lineTo(Xh, yFloor);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillText('h', Xh + 4, (yTop + yFloor) / 2);
-
-    var aLen = Math.max(22, 0.3 * sx);
-    var ang = rad(s.theta);
-    var ax1 = T + wT - 2;
-    var ay1 = yTop;
-    var ax2 = ax1 + Math.cos(ang) * aLen;
-    var ay2 = yTop - Math.sin(ang) * aLen;
-    ctx.strokeStyle = 'rgba(43,92,230,0.6)';
-    ctx.setLineDash([4, 3]);
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(ax1 + 2, ay1);
-    ctx.lineTo(ax2, ay2);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = '#2B5CE6';
-    ctx.beginPath();
-    ctx.arc(ax2, ay2, 2.2, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = '#2B5CE6';
-    ctx.strokeStyle = '#FFFFFF';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.arc(T + wT - 2, yTop, 4.5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-
-    if (d) {
-      var tT = flightTime(d.v0, s.theta, s.h, s.g);
-      var pts = trajectory(d.v0, s.theta, s.h, s.g, tT);
-      ctx.strokeStyle = 'rgba(43,92,230,0.75)';
-      ctx.setLineDash([6, 5]);
-      ctx.lineWidth = 1.7;
-      ctx.beginPath();
-      pts.forEach(function (p, i) {
-        if (i === 0) ctx.moveTo(px(p[0]), yFloor - p[1] * sy);
-        else ctx.lineTo(px(p[0]), yFloor - p[1] * sy);
-      });
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      ctx.strokeStyle = 'rgba(43,92,230,0.55)';
-      ctx.lineWidth = 1.4;
-      ctx.beginPath();
-      ctx.moveTo(px(d.xTeo), yFloor);
-      ctx.lineTo(px(d.xTeo), yFloor - 7);
-      ctx.stroke();
-    }
-
-    var valid = trials.filter(function (v) { return v !== null; });
-    valid.forEach(function (x) {
-      ctx.fillStyle = '#D64545';
-      ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.arc(px(x), yFloor, 4.2, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-    });
-
-    if (d && d.sigma > 0) {
-      var rx = Math.max(d.sigma * sx, 3);
-      ctx.fillStyle = 'rgba(31,122,92,0.14)';
-      ctx.beginPath();
-      ctx.ellipse(px(d.mean), yFloor, rx, 13, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(31,122,92,0.45)';
-      ctx.setLineDash([3, 3]);
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = 'rgba(31,122,92,0.8)';
-      ctx.font = '9px "IBM Plex Mono", monospace';
-      ctx.textAlign = 'left';
-      ctx.fillText('σ', px(d.mean) + rx + 5, yFloor - 10);
-    }
-
-    if (d) {
-      ctx.strokeStyle = 'rgba(43,92,230,0.5)';
-      ctx.setLineDash([4, 4]);
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.moveTo(px(d.mean), yFloor);
-      ctx.lineTo(px(d.mean), yFloor - 44);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = 'rgba(43,92,230,0.85)';
-      ctx.font = '9px "IBM Plex Mono", monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('X̄', px(d.mean), yFloor - 49);
-    }
-
-    if (hasTarget) {
-      var Xt = px(target);
-      ctx.strokeStyle = '#E08A00';
-      ctx.lineWidth = 1.8;
-      ctx.beginPath();
-      ctx.moveTo(Xt, yFloor);
-      ctx.lineTo(Xt, yFloor - 92);
-      ctx.stroke();
-      ctx.fillStyle = '#E08A00';
-      ctx.beginPath();
-      ctx.moveTo(Xt, yFloor - 92);
-      ctx.lineTo(Xt + 11, yFloor - 87);
-      ctx.lineTo(Xt, yFloor - 82);
-      ctx.closePath();
-      ctx.fill();
-      ctx.fillStyle = 'rgba(224,138,0,0.9)';
-      ctx.font = '9px "IBM Plex Mono", monospace';
-      ctx.textAlign = 'left';
-      ctx.fillText('Blanco', Xt + 14, yFloor - 84);
-    }
-
-    if (shot) {
-      var st = flightTime(shot.v0, s.theta, s.h, s.g);
-      var pts2 = trajectory(shot.v0, s.theta, s.h, s.g, st);
-      var n = Math.min(pts2.length - 1, Math.max(1, Math.ceil(pts2.length * shotProgress)));
-      ctx.strokeStyle = 'rgba(224,138,0,0.95)';
-      ctx.lineWidth = 1.8;
-      ctx.beginPath();
-      for (var i = 0; i <= n; i++) {
-        if (i === 0) ctx.moveTo(px(pts2[0][0]), yFloor - pts2[0][1] * sy);
-        else ctx.lineTo(px(pts2[i][0]), yFloor - pts2[i][1] * sy);
-      }
-      ctx.stroke();
-
-      var bp = pts2[Math.min(n, pts2.length - 1)];
-      ctx.fillStyle = '#E08A00';
-      ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.arc(px(bp[0]), yFloor - bp[1] * sy, 4.5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      if (shotProgress >= 1) {
-        var Xl = px(shot.xLand);
-        ctx.strokeStyle = 'rgba(224,138,0,0.9)';
-        ctx.lineWidth = 1.6;
-        ctx.beginPath();
-        ctx.arc(Xl, yFloor, 11, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.fillStyle = '#E08A00';
-        ctx.beginPath();
-        ctx.arc(Xl, yFloor, 3, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = 'rgba(224,138,0,0.9)';
-        ctx.font = '9px "IBM Plex Mono", monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('impacto', Xl, yFloor - 17);
-      }
-    }
-
-    if (!d && !shot) {
-      ctx.fillStyle = 'rgba(27,35,48,0.45)';
-      ctx.font = '12px "IBM Plex Sans", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('Registre al menos un ensayo para trazar la parábola teórica.', w / 2, h / 2);
-    }
-  }
-
-  var state = { shot: null };
-
-  function renderAll(fullProgress) {
-    var s = readStation();
-    var d = derived(s, readTrials());
-    var target = parseFloat(el.d.value);
-    updateMetrics(d);
-    updateScore(state.shot, target);
-    drawScene(fullProgress ? 1 : 1, state.shot);
-  }
-
-  function fire() {
+  function fireShot() {
     validateChallenge();
     var s = readStation();
     var v = parseFloat(el.v0.value);
     var target = parseFloat(el.d.value);
     if (!(isFinite(v) && v > 0) || !(isFinite(target) && target > 0)) return;
+
     var T = flightTime(v, s.theta, s.h, s.g);
     var xLand = rangeTrue(v, s.theta, s.h, s.g);
     state.shot = { v0: v, T: T, xLand: xLand, score: null };
-    renderAll(false);
+    state.shotVisible = true;
+    clearShotFx();
+    updateScene();
+
+    S.shot.setAttribute('d', trajectoryScenePath(v, s.theta, s.h, s.g, T));
+    S.shot.style.display = '';
+    var L = S.shot.getTotalLength();
+    S.shot.style.strokeDasharray = L;
+    S.shot.style.strokeDashoffset = L;
+    S.shotgroup.style.opacity = 1;
+    S.shotgroup.setAttribute('transform', 'translate(' + px(TABLE_W) + ' ' + py(s.h) + ')');
 
     var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var dur = Math.min(1700, Math.max(500, T * 1000));
     var t0 = performance.now();
-
-    function finish() {
-      var dx = Math.abs(state.shot.xLand - target);
-      state.shot.score = Math.max(0, Math.round(100 - dx * 100));
-      renderAll(true);
-    }
+    var token = ++animToken;
+    var cosT = Math.cos(rad(s.theta));
+    var sinT = Math.sin(rad(s.theta));
+    var off = BALL_R / geom.sy;
 
     function frame(now) {
+      if (token !== animToken) return;
       var p = Math.min(1, (now - t0) / dur);
-      drawScene(p, state.shot);
+      S.shot.style.strokeDashoffset = L * (1 - p);
+      var t = p * T;
+      var xp = v * cosT * t;
+      var yp = s.h + v * sinT * t - 0.5 * s.g * t * t + off;
+      S.shotgroup.setAttribute('transform', 'translate(' + px(TABLE_W + xp) + ' ' + py(yp) + ')');
       if (p < 1) requestAnimationFrame(frame);
-      else finish();
+      else finishShot(token);
     }
 
-    if (reduced) finish();
+    if (reduced) finishShot(token);
     else requestAnimationFrame(frame);
+  }
+
+  function finishShot(token) {
+    if (token !== animToken) return;
+    var shot = state.shot;
+    var target = parseFloat(el.d.value);
+    var dx = Math.abs(shot.xLand - target);
+    shot.score = Math.max(0, Math.round(100 - dx * 100));
+
+    S.shot.style.strokeDashoffset = 0;
+    var xl = px(TABLE_W + shot.xLand);
+    var yb = py(BALL_R / geom.sy);
+    S.shotgroup.setAttribute('transform', 'translate(' + xl + ' ' + yb + ')');
+    S.landing.setAttribute('transform', 'translate(' + xl + ' ' + YFLOOR + ')');
+    S.landing.style.opacity = 1;
+    var near = xl > 930;
+    S.landinglabel.setAttribute('x', near ? -14 : 0);
+    S.landinglabel.setAttribute('text-anchor', near ? 'end' : 'middle');
+    S.landinglabel.textContent = 'impacto';
+    void S.landingring.getBoundingClientRect();
+    S.landingring.classList.add('land-pop');
+
+    updateScore(shot, target);
+  }
+
+  function renderAll() {
+    var s = readStation();
+    var d = derived(s, readTrials());
+    var target = parseFloat(el.d.value);
+    updateMetrics(d);
+    updateScene();
+    var shot = state.shot;
+    updateScore(shot && state.shotVisible ? shot : null, target);
   }
 
   function sampleData() {
@@ -742,15 +902,25 @@ tailwind.config = {
   function clearTrials() {
     trialInputs.forEach(function (inp) { inp.value = ''; });
     state.shot = null;
+    state.shotVisible = false;
+    clearShotFx();
     validateTrials();
     renderAll();
   }
 
   function retry() {
     state.shot = null;
+    state.shotVisible = false;
+    clearShotFx();
     el.v0.value = '';
     validateChallenge();
     renderAll();
+  }
+
+  function resetShot() {
+    state.shot = null;
+    state.shotVisible = false;
+    clearShotFx();
   }
 
   function bindPresets() {
@@ -764,22 +934,22 @@ tailwind.config = {
     });
   }
 
-  el.h.addEventListener('input', function () { validateStation(); renderAll(); });
-  el.theta.addEventListener('input', function () { validateStation(); renderAll(); });
-  el.g.addEventListener('input', function () { validateStation(); renderAll(); });
+  el.h.addEventListener('input', function () { validateStation(); resetShot(); renderAll(); });
+  el.theta.addEventListener('input', function () { validateStation(); resetShot(); renderAll(); });
+  el.g.addEventListener('input', function () { validateStation(); resetShot(); renderAll(); });
   el.d.addEventListener('input', function () {
     validateChallenge();
-    state.shot = null;
+    resetShot();
     renderAll();
   });
   el.v0.addEventListener('input', validateChallenge);
-  el.btnFire.addEventListener('click', fire);
+  el.btnFire.addEventListener('click', fireShot);
   el.btnRetry.addEventListener('click', retry);
   el.btnSample.addEventListener('click', sampleData);
   el.btnClear.addEventListener('click', clearTrials);
   el.btnPrint.addEventListener('click', function () { window.print(); });
-  window.addEventListener('resize', function () { drawScene(1, state.shot); });
 
+  buildScene();
   buildTrials();
   bindPresets();
   validateStation();
