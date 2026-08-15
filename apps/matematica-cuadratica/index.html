@@ -739,8 +739,12 @@ const ctxCh = plotCh.getContext('2d');
 function setupCanvas(cv) {
   const dpr = window.devicePixelRatio || 1;
   const r = cv.getBoundingClientRect();
-  cv.width = Math.max(1, Math.round(r.width * dpr));
-  cv.height = Math.max(1, Math.round(r.height * dpr));
+  const pw = Math.max(1, Math.round(r.width * dpr));
+  const ph = Math.max(1, Math.round(r.height * dpr));
+  if (cv.width !== pw || cv.height !== ph) {
+    cv.width = pw;
+    cv.height = ph;
+  }
   const c = cv.getContext('2d');
   c.setTransform(dpr, 0, 0, dpr, 0, 0);
   return { c, w: r.width, h: r.height };
@@ -980,30 +984,20 @@ function drawPlot(c, w, h, poly, markers) {
   }
 }
 
-let lastMode = null;
-let lastPoly = null;
-let lastShow = null;
-
 function renderLoop() {
   const isLab = state.mode === 'lab';
   const cv = isLab ? plot : plotCh;
   const { c, w, h } = setupCanvas(cv);
 
   if (isLab) {
-    const changed = lastPoly !== state.poly || lastShow !== state.show;
-    lastPoly = state.poly;
-    lastShow = state.show;
-    if (changed || lastMode !== 'lab') {
-      drawPlot(c, w, h, state.poly, {
-        ax2: state.show.ax2,
-        symmetry: state.show.axis,
-        vertex: state.show.vertex,
-        roots: state.show.roots,
-        yint: state.show.yint,
-        visible: true,
-      });
-      lastMode = 'lab';
-    }
+    drawPlot(c, w, h, state.poly, {
+      ax2: state.show.ax2,
+      symmetry: state.show.axis,
+      vertex: state.show.vertex,
+      roots: state.show.roots,
+      yint: state.show.yint,
+      visible: true,
+    });
   } else {
     const reveal = state.challenge.revealed;
     drawPlot(c, w, h, currentPoly(), {
@@ -1014,13 +1008,9 @@ function renderLoop() {
       yint: reveal,
       visible: reveal,
     });
-    lastMode = 'challenge';
   }
   requestAnimationFrame(renderLoop);
 }
-
-new ResizeObserver(() => {}).observe(plot);
-new ResizeObserver(() => {}).observe(plotCh);
 
 $('tabLab').addEventListener('click', () => {
   state.mode = 'lab';
@@ -1030,7 +1020,6 @@ $('tabLab').addEventListener('click', () => {
   $('tabChallenge').setAttribute('aria-pressed', 'false');
   $('labView').classList.remove('hidden');
   $('challengeView').classList.add('hidden');
-  lastPoly = null;
   renderAll();
 });
 
@@ -1061,7 +1050,6 @@ document.querySelectorAll('.seg').forEach(btn => {
 document.querySelectorAll('input[data-layer]').forEach(input => {
   input.addEventListener('change', () => {
     state.show[input.dataset.layer] = input.checked;
-    lastShow = null;
   });
 });
 
