@@ -71,15 +71,22 @@ dispositivo, ni una máquina virtual, ni a alguien mirando por encima del hombro
 Colores institucionales, cada uno con un rol fijo. Están definidos una sola vez, en
 el `tailwind.config` de cada página; para cambiar la paleta alcanza con tocar ahí.
 
-| Token    | Color                | Rol                                        |
-| -------- | -------------------- | ------------------------------------------ |
-| `brand`  | `#243B7A` azul       | primario estructural, botones principales   |
-| `accent` | `#FF9300` naranja    | destaques, código de la toma, sala de espera |
-| `accent-deep` | `#E4510B` naranja rojizo | urgencia: reloj por vencer, rótulos sobre claro |
-| `ok`     | `#209B8A` verde azulado | correcto, examen en curso, aprobado      |
-| `alert`  | `#C52525` rojo       | incidentes, acciones peligrosas             |
-| `plum`   | `#7D2048` bordó      | nota provisoria, respuesta sin corregir     |
-| `ink`    | `#17122B` violeta oscuro | lienzo de fondo (derivado del violeta institucional) |
+| Token         | Color                    | Rol                                          |
+| ------------- | ------------------------ | -------------------------------------------- |
+| `canvas`      | `#FFF4E5` naranja muy claro | fondo de página                           |
+| `paper`       | `#FFFFFF` blanco         | tarjetas, que se despegan por sombra cálida   |
+| `ink`         | `#17122B` violeta oscuro | texto principal y bloques oscuros de contraste |
+| `brand`       | `#243B7A` azul           | primario estructural, botones principales     |
+| `accent`      | `#FF9300` naranja        | destaques, código de la toma, sala de espera  |
+| `accent-deep` | `#E4510B` naranja rojizo | rótulos sobre fondo claro                     |
+| `ok`          | `#209B8A` verde azulado  | correcto, examen en curso, aprobado           |
+| `alert`       | `#C52525` rojo           | incidentes, acciones peligrosas               |
+| `plum`        | `#7D2048` bordó          | nota provisoria, respuesta sin corregir       |
+
+La página es clara, pero hay islas oscuras a propósito: la barra del examen, la caja
+del código, el panel de control de la toma y el resumen de nota. Ahí el texto se
+invierte. Por eso `ok`, `alert` y `plum` tienen una variante **`-light`**: sobre
+violeta oscuro, el rojo y el bordó plenos no llegan a contraste legible.
 
 Sobre las animaciones: las listas que el servidor reenvía enteras (la sala, la tabla
 de alumnos, el editor) sólo se redibujan si algo cambió de verdad. Sin esa guarda, cada

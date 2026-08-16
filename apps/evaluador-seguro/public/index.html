@@ -17,14 +17,16 @@
           colors: {
             ink: '#17122B',
             panel: '#241A3F',
-            paper: '#FBF8F4',
-            line: '#E7DFD6',
-            muted: '#6E6480',
+            canvas: '#FFF4E5',
+            paper: '#FFFFFF',
+            line: '#F0E2CC',
+            muted: '#786552',
             brand: { DEFAULT: '#243B7A', deep: '#1A2C5C', soft: '#E7EAF4' },
             accent: { DEFAULT: '#FF9300', deep: '#E4510B', soft: '#FFF0DA' },
-            ok: { DEFAULT: '#209B8A', deep: '#17796B', soft: '#DDF2EE' },
-            alert: { DEFAULT: '#C52525', deep: '#A11C1C', soft: '#FAE6E6' },
-            plum: { DEFAULT: '#7D2048', soft: '#F7E6EC' },
+            // 'light' es la versión legible sobre las superficies oscuras (ink / panel).
+            ok: { DEFAULT: '#209B8A', deep: '#17796B', soft: '#DDF2EE', light: '#4FC9B5' },
+            alert: { DEFAULT: '#C52525', deep: '#A11C1C', soft: '#FAE6E6', light: '#F58A8A' },
+            plum: { DEFAULT: '#7D2048', soft: '#F7E6EC', light: '#E09BB6' },
           },
           fontFamily: {
             display: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
@@ -39,16 +41,22 @@
     :root { --ease: cubic-bezier(.2, .7, .3, 1); }
 
     body {
-      background-color: #17122B;
+      background-color: #FFF4E5;
       background-image:
-        radial-gradient(58rem 38rem at 8% -14%, rgba(75, 45, 104, .62), transparent 62%),
-        radial-gradient(48rem 32rem at 96% 4%, rgba(36, 59, 122, .52), transparent 64%),
-        radial-gradient(42rem 28rem at 52% 114%, rgba(255, 147, 0, .10), transparent 60%),
-        linear-gradient(rgba(170, 150, 205, .05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(170, 150, 205, .05) 1px, transparent 1px);
+        radial-gradient(58rem 38rem at 8% -14%, rgba(255, 147, 0, .20), transparent 62%),
+        radial-gradient(48rem 32rem at 96% 4%, rgba(36, 59, 122, .07), transparent 64%),
+        radial-gradient(42rem 28rem at 52% 114%, rgba(228, 81, 11, .09), transparent 60%),
+        linear-gradient(rgba(124, 92, 52, .055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124, 92, 52, .055) 1px, transparent 1px);
       background-size: auto, auto, auto, 28px 28px, 28px 28px;
       background-attachment: fixed;
     }
+
+    /* Las sombras de Tailwind son negras: sobre el fondo cálido se ven grises. */
+    .shadow-2xl { box-shadow: 0 18px 40px -12px rgba(93, 58, 12, .20), 0 4px 12px -4px rgba(93, 58, 12, .10) !important; }
+    .shadow-xl { box-shadow: 0 14px 30px -10px rgba(93, 58, 12, .17), 0 3px 8px -3px rgba(93, 58, 12, .09) !important; }
+    .shadow-lg { box-shadow: 0 10px 22px -8px rgba(93, 58, 12, .15), 0 2px 6px -2px rgba(93, 58, 12, .08) !important; }
+    .shadow { box-shadow: 0 4px 12px -4px rgba(93, 58, 12, .13) !important; }
     :focus-visible { outline: 3px solid #FF9300; outline-offset: 2px; border-radius: 6px; }
 
     /* ── entradas ─────────────────────────────────────────── */
@@ -97,7 +105,7 @@
     .tilde-anim { animation: tilde .55s var(--ease) .15s both; }
 
     /* ── tiempo y progreso ────────────────────────────────── */
-    .timer-urgent { color: #E4510B; animation: blink 1s steps(2, start) infinite; }
+    .timer-urgent { color: #FF7A45; animation: blink 1s steps(2, start) infinite; }
     @keyframes blink { to { opacity: .45; } }
     .ruler-seg {
       flex: 1; height: 5px; border-radius: 9999px; background: rgba(255, 255, 255, .14);
@@ -135,11 +143,11 @@
         </svg>
         <div>
           <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">Modo vigilado · Nivel secundario</p>
-          <h1 class="font-display font-bold text-2xl md:text-3xl text-paper">Evaluador Seguro</h1>
+          <h1 class="font-display font-bold text-2xl md:text-3xl text-ink">Evaluador Seguro</h1>
         </div>
       </header>
 
-      <div class="bg-paper rounded-2xl shadow-2xl ring-1 ring-white/10 border-t-4 border-t-accent overflow-hidden">
+      <div class="bg-paper rounded-2xl shadow-xl ring-1 ring-ink/10 border-t-4 border-t-accent overflow-hidden">
         <div class="px-6 py-8 md:px-9">
           <h2 class="font-display font-semibold text-xl mb-1">Ingresá al examen</h2>
           <p class="text-sm text-muted mb-7">Pedile el código a tu profesor. Son 6 caracteres.</p>
@@ -183,14 +191,14 @@
         </div>
       </div>
 
-      <p class="text-center text-xs text-paper/35 mt-6">
-        ¿Sos docente? <a href="/docente" class="underline hover:text-paper/70">Entrá al panel</a>
+      <p class="text-center text-xs text-muted mt-6">
+        ¿Sos docente? <a href="/docente" class="underline hover:text-ink">Entrá al panel</a>
       </p>
     </section>
 
     <!-- ============ SALA DE ESPERA ============ -->
     <section id="view-lobby" class="hidden max-w-2xl mx-auto px-4 py-10 md:py-16">
-      <div class="bg-paper rounded-2xl shadow-2xl ring-1 ring-white/10 border-t-4 border-t-accent overflow-hidden">
+      <div class="bg-paper rounded-2xl shadow-xl ring-1 ring-ink/10 border-t-4 border-t-accent overflow-hidden">
         <div class="px-6 py-8 md:px-10 text-center">
           <div class="inline-flex items-center gap-2 bg-accent-soft text-accent-deep font-mono text-[11px] uppercase tracking-[0.18em] px-3 py-1.5 rounded-full mb-6">
             <span class="w-2 h-2 rounded-full bg-accent breathe"></span> Sala de espera
@@ -260,13 +268,13 @@
             Entregar examen
           </button>
         </div>
-        <p class="text-center text-xs text-paper/35 mt-4">Las respuestas se guardan solas a medida que escribís.</p>
+        <p class="text-center text-xs text-muted mt-4">Las respuestas se guardan solas a medida que escribís.</p>
       </div>
     </section>
 
     <!-- ============ ENTREGADO ============ -->
     <section id="view-done" class="hidden max-w-lg mx-auto px-4 py-10 md:py-16">
-      <div class="bg-paper rounded-2xl shadow-2xl ring-1 ring-white/10 border-t-4 border-t-ok overflow-hidden">
+      <div class="bg-paper rounded-2xl shadow-xl ring-1 ring-ink/10 border-t-4 border-t-ok overflow-hidden">
         <div class="px-6 py-10 md:px-10 text-center">
           <div class="w-14 h-14 rounded-full bg-ok-soft flex items-center justify-center mx-auto mb-5">
             <svg viewBox="0 0 24 24" class="w-7 h-7" aria-hidden="true">
@@ -603,7 +611,7 @@
         regla.appendChild(seg);
 
         const card = document.createElement('article');
-        card.className = 'bg-paper rounded-2xl shadow-lg ring-1 ring-white/10 overflow-hidden rise';
+        card.className = 'bg-paper rounded-2xl shadow-lg ring-1 ring-ink/10 overflow-hidden rise';
         card.style.setProperty('--i', i);
         card.id = 'card-' + q.id;
 
@@ -773,7 +781,7 @@
     async function registrarIncidente(tipo, dur, at) {
       S.incidentes++;
       $('chip-incidentes').textContent = S.incidentes + (S.incidentes === 1 ? ' incidente' : ' incidentes');
-      $('chip-incidentes').className = 'font-mono text-[12px] font-medium text-alert';
+      $('chip-incidentes').className = 'font-mono text-[12px] font-medium text-alert-light';
       const v = $('vigil');
       v.classList.remove('ok');
       v.classList.add('alert');

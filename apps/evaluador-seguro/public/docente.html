@@ -18,14 +18,16 @@
           colors: {
             ink: '#17122B',
             panel: '#241A3F',
-            paper: '#FBF8F4',
-            line: '#E7DFD6',
-            muted: '#6E6480',
+            canvas: '#FFF4E5',
+            paper: '#FFFFFF',
+            line: '#F0E2CC',
+            muted: '#786552',
             brand: { DEFAULT: '#243B7A', deep: '#1A2C5C', soft: '#E7EAF4' },
             accent: { DEFAULT: '#FF9300', deep: '#E4510B', soft: '#FFF0DA' },
-            ok: { DEFAULT: '#209B8A', deep: '#17796B', soft: '#DDF2EE' },
-            alert: { DEFAULT: '#C52525', deep: '#A11C1C', soft: '#FAE6E6' },
-            plum: { DEFAULT: '#7D2048', soft: '#F7E6EC' },
+            // 'light' es la versión legible sobre las superficies oscuras (ink / panel).
+            ok: { DEFAULT: '#209B8A', deep: '#17796B', soft: '#DDF2EE', light: '#4FC9B5' },
+            alert: { DEFAULT: '#C52525', deep: '#A11C1C', soft: '#FAE6E6', light: '#F58A8A' },
+            plum: { DEFAULT: '#7D2048', soft: '#F7E6EC', light: '#E09BB6' },
           },
           fontFamily: {
             display: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
@@ -40,16 +42,22 @@
     :root { --ease: cubic-bezier(.2, .7, .3, 1); }
 
     body {
-      background-color: #17122B;
+      background-color: #FFF4E5;
       background-image:
-        radial-gradient(58rem 38rem at 8% -14%, rgba(75, 45, 104, .62), transparent 62%),
-        radial-gradient(48rem 32rem at 96% 4%, rgba(36, 59, 122, .52), transparent 64%),
-        radial-gradient(42rem 28rem at 52% 114%, rgba(255, 147, 0, .10), transparent 60%),
-        linear-gradient(rgba(170, 150, 205, .05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(170, 150, 205, .05) 1px, transparent 1px);
+        radial-gradient(58rem 38rem at 8% -14%, rgba(255, 147, 0, .20), transparent 62%),
+        radial-gradient(48rem 32rem at 96% 4%, rgba(36, 59, 122, .07), transparent 64%),
+        radial-gradient(42rem 28rem at 52% 114%, rgba(228, 81, 11, .09), transparent 60%),
+        linear-gradient(rgba(124, 92, 52, .055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124, 92, 52, .055) 1px, transparent 1px);
       background-size: auto, auto, auto, 28px 28px, 28px 28px;
       background-attachment: fixed;
     }
+
+    /* Las sombras de Tailwind son negras: sobre el fondo cálido se ven grises. */
+    .shadow-2xl { box-shadow: 0 18px 40px -12px rgba(93, 58, 12, .20), 0 4px 12px -4px rgba(93, 58, 12, .10) !important; }
+    .shadow-xl { box-shadow: 0 14px 30px -10px rgba(93, 58, 12, .17), 0 3px 8px -3px rgba(93, 58, 12, .09) !important; }
+    .shadow-lg { box-shadow: 0 10px 22px -8px rgba(93, 58, 12, .15), 0 2px 6px -2px rgba(93, 58, 12, .08) !important; }
+    .shadow { box-shadow: 0 4px 12px -4px rgba(93, 58, 12, .13) !important; }
     :focus-visible { outline: 3px solid #FF9300; outline-offset: 2px; border-radius: 6px; }
 
     /* ── entradas ─────────────────────────────────────────── */
@@ -100,7 +108,7 @@
     }
 
     /* ── estados en vivo ──────────────────────────────────── */
-    .timer-urgent { color: #E4510B; animation: blink 1s steps(2, start) infinite; }
+    .timer-urgent { color: #FF7A45; animation: blink 1s steps(2, start) infinite; }
     @keyframes blink { to { opacity: .45; } }
     @keyframes breathe { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
     .breathe { animation: breathe 2.2s ease-in-out infinite; }
@@ -128,10 +136,10 @@
         </svg>
         <div>
           <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">Panel docente</p>
-          <h1 class="font-display font-bold text-2xl text-paper">Evaluador Seguro</h1>
+          <h1 class="font-display font-bold text-2xl text-ink">Evaluador Seguro</h1>
         </div>
       </header>
-      <div class="bg-paper rounded-2xl shadow-2xl ring-1 ring-white/10 border-t-4 border-t-brand p-7">
+      <div class="bg-paper rounded-2xl shadow-xl ring-1 ring-ink/10 border-t-4 border-t-brand p-7">
         <h2 class="font-display font-semibold text-lg mb-1">Ingreso</h2>
         <p class="text-sm text-muted mb-6">Escribí la clave docente para entrar.</p>
         <form id="form-login" novalidate>
@@ -142,8 +150,8 @@
           <button type="submit" class="lift w-full bg-brand hover:bg-brand-deep text-white font-semibold py-3 rounded-xl">Entrar</button>
         </form>
       </div>
-      <p class="text-center text-xs text-paper/35 mt-6">
-        ¿Sos alumno? <a href="/" class="underline hover:text-paper/70">Ingresá con tu código</a>
+      <p class="text-center text-xs text-muted mt-6">
+        ¿Sos alumno? <a href="/" class="underline hover:text-ink">Ingresá con tu código</a>
       </p>
     </section>
 
@@ -156,14 +164,14 @@
         </svg>
         <div class="flex-1 min-w-0">
           <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">Panel docente</p>
-          <h1 class="font-display font-bold text-xl md:text-2xl text-paper">Evaluador Seguro</h1>
+          <h1 class="font-display font-bold text-xl md:text-2xl text-ink">Evaluador Seguro</h1>
         </div>
-        <button id="btn-logout" class="lift font-mono text-[11px] uppercase tracking-[0.16em] text-paper/50 hover:text-paper border border-white/15 hover:border-white/40 rounded-lg px-3 py-2 transition-colors">
+        <button id="btn-logout" class="lift font-mono text-[11px] uppercase tracking-[0.16em] text-muted hover:text-ink border border-ink/15 hover:border-ink/40 rounded-lg px-3 py-2 transition-colors">
           Salir
         </button>
       </header>
 
-      <div class="flex items-center gap-1 mb-6 bg-white/5 p-1 rounded-xl w-fit">
+      <div class="flex items-center gap-1 mb-6 bg-ink/5 p-1 rounded-xl w-fit">
         <button data-tab="examenes" class="tab-bt font-medium text-sm px-4 py-2 rounded-lg transition-colors">Mis exámenes</button>
         <button data-tab="tomas" class="tab-bt font-medium text-sm px-4 py-2 rounded-lg transition-colors">Tomas</button>
       </div>
@@ -171,7 +179,7 @@
       <!-- examenes -->
       <div id="tab-examenes">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
-          <p class="text-paper/60 text-sm">Armá un examen una vez y tomalo todas las veces que quieras.</p>
+          <p class="text-muted text-sm">Armá un examen una vez y tomalo todas las veces que quieras.</p>
           <button id="btn-nuevo-examen" class="lift bg-brand hover:bg-brand-deep text-white font-semibold text-sm px-4 py-2.5 rounded-xl transition-colors">
             + Crear examen
           </button>
@@ -181,7 +189,7 @@
 
       <!-- tomas -->
       <div id="tab-tomas" class="hidden">
-        <p class="text-paper/60 text-sm mb-5">Cada vez que iniciás un examen se crea una toma con su propio código y sus propios resultados.</p>
+        <p class="text-muted text-sm mb-5">Cada vez que iniciás un examen se crea una toma con su propio código y sus propios resultados.</p>
         <div id="lista-tomas" class="space-y-3"></div>
       </div>
     </section>
@@ -189,13 +197,13 @@
     <!-- ============ EDITOR ============ -->
     <section id="view-editor" class="hidden max-w-3xl mx-auto px-4 py-8 md:py-12">
       <div class="flex items-center gap-3 mb-6">
-        <button id="btn-volver-editor" class="lift font-mono text-[11px] uppercase tracking-[0.16em] text-paper/50 hover:text-paper border border-white/15 hover:border-white/40 rounded-lg px-3 py-2 transition-colors">
+        <button id="btn-volver-editor" class="lift font-mono text-[11px] uppercase tracking-[0.16em] text-muted hover:text-ink border border-ink/15 hover:border-ink/40 rounded-lg px-3 py-2 transition-colors">
           ← Volver
         </button>
-        <h2 id="editor-titulo-vista" class="font-display font-bold text-xl text-paper">Nuevo examen</h2>
+        <h2 id="editor-titulo-vista" class="font-display font-bold text-xl text-ink">Nuevo examen</h2>
       </div>
 
-      <div class="bg-paper rounded-2xl shadow-2xl ring-1 ring-white/10 border-t-4 border-t-brand p-6 md:p-8 mb-5">
+      <div class="bg-paper rounded-2xl shadow-xl ring-1 ring-ink/10 border-t-4 border-t-brand p-6 md:p-8 mb-5">
         <div class="grid gap-4 md:grid-cols-2 mb-4">
           <div class="md:col-span-2">
             <label for="ed-title" class="block font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Título del examen</label>
@@ -226,7 +234,7 @@
 
       <div id="ed-preguntas" class="space-y-4 mb-5"></div>
 
-      <div class="bg-paper/95 rounded-2xl shadow-lg ring-1 ring-white/10 p-5 mb-5">
+      <div class="bg-paper rounded-2xl shadow-lg ring-1 ring-ink/10 p-5 mb-5">
         <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-3">Agregar pregunta</p>
         <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
           <button data-add="mc" class="add-bt">Opción múltiple</button>
@@ -243,7 +251,7 @@
         <button id="btn-guardar-examen" class="lift flex-1 bg-brand hover:bg-brand-deep text-white font-semibold py-3.5 rounded-xl transition-colors">
           Guardar examen
         </button>
-        <button id="btn-cancelar-editor" class="lift sm:w-40 border border-white/15 text-paper/70 hover:text-paper hover:border-white/40 font-semibold py-3.5 rounded-xl transition-colors">
+        <button id="btn-cancelar-editor" class="lift sm:w-40 border border-ink/15 text-muted hover:text-ink hover:border-ink/40 font-semibold py-3.5 rounded-xl transition-colors">
           Cancelar
         </button>
       </div>
@@ -252,18 +260,18 @@
     <!-- ============ TOMA (sala / vivo / resultados) ============ -->
     <section id="view-run" class="hidden max-w-5xl mx-auto px-4 py-8 md:py-12">
       <div class="flex items-center gap-3 mb-6">
-        <button id="btn-volver-run" class="lift font-mono text-[11px] uppercase tracking-[0.16em] text-paper/50 hover:text-paper border border-white/15 hover:border-white/40 rounded-lg px-3 py-2 transition-colors">
+        <button id="btn-volver-run" class="lift font-mono text-[11px] uppercase tracking-[0.16em] text-muted hover:text-ink border border-ink/15 hover:border-ink/40 rounded-lg px-3 py-2 transition-colors">
           ← Volver
         </button>
         <div class="min-w-0 flex-1">
-          <h2 id="run-titulo" class="font-display font-bold text-xl text-paper truncate">—</h2>
-          <p id="run-materia" class="font-mono text-[11px] uppercase tracking-[0.16em] text-paper/40">—</p>
+          <h2 id="run-titulo" class="font-display font-bold text-xl text-ink truncate">—</h2>
+          <p id="run-materia" class="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">—</p>
         </div>
         <span id="run-estado" class="shrink-0 font-mono text-[11px] uppercase tracking-[0.16em] px-3 py-1.5 rounded-full">—</span>
       </div>
 
       <!-- panel de código: visible en sala -->
-      <div id="run-panel-codigo" class="bg-paper rounded-2xl shadow-2xl ring-1 ring-white/10 border-t-4 border-t-accent p-6 md:p-8 mb-5">
+      <div id="run-panel-codigo" class="bg-paper rounded-2xl shadow-xl ring-1 ring-ink/10 border-t-4 border-t-accent p-6 md:p-8 mb-5">
         <div class="grid md:grid-cols-[auto,1fr] gap-6 items-center">
           <div class="bg-ink rounded-xl px-7 py-5 text-center">
             <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-paper/40 mb-2">Código del examen</p>
@@ -285,16 +293,16 @@
 
       <!-- alumnos -->
       <div class="flex flex-wrap items-baseline justify-between gap-3 mb-3">
-        <h3 id="run-subtitulo-alumnos" class="font-display font-semibold text-paper">Alumnos</h3>
+        <h3 id="run-subtitulo-alumnos" class="font-display font-semibold text-ink">Alumnos</h3>
         <div class="flex items-center gap-3">
-          <button id="btn-informe" class="lift hidden font-mono text-[11px] uppercase tracking-[0.16em] text-paper/50 hover:text-paper border border-white/15 hover:border-white/40 rounded-lg px-3 py-2 transition-colors">
+          <button id="btn-informe" class="lift hidden font-mono text-[11px] uppercase tracking-[0.16em] text-muted hover:text-ink border border-ink/15 hover:border-ink/40 rounded-lg px-3 py-2 transition-colors">
             Descargar informe
           </button>
-          <p id="run-conteo" class="font-mono text-sm text-paper/50">0</p>
+          <p id="run-conteo" class="font-mono text-sm text-muted">0</p>
         </div>
       </div>
       <div id="run-alumnos" class="space-y-2.5"></div>
-      <p id="run-vacio" class="hidden text-center text-paper/40 text-sm py-10 border border-dashed border-white/15 rounded-2xl">
+      <p id="run-vacio" class="hidden text-center text-muted text-sm py-10 border border-dashed border-ink/15 rounded-2xl">
         Todavía no entró nadie. Compartí el código.
       </p>
     </section>
@@ -501,7 +509,7 @@
       document.querySelectorAll('.tab-bt').forEach((b) => {
         const activa = b.dataset.tab === S.tab;
         b.className = 'tab-bt lift font-medium text-sm px-4 py-2 rounded-lg ' +
-          (activa ? 'bg-paper text-ink' : 'text-paper/55 hover:text-paper');
+          (activa ? 'bg-paper text-ink shadow' : 'text-muted hover:text-ink');
       });
       $('tab-examenes').classList.toggle('hidden', S.tab !== 'examenes');
       $('tab-tomas').classList.toggle('hidden', S.tab !== 'tomas');
@@ -517,17 +525,17 @@
       cont.textContent = '';
 
       if (!S.examenes.length) {
-        const vacio = el('div', 'md:col-span-2 text-center py-14 border border-dashed border-white/15 rounded-2xl');
+        const vacio = el('div', 'md:col-span-2 text-center py-14 border border-dashed border-ink/15 rounded-2xl');
         vacio.append(
-          el('p', 'text-paper/60 font-medium mb-1', 'Todavía no creaste ningún examen.'),
-          el('p', 'text-paper/35 text-sm', 'Tocá «Crear examen» para armar el primero.')
+          el('p', 'text-ink font-medium mb-1', 'Todavía no creaste ningún examen.'),
+          el('p', 'text-muted text-sm', 'Tocá «Crear examen» para armar el primero.')
         );
         cont.appendChild(vacio);
         return;
       }
 
       S.examenes.forEach((ex, i) => {
-        const card = el('article', 'card rise bg-paper rounded-2xl shadow-lg ring-1 ring-white/10 overflow-hidden flex flex-col');
+        const card = el('article', 'card rise bg-paper rounded-2xl shadow-lg ring-1 ring-ink/10 overflow-hidden flex flex-col');
         card.style.setProperty('--i', i);
         const cuerpo = el('div', 'p-5 flex-1');
         if (ex.subject) cuerpo.appendChild(el('p', 'font-mono text-[10px] uppercase tracking-[0.18em] text-accent-deep mb-1', ex.subject));
@@ -572,13 +580,13 @@
       cont.textContent = '';
 
       if (!datos.runs.length) {
-        cont.appendChild(el('p', 'text-center text-paper/40 text-sm py-14 border border-dashed border-white/15 rounded-2xl',
+        cont.appendChild(el('p', 'text-center text-muted text-sm py-14 border border-dashed border-ink/15 rounded-2xl',
           'Cuando inicies un examen, la toma aparece acá.'));
         return;
       }
 
       datos.runs.forEach((r, i) => {
-        const fila = el('button', 'card rise w-full text-left bg-paper rounded-xl shadow ring-1 ring-white/10 px-5 py-4 flex flex-wrap items-center gap-4');
+        const fila = el('button', 'card rise w-full text-left bg-paper rounded-xl shadow ring-1 ring-ink/10 px-5 py-4 flex flex-wrap items-center gap-4');
         fila.style.setProperty('--i', i);
         fila.addEventListener('click', () => abrirToma(r.id));
 
@@ -662,7 +670,7 @@
 
       qs.forEach((q, i) => {
         const anima = editorAnimar === -2 ? ' rise' : editorAnimar === i ? ' pop' : '';
-        const card = el('article', 'bg-paper rounded-2xl shadow-lg ring-1 ring-white/10 overflow-hidden' + anima);
+        const card = el('article', 'bg-paper rounded-2xl shadow-lg ring-1 ring-ink/10 overflow-hidden' + anima);
         if (editorAnimar === -2) card.style.setProperty('--i', i);
 
         // cabecera
@@ -715,7 +723,7 @@
       });
 
       if (!qs.length) {
-        cont.appendChild(el('p', 'text-center text-paper/40 text-sm py-10 border border-dashed border-white/15 rounded-2xl',
+        cont.appendChild(el('p', 'text-center text-muted text-sm py-10 border border-dashed border-ink/15 rounded-2xl',
           'Agregá la primera pregunta con los botones de abajo.'));
       }
       editorAnimar = -1;
@@ -1076,14 +1084,14 @@
       };
       grid.append(
         dato('Promedio', dec(promedio)),
-        dato('Aprobados', aprobados + '/' + alumnos.length, aprobados === alumnos.length ? 'text-ok' : 'text-paper'),
-        dato('Incidentes', String(incidentes), incidentes ? 'text-alert' : 'text-paper'),
-        dato('Sin corregir', String(pendientes), pendientes ? 'text-plum' : 'text-paper')
+        dato('Aprobados', aprobados + '/' + alumnos.length, aprobados === alumnos.length ? 'text-ok-light' : 'text-paper'),
+        dato('Incidentes', String(incidentes), incidentes ? 'text-alert-light' : 'text-paper'),
+        dato('Sin corregir', String(pendientes), pendientes ? 'text-plum-light' : 'text-paper')
       );
       cont.appendChild(grid);
 
       if (pendientes) {
-        cont.appendChild(el('p', 'text-[#D98BA6] text-sm mt-4 pt-4 border-t border-white/10',
+        cont.appendChild(el('p', 'text-plum-light text-sm mt-4 pt-4 border-t border-white/10',
           'Hay respuestas de desarrollo sin corregir. Las notas con el rótulo «provisoria» todavía no son definitivas.'));
       }
     }
@@ -1126,7 +1134,7 @@
         incidentesVistos.set(a.id, a.incidents.length);
         const saltoIncidente = incidentesPrevios !== undefined && a.incidents.length > incidentesPrevios;
 
-        const fila = el('div', 'bg-paper rounded-xl shadow ring-1 ring-white/10 px-4 py-3.5 flex flex-wrap items-center gap-3'
+        const fila = el('div', 'bg-paper rounded-xl shadow ring-1 ring-ink/10 px-4 py-3.5 flex flex-wrap items-center gap-3'
           + (reciente ? ' pop' : '') + (saltoIncidente ? ' destello' : ''));
 
         const punto = el('span', 'w-2.5 h-2.5 rounded-full shrink-0 ' +
@@ -1237,9 +1245,9 @@
       resumen.append(
         bloque(a.correccion.provisional ? 'Nota provisoria' : 'Nota',
           dec(a.correccion.nota) + ' / 10',
-          a.correccion.provisional ? 'text-plum' : a.correccion.nota >= 6 ? 'text-ok' : 'text-alert'),
+          a.correccion.provisional ? 'text-plum-light' : a.correccion.nota >= 6 ? 'text-ok-light' : 'text-alert-light'),
         bloque('Puntaje', dec(a.correccion.obtenido) + ' / ' + dec(a.correccion.total)),
-        bloque('Incidentes', String(a.incidents.length), a.incidents.length ? 'text-alert' : 'text-paper')
+        bloque('Incidentes', String(a.incidents.length), a.incidents.length ? 'text-alert-light' : 'text-paper')
       );
       cuerpo.appendChild(resumen);
 
