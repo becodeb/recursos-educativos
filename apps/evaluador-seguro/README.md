@@ -66,6 +66,26 @@ alumno.
 Vale aclarar qué **no** hace: es un disuasivo, no un candado. No detecta un segundo
 dispositivo, ni una máquina virtual, ni a alguien mirando por encima del hombro.
 
+## Identidad visual
+
+Colores institucionales, cada uno con un rol fijo. Están definidos una sola vez, en
+el `tailwind.config` de cada página; para cambiar la paleta alcanza con tocar ahí.
+
+| Token    | Color                | Rol                                        |
+| -------- | -------------------- | ------------------------------------------ |
+| `brand`  | `#243B7A` azul       | primario estructural, botones principales   |
+| `accent` | `#FF9300` naranja    | destaques, código de la toma, sala de espera |
+| `accent-deep` | `#E4510B` naranja rojizo | urgencia: reloj por vencer, rótulos sobre claro |
+| `ok`     | `#209B8A` verde azulado | correcto, examen en curso, aprobado      |
+| `alert`  | `#C52525` rojo       | incidentes, acciones peligrosas             |
+| `plum`   | `#7D2048` bordó      | nota provisoria, respuesta sin corregir     |
+| `ink`    | `#17122B` violeta oscuro | lienzo de fondo (derivado del violeta institucional) |
+
+Sobre las animaciones: las listas que el servidor reenvía enteras (la sala, la tabla
+de alumnos, el editor) sólo se redibujan si algo cambió de verdad. Sin esa guarda, cada
+evento del stream cortaba las animaciones de entrada y hacía parpadear la tabla. Todo
+el movimiento se apaga con `prefers-reduced-motion`.
+
 ## Cómo está armado
 
 ```

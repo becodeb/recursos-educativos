@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Evaluador Seguro: ingresá con el código que te dio tu profesor para rendir el examen en línea.">
   <title>Evaluador Seguro · Ingreso de alumnos</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%232F5BD9' d='M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z'/%3E%3Ccircle cx='12' cy='11' r='3' fill='%23F6F8FD'/%3E%3Ccircle cx='12' cy='11' r='1.3' fill='%232F5BD9'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23FF9300' d='M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z'/%3E%3Ccircle cx='12' cy='11' r='3' fill='%2317122B'/%3E%3Ccircle cx='12' cy='11' r='1.3' fill='%23FF9300'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -15,15 +15,16 @@
       theme: {
         extend: {
           colors: {
-            ink: '#0D1428',
-            panel: '#111A36',
-            paper: '#F6F8FD',
-            line: '#E2E8F4',
-            muted: '#5B6786',
-            brand: { DEFAULT: '#2F5BD9', deep: '#1D3E8F', soft: '#E8EEFC' },
-            alert: { DEFAULT: '#D64545', soft: '#FBEBEB' },
-            ok: { DEFAULT: '#1F9D6B', soft: '#E4F5EE' },
-            amber: { DEFAULT: '#C77F16', soft: '#FCF1DC' },
+            ink: '#17122B',
+            panel: '#241A3F',
+            paper: '#FBF8F4',
+            line: '#E7DFD6',
+            muted: '#6E6480',
+            brand: { DEFAULT: '#243B7A', deep: '#1A2C5C', soft: '#E7EAF4' },
+            accent: { DEFAULT: '#FF9300', deep: '#E4510B', soft: '#FFF0DA' },
+            ok: { DEFAULT: '#209B8A', deep: '#17796B', soft: '#DDF2EE' },
+            alert: { DEFAULT: '#C52525', deep: '#A11C1C', soft: '#FAE6E6' },
+            plum: { DEFAULT: '#7D2048', soft: '#F7E6EC' },
           },
           fontFamily: {
             display: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
@@ -35,21 +36,50 @@
     };
   </script>
   <style>
+    :root { --ease: cubic-bezier(.2, .7, .3, 1); }
+
     body {
-      background-color: #0D1428;
+      background-color: #17122B;
       background-image:
-        linear-gradient(rgba(148, 163, 216, 0.055) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(148, 163, 216, 0.055) 1px, transparent 1px);
-      background-size: 28px 28px;
+        radial-gradient(58rem 38rem at 8% -14%, rgba(75, 45, 104, .62), transparent 62%),
+        radial-gradient(48rem 32rem at 96% 4%, rgba(36, 59, 122, .52), transparent 64%),
+        radial-gradient(42rem 28rem at 52% 114%, rgba(255, 147, 0, .10), transparent 60%),
+        linear-gradient(rgba(170, 150, 205, .05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(170, 150, 205, .05) 1px, transparent 1px);
+      background-size: auto, auto, auto, 28px 28px, 28px 28px;
+      background-attachment: fixed;
     }
-    :focus-visible { outline: 3px solid #2F5BD9; outline-offset: 2px; border-radius: 4px; }
-    .vigil { width: 12px; height: 12px; border-radius: 9999px; background: #5B6786; transition: background .3s, box-shadow .3s; }
-    .vigil.ok { background: #1F9D6B; box-shadow: 0 0 0 4px rgba(31,157,107,.18), 0 0 14px rgba(31,157,107,.55); }
-    .vigil.alert { background: #D64545; animation: vigil-pulse 1s ease-in-out 3; }
+    :focus-visible { outline: 3px solid #FF9300; outline-offset: 2px; border-radius: 6px; }
+
+    /* ── entradas ─────────────────────────────────────────── */
+    @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    @keyframes pop { 0% { opacity: 0; transform: scale(.9); } 60% { transform: scale(1.02); } 100% { opacity: 1; transform: scale(1); } }
+    .rise { animation: rise .42s var(--ease) both; animation-delay: calc(var(--i, 0) * 55ms); }
+    .pop { animation: pop .32s var(--ease) both; animation-delay: calc(var(--i, 0) * 45ms); }
+    .view-in { animation: rise .4s var(--ease) both; }
+
+    /* ── interacción ──────────────────────────────────────── */
+    .lift { transition: transform .18s var(--ease), box-shadow .24s, background-color .2s, border-color .2s, color .2s; }
+    .lift:hover:not(:disabled) { transform: translateY(-2px); }
+    .lift:active:not(:disabled) { transform: translateY(0) scale(.99); }
+    .opcion { transition: transform .18s var(--ease), border-color .2s, background-color .2s; }
+    .opcion:hover { transform: translateX(3px); }
+    .opcion:has(input:checked) { border-color: #243B7A; background-color: #E7EAF4; }
+
+    /* ── vigilancia ───────────────────────────────────────── */
+    .vigil { width: 12px; height: 12px; border-radius: 9999px; background: #6E6480; transition: background .3s, box-shadow .3s; }
+    .vigil.ok { background: #209B8A; animation: vigil-breathe 3.4s ease-in-out infinite; }
+    @keyframes vigil-breathe {
+      0%, 100% { box-shadow: 0 0 0 4px rgba(32, 155, 138, .16), 0 0 12px rgba(32, 155, 138, .45); }
+      50% { box-shadow: 0 0 0 5px rgba(32, 155, 138, .26), 0 0 20px rgba(32, 155, 138, .70); }
+    }
+    .vigil.alert { background: #C52525; animation: vigil-pulse 1s ease-in-out 3; }
     @keyframes vigil-pulse {
-      0%, 100% { box-shadow: 0 0 0 4px rgba(214,69,69,.2), 0 0 10px rgba(214,69,69,.4); }
-      50% { box-shadow: 0 0 0 9px rgba(214,69,69,.08), 0 0 22px rgba(214,69,69,.75); }
+      0%, 100% { box-shadow: 0 0 0 4px rgba(197, 37, 37, .22), 0 0 10px rgba(197, 37, 37, .45); }
+      50% { box-shadow: 0 0 0 9px rgba(197, 37, 37, .08), 0 0 24px rgba(197, 37, 37, .80); }
     }
+
+    /* ── avisos ───────────────────────────────────────────── */
     @keyframes shake {
       10%, 90% { transform: translateX(-2px); }
       20%, 80% { transform: translateX(4px); }
@@ -57,16 +87,36 @@
       40%, 60% { transform: translateX(7px); }
     }
     .shake { animation: shake .5s cubic-bezier(.36,.07,.19,.97) both; }
-    @keyframes modal-in { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
-    .modal-in { animation: modal-in .22s ease-out both; }
-    .timer-urgent { color: #D64545; animation: blink 1s steps(2, start) infinite; }
-    @keyframes blink { to { opacity: .5; } }
-    @keyframes breathe { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+    @keyframes modal-in { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
+    .modal-in { animation: modal-in .26s var(--ease) both; }
+    @keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+    .backdrop-in { animation: backdrop-in .22s ease-out both; }
+    @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 14px); } to { opacity: 1; transform: translate(-50%, 0); } }
+    .toast-in { animation: toast-in .3s var(--ease) both; }
+    @keyframes tilde { to { stroke-dashoffset: 0; } }
+    .tilde-anim { animation: tilde .55s var(--ease) .15s both; }
+
+    /* ── tiempo y progreso ────────────────────────────────── */
+    .timer-urgent { color: #E4510B; animation: blink 1s steps(2, start) infinite; }
+    @keyframes blink { to { opacity: .45; } }
+    .ruler-seg {
+      flex: 1; height: 5px; border-radius: 9999px; background: rgba(255, 255, 255, .14);
+      transition: background-color .4s var(--ease), transform .3s var(--ease), box-shadow .4s;
+    }
+    .ruler-seg.filled {
+      background: #FF9300; transform: scaleY(1.6);
+      box-shadow: 0 0 10px rgba(255, 147, 0, .45);
+    }
+    @keyframes breathe { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
     .breathe { animation: breathe 2.4s ease-in-out infinite; }
+
     .codigo-input {
       font-family: "JetBrains Mono", ui-monospace, monospace;
       letter-spacing: .42em; text-transform: uppercase; text-align: center;
+      transition: border-color .2s, box-shadow .28s var(--ease);
     }
+    .codigo-input:focus { box-shadow: 0 0 0 5px rgba(255, 147, 0, .16); }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; }
     }
@@ -80,16 +130,16 @@
     <section id="view-join" class="max-w-lg mx-auto px-4 py-10 md:py-16">
       <header class="flex items-center gap-3 mb-8">
         <svg viewBox="0 0 24 24" class="w-11 h-11 shrink-0" aria-hidden="true">
-          <path fill="#2F5BD9" d="M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z"/>
-          <path fill="#0D1428" d="M12 7.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm0 1.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4z"/>
+          <path fill="#FF9300" d="M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z"/>
+          <path fill="#17122B" d="M12 7.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm0 1.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4z"/>
         </svg>
         <div>
-          <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-brand">Modo vigilado · Nivel secundario</p>
+          <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">Modo vigilado · Nivel secundario</p>
           <h1 class="font-display font-bold text-2xl md:text-3xl text-paper">Evaluador Seguro</h1>
         </div>
       </header>
 
-      <div class="bg-paper rounded-2xl shadow-2xl ring-1 ring-white/10 border-t-4 border-t-brand overflow-hidden">
+      <div class="bg-paper rounded-2xl shadow-2xl ring-1 ring-white/10 border-t-4 border-t-accent overflow-hidden">
         <div class="px-6 py-8 md:px-9">
           <h2 class="font-display font-semibold text-xl mb-1">Ingresá al examen</h2>
           <p class="text-sm text-muted mb-7">Pedile el código a tu profesor. Son 6 caracteres.</p>
@@ -116,7 +166,7 @@
             <p id="error-join" class="hidden text-sm font-medium text-alert bg-alert-soft border border-alert/20 rounded-lg px-3 py-2 mb-4" role="alert"></p>
 
             <button id="btn-join" type="submit"
-                    class="w-full bg-brand hover:bg-brand-deep text-white font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+                    class="lift w-full bg-brand hover:bg-brand-deep text-white font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
               Entrar a la sala
             </button>
           </form>
@@ -140,10 +190,10 @@
 
     <!-- ============ SALA DE ESPERA ============ -->
     <section id="view-lobby" class="hidden max-w-2xl mx-auto px-4 py-10 md:py-16">
-      <div class="bg-paper rounded-2xl shadow-2xl ring-1 ring-white/10 border-t-4 border-t-amber overflow-hidden">
+      <div class="bg-paper rounded-2xl shadow-2xl ring-1 ring-white/10 border-t-4 border-t-accent overflow-hidden">
         <div class="px-6 py-8 md:px-10 text-center">
-          <div class="inline-flex items-center gap-2 bg-amber-soft text-amber font-mono text-[11px] uppercase tracking-[0.18em] px-3 py-1.5 rounded-full mb-6">
-            <span class="w-2 h-2 rounded-full bg-amber breathe"></span> Sala de espera
+          <div class="inline-flex items-center gap-2 bg-accent-soft text-accent-deep font-mono text-[11px] uppercase tracking-[0.18em] px-3 py-1.5 rounded-full mb-6">
+            <span class="w-2 h-2 rounded-full bg-accent breathe"></span> Sala de espera
           </div>
           <h2 id="lobby-titulo" class="font-display font-bold text-2xl mb-2">—</h2>
           <p id="lobby-materia" class="text-sm text-muted mb-7">—</p>
@@ -206,7 +256,7 @@
 
         <div class="mt-8 flex flex-col sm:flex-row gap-3">
           <button id="btn-entregar"
-                  class="flex-1 bg-brand hover:bg-brand-deep text-white font-semibold py-3.5 rounded-xl transition-colors">
+                  class="lift flex-1 bg-brand hover:bg-brand-deep text-white font-semibold py-3.5 rounded-xl transition-colors">
             Entregar examen
           </button>
         </div>
@@ -220,7 +270,8 @@
         <div class="px-6 py-10 md:px-10 text-center">
           <div class="w-14 h-14 rounded-full bg-ok-soft flex items-center justify-center mx-auto mb-5">
             <svg viewBox="0 0 24 24" class="w-7 h-7" aria-hidden="true">
-              <path fill="none" stroke="#1F9D6B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5"/>
+              <path fill="none" stroke="#209B8A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5"
+                    stroke-dasharray="24" stroke-dashoffset="24" class="tilde-anim"/>
             </svg>
           </div>
           <h2 id="done-titulo" class="font-display font-bold text-2xl mb-2">Examen entregado</h2>
@@ -244,7 +295,7 @@
       <h2 class="font-display font-bold text-xl mb-2">Tocá para empezar</h2>
       <p class="text-sm text-muted mb-2">Vas a entrar en pantalla completa y el examen se va a mostrar.</p>
       <p class="text-sm font-semibold text-alert mb-6">El reloj ya está corriendo.</p>
-      <button id="btn-arrancar" class="w-full bg-brand hover:bg-brand-deep text-white font-semibold py-3.5 rounded-xl transition-colors">
+      <button id="btn-arrancar" class="lift w-full bg-brand hover:bg-brand-deep text-white font-semibold py-3.5 rounded-xl transition-colors">
         Empezar el examen
       </button>
     </div>
@@ -257,14 +308,14 @@
       <div class="p-7">
         <div class="w-12 h-12 rounded-full bg-alert-soft flex items-center justify-center mb-5">
           <svg viewBox="0 0 24 24" class="w-6 h-6" aria-hidden="true">
-            <path fill="#D64545" d="M12 2 1.5 20.5h21L12 2zm0 6.2 6.6 11.6H5.4L12 8.2zM11 11v4.2h2V11h-2zm0 5.4v1.8h2v-1.8h-2z"/>
+            <path fill="#C52525" d="M12 2 1.5 20.5h21L12 2zm0 6.2 6.6 11.6H5.4L12 8.2zM11 11v4.2h2V11h-2zm0 5.4v1.8h2v-1.8h-2z"/>
           </svg>
         </div>
         <h2 id="aviso-titulo" class="font-display font-bold text-xl mb-2">—</h2>
         <p id="aviso-texto" class="text-sm text-muted mb-5">—</p>
         <div id="aviso-detalle" class="bg-ink rounded-xl px-4 py-3 flex items-baseline justify-between mb-3"></div>
         <p id="aviso-conteo" class="font-mono text-[12px] text-muted mb-6">—</p>
-        <button id="btn-continuar-aviso" class="w-full bg-ink hover:bg-panel text-paper font-semibold py-3 rounded-xl transition-colors">
+        <button id="btn-continuar-aviso" class="lift w-full bg-ink hover:bg-panel text-paper font-semibold py-3 rounded-xl transition-colors">
           Volver al examen
         </button>
       </div>
@@ -278,10 +329,10 @@
       <h2 id="entrega-titulo" class="font-display font-bold text-xl mb-2">¿Entregar el examen?</h2>
       <p id="entrega-texto" class="text-sm text-muted mb-6">—</p>
       <div class="flex flex-col sm:flex-row gap-3">
-        <button id="btn-cancelar-entrega" class="flex-1 border border-line hover:bg-line/40 font-semibold py-3 rounded-xl transition-colors">
+        <button id="btn-cancelar-entrega" class="lift flex-1 border border-line hover:bg-line/40 font-semibold py-3 rounded-xl transition-colors">
           Seguir respondiendo
         </button>
-        <button id="btn-confirmar-entrega" class="flex-1 bg-brand hover:bg-brand-deep text-white font-semibold py-3 rounded-xl transition-colors">
+        <button id="btn-confirmar-entrega" class="lift flex-1 bg-brand hover:bg-brand-deep text-white font-semibold py-3 rounded-xl transition-colors">
           Sí, entregar
         </button>
       </div>
@@ -329,20 +380,37 @@
     const ahoraServidor = () => Date.now() + S.desfase;
 
     // ── helpers de UI ───────────────────────────────────────────────
+    let vistaActual = null;
     function show(view) {
       ['join', 'lobby', 'exam', 'done'].forEach((v) => $('view-' + v).classList.toggle('hidden', v !== view));
+      if (view !== vistaActual) {
+        vistaActual = view;
+        reanimar($('view-' + view), 'view-in');
+      }
       window.scrollTo(0, 0);
     }
+
+    /** Vuelve a disparar una animación CSS sobre un elemento que ya existe. */
+    function reanimar(nodo, clase) {
+      nodo.classList.remove(clase);
+      void nodo.offsetWidth;
+      nodo.classList.add(clase);
+    }
+
     let toastTimeout = null;
     function toast(msg) {
       const t = $('toast');
       t.textContent = msg;
       t.classList.remove('hidden');
+      reanimar(t, 'toast-in');
       clearTimeout(toastTimeout);
       toastTimeout = setTimeout(() => t.classList.add('hidden'), 2800);
     }
     function openModal(id) {
       $(id).classList.remove('hidden');
+      reanimar($(id), 'backdrop-in');
+      const caja = $(id).querySelector('.modal-in');
+      if (caja) reanimar(caja, 'modal-in');
       document.body.classList.add('overflow-hidden');
       const f = $(id).querySelector('button, input');
       if (f) f.focus();
@@ -475,12 +543,26 @@
       $('lobby-nombre').textContent = datos.student.name;
       $('lobby-tiempo').textContent = Math.round(datos.run.timeLimit / 60) + ' min';
       const sala = datos.sala || [];
+      // El estado inicial llega dos veces (fetch + primer evento del stream). Si la
+      // sala no cambió no redibujamos, así no se corta la animación de entrada.
+      const firma = sala.map((p) => p.name + '|' + p.course + '|' + p.status).join('~');
+      if (firma === salaFirma) return;
+      salaFirma = firma;
+
       $('lobby-conteo').textContent = sala.length + (sala.length === 1 ? ' alumno' : ' alumnos');
       const lista = $('lobby-lista');
       lista.textContent = '';
-      sala.forEach((p) => {
+      sala.forEach((p, i) => {
+        const clave = p.name + '|' + p.course;
+        const reciente = !yaEnSala.has(clave);
+        yaEnSala.add(clave);
+
         const li = document.createElement('li');
-        li.className = 'inline-flex items-center gap-2 bg-white border border-line rounded-full pl-2 pr-3 py-1.5 text-sm';
+        li.className = 'inline-flex items-center gap-2 bg-white border border-line rounded-full pl-2 pr-3 py-1.5 text-sm shadow-sm'
+          + (reciente ? ' pop' : '');
+        // Sólo escalonamos la tanda inicial; los que llegan después entran de a uno.
+        if (reciente && primeraSala) li.style.setProperty('--i', i);
+
         const punto = document.createElement('span');
         punto.className = 'w-2 h-2 rounded-full ' + (p.status === 'submitted' ? 'bg-muted' : 'bg-ok');
         const txt = document.createElement('span');
@@ -489,7 +571,11 @@
         li.append(punto, txt);
         lista.appendChild(li);
       });
+      primeraSala = false;
     }
+    const yaEnSala = new Set();
+    let primeraSala = true;
+    let salaFirma = null;
 
     $('btn-arrancar').addEventListener('click', async () => {
       S.arrancado = true;
@@ -512,12 +598,13 @@
       regla.textContent = '';
       S.preguntas.forEach((q, i) => {
         const seg = document.createElement('div');
-        seg.className = 'flex-1 h-1.5 rounded-full bg-white/15 transition-colors';
+        seg.className = 'ruler-seg';
         seg.id = 'seg-' + q.id;
         regla.appendChild(seg);
 
         const card = document.createElement('article');
-        card.className = 'bg-paper rounded-2xl shadow-lg ring-1 ring-white/10 overflow-hidden';
+        card.className = 'bg-paper rounded-2xl shadow-lg ring-1 ring-white/10 overflow-hidden rise';
+        card.style.setProperty('--i', i);
         card.id = 'card-' + q.id;
 
         const head = document.createElement('header');
@@ -571,11 +658,11 @@
         const opciones = q.type === 'tf' ? ['Verdadero', 'Falso'] : q.options;
         opciones.forEach((texto, idx) => {
           const label = document.createElement('label');
-          label.className = 'flex items-center gap-3 px-3.5 py-3 rounded-xl border border-line hover:border-brand hover:bg-brand-soft/40 cursor-pointer transition-colors';
+          label.className = 'opcion flex items-center gap-3 px-3.5 py-3 rounded-xl border border-line hover:border-brand cursor-pointer';
           const input = document.createElement('input');
           input.type = q.type === 'ms' ? 'checkbox' : 'radio';
           input.name = 'q-' + q.id;
-          input.className = 'w-4 h-4 accent-[#2F5BD9] shrink-0';
+          input.className = 'w-4 h-4 accent-[#243B7A] shrink-0';
           input.value = String(idx);
 
           if (q.type === 'ms') input.checked = Array.isArray(val) && val.includes(idx);
@@ -656,7 +743,7 @@
         const ok = respondida(q);
         if (ok) hechas++;
         const seg = $('seg-' + q.id);
-        if (seg) seg.className = 'flex-1 h-1.5 rounded-full transition-colors ' + (ok ? 'bg-brand' : 'bg-white/15');
+        if (seg) seg.classList.toggle('filled', ok);
       });
       $('progreso-texto').textContent = hechas + '/' + S.preguntas.length;
     }

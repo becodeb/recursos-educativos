@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex">
   <meta name="description" content="Panel docente de Evaluador Seguro: armá exámenes, tomalos en vivo y corregí con el registro de auditoría a la vista.">
   <title>Evaluador Seguro · Panel docente</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%232F5BD9' d='M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z'/%3E%3Ccircle cx='12' cy='11' r='3' fill='%23F6F8FD'/%3E%3Ccircle cx='12' cy='11' r='1.3' fill='%232F5BD9'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23FF9300' d='M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z'/%3E%3Ccircle cx='12' cy='11' r='3' fill='%2317122B'/%3E%3Ccircle cx='12' cy='11' r='1.3' fill='%23FF9300'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -16,15 +16,16 @@
       theme: {
         extend: {
           colors: {
-            ink: '#0D1428',
-            panel: '#111A36',
-            paper: '#F6F8FD',
-            line: '#E2E8F4',
-            muted: '#5B6786',
-            brand: { DEFAULT: '#2F5BD9', deep: '#1D3E8F', soft: '#E8EEFC' },
-            alert: { DEFAULT: '#D64545', soft: '#FBEBEB' },
-            ok: { DEFAULT: '#1F9D6B', soft: '#E4F5EE' },
-            amber: { DEFAULT: '#C77F16', soft: '#FCF1DC' },
+            ink: '#17122B',
+            panel: '#241A3F',
+            paper: '#FBF8F4',
+            line: '#E7DFD6',
+            muted: '#6E6480',
+            brand: { DEFAULT: '#243B7A', deep: '#1A2C5C', soft: '#E7EAF4' },
+            accent: { DEFAULT: '#FF9300', deep: '#E4510B', soft: '#FFF0DA' },
+            ok: { DEFAULT: '#209B8A', deep: '#17796B', soft: '#DDF2EE' },
+            alert: { DEFAULT: '#C52525', deep: '#A11C1C', soft: '#FAE6E6' },
+            plum: { DEFAULT: '#7D2048', soft: '#F7E6EC' },
           },
           fontFamily: {
             display: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
@@ -36,14 +37,39 @@
     };
   </script>
   <style>
+    :root { --ease: cubic-bezier(.2, .7, .3, 1); }
+
     body {
-      background-color: #0D1428;
+      background-color: #17122B;
       background-image:
-        linear-gradient(rgba(148, 163, 216, 0.055) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(148, 163, 216, 0.055) 1px, transparent 1px);
-      background-size: 28px 28px;
+        radial-gradient(58rem 38rem at 8% -14%, rgba(75, 45, 104, .62), transparent 62%),
+        radial-gradient(48rem 32rem at 96% 4%, rgba(36, 59, 122, .52), transparent 64%),
+        radial-gradient(42rem 28rem at 52% 114%, rgba(255, 147, 0, .10), transparent 60%),
+        linear-gradient(rgba(170, 150, 205, .05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(170, 150, 205, .05) 1px, transparent 1px);
+      background-size: auto, auto, auto, 28px 28px, 28px 28px;
+      background-attachment: fixed;
     }
-    :focus-visible { outline: 3px solid #2F5BD9; outline-offset: 2px; border-radius: 4px; }
+    :focus-visible { outline: 3px solid #FF9300; outline-offset: 2px; border-radius: 6px; }
+
+    /* ── entradas ─────────────────────────────────────────── */
+    @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    @keyframes pop { 0% { opacity: 0; transform: scale(.9); } 60% { transform: scale(1.02); } 100% { opacity: 1; transform: scale(1); } }
+    .rise { animation: rise .42s var(--ease) both; animation-delay: calc(var(--i, 0) * 55ms); }
+    .pop { animation: pop .32s var(--ease) both; animation-delay: calc(var(--i, 0) * 45ms); }
+    .view-in { animation: rise .4s var(--ease) both; }
+
+    /* ── interacción ──────────────────────────────────────── */
+    .lift { transition: transform .18s var(--ease), box-shadow .24s, background-color .2s, border-color .2s, color .2s; }
+    .lift:hover:not(:disabled) { transform: translateY(-2px); }
+    .lift:active:not(:disabled) { transform: translateY(0) scale(.99); }
+    .card {
+      transition: transform .24s var(--ease), box-shadow .24s, outline-color .24s;
+      outline: 2px solid transparent; outline-offset: -1px;
+    }
+    .card:hover { transform: translateY(-3px); outline-color: #FF9300; }
+
+    /* ── avisos ───────────────────────────────────────────── */
     @keyframes shake {
       10%, 90% { transform: translateX(-2px); }
       20%, 80% { transform: translateX(4px); }
@@ -51,16 +77,39 @@
       40%, 60% { transform: translateX(7px); }
     }
     .shake { animation: shake .5s cubic-bezier(.36,.07,.19,.97) both; }
-    @keyframes modal-in { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
-    .modal-in { animation: modal-in .22s ease-out both; }
-    @keyframes breathe { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
-    .breathe { animation: breathe 2.2s ease-in-out infinite; }
+    @keyframes modal-in { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
+    .modal-in { animation: modal-in .26s var(--ease) both; }
+    @keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+    .backdrop-in { animation: backdrop-in .22s ease-out both; }
+    @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 14px); } to { opacity: 1; transform: translate(-50%, 0); } }
+    .toast-in { animation: toast-in .3s var(--ease) both; }
+
+    /* ── código de la toma ────────────────────────────────── */
     .codigo-grande {
       font-family: "JetBrains Mono", ui-monospace, monospace;
       letter-spacing: .18em; font-weight: 700;
     }
-    .timer-urgent { color: #D64545; animation: blink 1s steps(2, start) infinite; }
-    @keyframes blink { to { opacity: .5; } }
+    @keyframes codigo-in {
+      from { opacity: 0; transform: scale(.88); letter-spacing: .55em; }
+      to { opacity: 1; transform: scale(1); letter-spacing: .18em; }
+    }
+    .codigo-in { animation: codigo-in .65s var(--ease) both, codigo-glow 3.6s ease-in-out .65s infinite; }
+    @keyframes codigo-glow {
+      0%, 100% { text-shadow: 0 0 22px rgba(255, 147, 0, .28); }
+      50% { text-shadow: 0 0 38px rgba(255, 147, 0, .55); }
+    }
+
+    /* ── estados en vivo ──────────────────────────────────── */
+    .timer-urgent { color: #E4510B; animation: blink 1s steps(2, start) infinite; }
+    @keyframes blink { to { opacity: .45; } }
+    @keyframes breathe { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+    .breathe { animation: breathe 2.2s ease-in-out infinite; }
+    @keyframes destello {
+      from { box-shadow: 0 0 0 0 rgba(197, 37, 37, .55); }
+      to { box-shadow: 0 0 0 14px rgba(197, 37, 37, 0); }
+    }
+    .destello { animation: destello .9s ease-out 2; }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; }
     }
@@ -74,11 +123,11 @@
     <section id="view-login" class="hidden max-w-md mx-auto px-4 py-16 md:py-24">
       <header class="flex items-center gap-3 mb-8">
         <svg viewBox="0 0 24 24" class="w-11 h-11 shrink-0" aria-hidden="true">
-          <path fill="#2F5BD9" d="M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z"/>
-          <path fill="#0D1428" d="M12 7.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm0 1.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4z"/>
+          <path fill="#FF9300" d="M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z"/>
+          <path fill="#17122B" d="M12 7.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm0 1.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4z"/>
         </svg>
         <div>
-          <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-brand">Panel docente</p>
+          <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">Panel docente</p>
           <h1 class="font-display font-bold text-2xl text-paper">Evaluador Seguro</h1>
         </div>
       </header>
@@ -90,7 +139,7 @@
           <input id="campo-clave" type="password" autocomplete="current-password"
                  class="w-full px-3.5 py-3 rounded-xl border border-line bg-white focus:border-brand outline-none mb-4">
           <p id="error-login" class="hidden text-sm font-medium text-alert bg-alert-soft border border-alert/20 rounded-lg px-3 py-2 mb-4" role="alert"></p>
-          <button type="submit" class="w-full bg-brand hover:bg-brand-deep text-white font-semibold py-3 rounded-xl transition-colors">Entrar</button>
+          <button type="submit" class="lift w-full bg-brand hover:bg-brand-deep text-white font-semibold py-3 rounded-xl">Entrar</button>
         </form>
       </div>
       <p class="text-center text-xs text-paper/35 mt-6">
@@ -102,14 +151,14 @@
     <section id="view-dash" class="hidden max-w-5xl mx-auto px-4 py-8 md:py-12">
       <header class="flex flex-wrap items-center gap-3 mb-8">
         <svg viewBox="0 0 24 24" class="w-10 h-10 shrink-0" aria-hidden="true">
-          <path fill="#2F5BD9" d="M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z"/>
-          <path fill="#0D1428" d="M12 7.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm0 1.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4z"/>
+          <path fill="#FF9300" d="M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z"/>
+          <path fill="#17122B" d="M12 7.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm0 1.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4z"/>
         </svg>
         <div class="flex-1 min-w-0">
-          <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-brand">Panel docente</p>
+          <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">Panel docente</p>
           <h1 class="font-display font-bold text-xl md:text-2xl text-paper">Evaluador Seguro</h1>
         </div>
-        <button id="btn-logout" class="font-mono text-[11px] uppercase tracking-[0.16em] text-paper/50 hover:text-paper border border-white/15 hover:border-white/40 rounded-lg px-3 py-2 transition-colors">
+        <button id="btn-logout" class="lift font-mono text-[11px] uppercase tracking-[0.16em] text-paper/50 hover:text-paper border border-white/15 hover:border-white/40 rounded-lg px-3 py-2 transition-colors">
           Salir
         </button>
       </header>
@@ -123,7 +172,7 @@
       <div id="tab-examenes">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
           <p class="text-paper/60 text-sm">Armá un examen una vez y tomalo todas las veces que quieras.</p>
-          <button id="btn-nuevo-examen" class="bg-brand hover:bg-brand-deep text-white font-semibold text-sm px-4 py-2.5 rounded-xl transition-colors">
+          <button id="btn-nuevo-examen" class="lift bg-brand hover:bg-brand-deep text-white font-semibold text-sm px-4 py-2.5 rounded-xl transition-colors">
             + Crear examen
           </button>
         </div>
@@ -140,7 +189,7 @@
     <!-- ============ EDITOR ============ -->
     <section id="view-editor" class="hidden max-w-3xl mx-auto px-4 py-8 md:py-12">
       <div class="flex items-center gap-3 mb-6">
-        <button id="btn-volver-editor" class="font-mono text-[11px] uppercase tracking-[0.16em] text-paper/50 hover:text-paper border border-white/15 hover:border-white/40 rounded-lg px-3 py-2 transition-colors">
+        <button id="btn-volver-editor" class="lift font-mono text-[11px] uppercase tracking-[0.16em] text-paper/50 hover:text-paper border border-white/15 hover:border-white/40 rounded-lg px-3 py-2 transition-colors">
           ← Volver
         </button>
         <h2 id="editor-titulo-vista" class="font-display font-bold text-xl text-paper">Nuevo examen</h2>
@@ -191,10 +240,10 @@
       <p id="error-editor" class="hidden text-sm font-medium text-alert bg-alert-soft border border-alert/20 rounded-lg px-3 py-2 mb-4" role="alert"></p>
 
       <div class="flex flex-col sm:flex-row gap-3">
-        <button id="btn-guardar-examen" class="flex-1 bg-brand hover:bg-brand-deep text-white font-semibold py-3.5 rounded-xl transition-colors">
+        <button id="btn-guardar-examen" class="lift flex-1 bg-brand hover:bg-brand-deep text-white font-semibold py-3.5 rounded-xl transition-colors">
           Guardar examen
         </button>
-        <button id="btn-cancelar-editor" class="sm:w-40 border border-white/15 text-paper/70 hover:text-paper hover:border-white/40 font-semibold py-3.5 rounded-xl transition-colors">
+        <button id="btn-cancelar-editor" class="lift sm:w-40 border border-white/15 text-paper/70 hover:text-paper hover:border-white/40 font-semibold py-3.5 rounded-xl transition-colors">
           Cancelar
         </button>
       </div>
@@ -203,7 +252,7 @@
     <!-- ============ TOMA (sala / vivo / resultados) ============ -->
     <section id="view-run" class="hidden max-w-5xl mx-auto px-4 py-8 md:py-12">
       <div class="flex items-center gap-3 mb-6">
-        <button id="btn-volver-run" class="font-mono text-[11px] uppercase tracking-[0.16em] text-paper/50 hover:text-paper border border-white/15 hover:border-white/40 rounded-lg px-3 py-2 transition-colors">
+        <button id="btn-volver-run" class="lift font-mono text-[11px] uppercase tracking-[0.16em] text-paper/50 hover:text-paper border border-white/15 hover:border-white/40 rounded-lg px-3 py-2 transition-colors">
           ← Volver
         </button>
         <div class="min-w-0 flex-1">
@@ -214,17 +263,17 @@
       </div>
 
       <!-- panel de código: visible en sala -->
-      <div id="run-panel-codigo" class="bg-paper rounded-2xl shadow-2xl ring-1 ring-white/10 border-t-4 border-t-brand p-6 md:p-8 mb-5">
+      <div id="run-panel-codigo" class="bg-paper rounded-2xl shadow-2xl ring-1 ring-white/10 border-t-4 border-t-accent p-6 md:p-8 mb-5">
         <div class="grid md:grid-cols-[auto,1fr] gap-6 items-center">
-          <div class="text-center md:text-left">
-            <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Código del examen</p>
-            <p id="run-codigo" class="codigo-grande text-4xl md:text-5xl text-brand">------</p>
+          <div class="bg-ink rounded-xl px-7 py-5 text-center">
+            <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-paper/40 mb-2">Código del examen</p>
+            <p id="run-codigo" class="codigo-grande text-4xl md:text-5xl text-accent">------</p>
           </div>
           <div>
             <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Link directo</p>
             <div class="flex gap-2">
               <input id="run-link" readonly class="flex-1 min-w-0 px-3 py-2.5 rounded-lg border border-line bg-line/30 font-mono text-xs">
-              <button id="btn-copiar-link" class="shrink-0 bg-ink hover:bg-panel text-paper font-medium text-sm px-4 rounded-lg transition-colors">Copiar</button>
+              <button id="btn-copiar-link" class="lift shrink-0 bg-ink hover:bg-panel text-paper font-medium text-sm px-4 rounded-lg">Copiar</button>
             </div>
             <p class="text-xs text-muted mt-2">Pasales el link o el código. Van a entrar a la sala de espera.</p>
           </div>
@@ -238,7 +287,7 @@
       <div class="flex flex-wrap items-baseline justify-between gap-3 mb-3">
         <h3 id="run-subtitulo-alumnos" class="font-display font-semibold text-paper">Alumnos</h3>
         <div class="flex items-center gap-3">
-          <button id="btn-informe" class="hidden font-mono text-[11px] uppercase tracking-[0.16em] text-paper/50 hover:text-paper border border-white/15 hover:border-white/40 rounded-lg px-3 py-2 transition-colors">
+          <button id="btn-informe" class="lift hidden font-mono text-[11px] uppercase tracking-[0.16em] text-paper/50 hover:text-paper border border-white/15 hover:border-white/40 rounded-lg px-3 py-2 transition-colors">
             Descargar informe
           </button>
           <p id="run-conteo" class="font-mono text-sm text-paper/50">0</p>
@@ -264,10 +313,10 @@
       </header>
       <div id="det-cuerpo" class="px-6 py-6 space-y-6"></div>
       <footer class="px-6 py-4 border-t border-line flex flex-wrap gap-3 justify-end">
-        <button id="btn-informe-alumno" class="border border-line hover:bg-line/40 font-semibold text-sm px-4 py-2.5 rounded-xl transition-colors">
+        <button id="btn-informe-alumno" class="lift border border-line hover:bg-line/40 font-semibold text-sm px-4 py-2.5 rounded-xl transition-colors">
           Copiar informe
         </button>
-        <button id="btn-cerrar-alumno-2" class="bg-ink hover:bg-panel text-paper font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors">
+        <button id="btn-cerrar-alumno-2" class="lift bg-ink hover:bg-panel text-paper font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors">
           Cerrar
         </button>
       </footer>
@@ -280,8 +329,8 @@
       <h2 id="confirm-titulo" class="font-display font-bold text-xl mb-2">—</h2>
       <p id="confirm-texto" class="text-sm text-muted mb-6">—</p>
       <div class="flex flex-col sm:flex-row gap-3">
-        <button id="btn-confirm-no" class="flex-1 border border-line hover:bg-line/40 font-semibold py-3 rounded-xl transition-colors">Cancelar</button>
-        <button id="btn-confirm-si" class="flex-1 bg-alert hover:bg-alert/85 text-white font-semibold py-3 rounded-xl transition-colors">Confirmar</button>
+        <button id="btn-confirm-no" class="lift flex-1 border border-line hover:bg-line/40 font-semibold py-3 rounded-xl transition-colors">Cancelar</button>
+        <button id="btn-confirm-si" class="lift flex-1 bg-alert hover:bg-alert/85 text-white font-semibold py-3 rounded-xl transition-colors">Confirmar</button>
       </div>
     </div>
   </div>
@@ -329,11 +378,20 @@
     };
     const MOTIVO = { manual: 'entregó', tiempo: 'se acabó el tiempo', docente: 'cerrado por el docente' };
 
+    /** Vuelve a disparar una animación CSS sobre un elemento que ya existe. */
+    function reanimar(nodo, clase) {
+      if (!nodo) return;
+      nodo.classList.remove(clase);
+      void nodo.offsetWidth;
+      nodo.classList.add(clase);
+    }
+
     let toastTimeout = null;
     function toast(msg) {
       const t = $('toast');
       t.textContent = msg;
       t.classList.remove('hidden');
+      reanimar(t, 'toast-in');
       clearTimeout(toastTimeout);
       toastTimeout = setTimeout(() => t.classList.add('hidden'), 2800);
     }
@@ -355,8 +413,13 @@
       return datos;
     }
 
+    let vistaActual = null;
     function show(view) {
       ['login', 'dash', 'editor', 'run'].forEach((v) => $('view-' + v).classList.toggle('hidden', v !== view));
+      if (view !== vistaActual) {
+        vistaActual = view;
+        reanimar($('view-' + view), 'view-in');
+      }
       window.scrollTo(0, 0);
     }
 
@@ -367,6 +430,9 @@
       $('confirm-texto').textContent = texto;
       $('btn-confirm-si').textContent = etiqueta || 'Confirmar';
       $('modal-confirm').classList.remove('hidden');
+      reanimar($('modal-confirm'), 'backdrop-in');
+      reanimar($('modal-confirm').querySelector('.modal-in'), 'modal-in');
+      $('btn-confirm-si').focus();
       return new Promise((resolve) => { confirmarResolver = resolve; });
     }
     function cerrarConfirm(valor) {
@@ -387,6 +453,11 @@
       relojId: null,
       tab: 'examenes',
     };
+    // Memoria de lo ya dibujado, para animar sólo las novedades.
+    const alumnosVistos = new Set();
+    const incidentesVistos = new Map();
+    let codigoMostrado = null;
+    let alumnosFirma = null;
     const ahoraServidor = () => Date.now() + S.desfase;
 
     // ── login ───────────────────────────────────────────────────────
@@ -429,7 +500,7 @@
     function pintarTabs() {
       document.querySelectorAll('.tab-bt').forEach((b) => {
         const activa = b.dataset.tab === S.tab;
-        b.className = 'tab-bt font-medium text-sm px-4 py-2 rounded-lg transition-colors ' +
+        b.className = 'tab-bt lift font-medium text-sm px-4 py-2 rounded-lg ' +
           (activa ? 'bg-paper text-ink' : 'text-paper/55 hover:text-paper');
       });
       $('tab-examenes').classList.toggle('hidden', S.tab !== 'examenes');
@@ -455,10 +526,11 @@
         return;
       }
 
-      S.examenes.forEach((ex) => {
-        const card = el('article', 'bg-paper rounded-2xl shadow-lg ring-1 ring-white/10 overflow-hidden flex flex-col');
+      S.examenes.forEach((ex, i) => {
+        const card = el('article', 'card rise bg-paper rounded-2xl shadow-lg ring-1 ring-white/10 overflow-hidden flex flex-col');
+        card.style.setProperty('--i', i);
         const cuerpo = el('div', 'p-5 flex-1');
-        if (ex.subject) cuerpo.appendChild(el('p', 'font-mono text-[10px] uppercase tracking-[0.18em] text-brand mb-1', ex.subject));
+        if (ex.subject) cuerpo.appendChild(el('p', 'font-mono text-[10px] uppercase tracking-[0.18em] text-accent-deep mb-1', ex.subject));
         cuerpo.appendChild(el('h3', 'font-display font-bold text-lg leading-snug mb-3', ex.title));
 
         const datos2 = el('div', 'flex flex-wrap gap-x-4 gap-y-1 font-mono text-[11px] text-muted');
@@ -471,11 +543,11 @@
         cuerpo.appendChild(datos2);
 
         const pie = el('div', 'flex flex-wrap gap-2 px-5 py-4 border-t border-line bg-line/20');
-        const iniciar = el('button', 'bg-brand hover:bg-brand-deep text-white font-semibold text-sm px-4 py-2 rounded-lg transition-colors', 'Iniciar toma');
+        const iniciar = el('button', 'lift bg-brand hover:bg-brand-deep text-white font-semibold text-sm px-4 py-2 rounded-lg', 'Iniciar toma');
         iniciar.addEventListener('click', () => nuevaToma(ex));
-        const editar = el('button', 'border border-line hover:bg-line/60 font-medium text-sm px-3 py-2 rounded-lg transition-colors', 'Editar');
+        const editar = el('button', 'lift border border-line hover:bg-line/60 font-medium text-sm px-3 py-2 rounded-lg', 'Editar');
         editar.addEventListener('click', () => abrirEditor(ex));
-        const duplicar = el('button', 'border border-line hover:bg-line/60 font-medium text-sm px-3 py-2 rounded-lg transition-colors', 'Duplicar');
+        const duplicar = el('button', 'lift border border-line hover:bg-line/60 font-medium text-sm px-3 py-2 rounded-lg', 'Duplicar');
         duplicar.addEventListener('click', async () => {
           try { await api('/api/exams/' + ex.id + '/duplicate', { method: 'POST' }); await cargarExamenes(); toast('Examen duplicado'); }
           catch (e2) { toast(e2.message); }
@@ -505,11 +577,12 @@
         return;
       }
 
-      datos.runs.forEach((r) => {
-        const fila = el('button', 'w-full text-left bg-paper rounded-xl shadow ring-1 ring-white/10 px-5 py-4 flex flex-wrap items-center gap-4 hover:ring-brand transition');
+      datos.runs.forEach((r, i) => {
+        const fila = el('button', 'card rise w-full text-left bg-paper rounded-xl shadow ring-1 ring-white/10 px-5 py-4 flex flex-wrap items-center gap-4');
+        fila.style.setProperty('--i', i);
         fila.addEventListener('click', () => abrirToma(r.id));
 
-        fila.appendChild(el('span', 'codigo-grande text-xl text-brand shrink-0', r.code));
+        fila.appendChild(el('span', 'codigo-grande text-xl text-accent-deep shrink-0', r.code));
 
         const medio = el('div', 'min-w-0 flex-1');
         medio.append(
@@ -532,7 +605,7 @@
 
     function chipEstado(status) {
       const mapa = {
-        lobby: ['Sala de espera', 'bg-amber-soft text-amber'],
+        lobby: ['Sala de espera', 'bg-accent-soft text-accent-deep'],
         running: ['En curso', 'bg-ok-soft text-ok'],
         ended: ['Cerrada', 'bg-line text-muted'],
       };
@@ -552,7 +625,12 @@
       return base;
     }
 
+    // El editor se redibuja entero con cada cambio, así que sólo animamos cuando
+    // hay algo nuevo que mostrar: -2 = todo (al abrir), -1 = nada, n = sólo esa.
+    let editorAnimar = -1;
+
     function abrirEditor(examen) {
+      editorAnimar = -2;
       S.editando = examen
         ? { id: examen.id, questions: JSON.parse(JSON.stringify(examen.questions)) }
         : { id: null, questions: [nuevaPregunta('mc')] };
@@ -570,6 +648,7 @@
       b.className = 'add-bt border border-line hover:border-brand hover:bg-brand-soft font-medium text-sm px-3 py-2.5 rounded-xl transition-colors';
       b.addEventListener('click', () => {
         S.editando.questions.push(nuevaPregunta(b.dataset.add));
+        editorAnimar = S.editando.questions.length - 1;
         renderEditor();
         const tarjetas = $('ed-preguntas').children;
         if (tarjetas.length) tarjetas[tarjetas.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -582,7 +661,9 @@
       const qs = S.editando.questions;
 
       qs.forEach((q, i) => {
-        const card = el('article', 'bg-paper rounded-2xl shadow-lg ring-1 ring-white/10 overflow-hidden');
+        const anima = editorAnimar === -2 ? ' rise' : editorAnimar === i ? ' pop' : '';
+        const card = el('article', 'bg-paper rounded-2xl shadow-lg ring-1 ring-white/10 overflow-hidden' + anima);
+        if (editorAnimar === -2) card.style.setProperty('--i', i);
 
         // cabecera
         const head = el('header', 'flex flex-wrap items-center gap-2 px-5 py-3 border-b border-line bg-line/20');
@@ -637,6 +718,7 @@
         cont.appendChild(el('p', 'text-center text-paper/40 text-sm py-10 border border-dashed border-white/15 rounded-2xl',
           'Agregá la primera pregunta con los botones de abajo.'));
       }
+      editorAnimar = -1;
       actualizarPuntaje();
     }
 
@@ -655,7 +737,7 @@
           const input = el('input');
           input.type = 'radio';
           input.name = 'tf-' + Math.random().toString(36).slice(2);
-          input.className = 'w-4 h-4 accent-[#1F9D6B]';
+          input.className = 'w-4 h-4 accent-[#209B8A]';
           input.checked = q.correct === val;
           input.addEventListener('change', () => { q.correct = val; renderEditor(); });
           label.append(input, el('span', 'text-sm font-medium', txt));
@@ -716,7 +798,7 @@
         const marca = el('input');
         marca.type = q.type === 'ms' ? 'checkbox' : 'radio';
         marca.name = grupo;
-        marca.className = 'w-4 h-4 accent-[#1F9D6B] shrink-0 ml-1.5';
+        marca.className = 'w-4 h-4 accent-[#209B8A] shrink-0 ml-1.5';
         marca.checked = esCorrecta;
         marca.setAttribute('aria-label', 'Marcar la opción ' + (k + 1) + ' como correcta');
         marca.addEventListener('change', () => {
@@ -808,6 +890,10 @@
 
     async function abrirToma(runId) {
       cerrarStream();
+      alumnosVistos.clear();
+      incidentesVistos.clear();
+      codigoMostrado = null;
+      alumnosFirma = null;
       try {
         const foto = await api('/api/runs/' + runId);
         aplicarFoto(foto);
@@ -856,6 +942,10 @@
       $('run-panel-codigo').classList.toggle('hidden', run.status === 'ended');
       $('run-codigo').textContent = run.code;
       $('run-link').value = location.origin + '/?c=' + run.code;
+      if (codigoMostrado !== run.code) {
+        codigoMostrado = run.code;
+        reanimar($('run-codigo'), 'codigo-in');
+      }
 
       renderControles();
 
@@ -895,7 +985,7 @@
         );
         fila.appendChild(info);
 
-        const iniciar = el('button', 'bg-ok hover:bg-ok/85 text-white font-semibold px-6 py-3 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed', 'Iniciar examen');
+        const iniciar = el('button', 'lift bg-ok hover:bg-ok-deep text-white font-semibold px-6 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed', 'Iniciar examen');
         iniciar.disabled = alumnos.length === 0;
         iniciar.addEventListener('click', async () => {
           const minutos = Number($('run-minutos').value);
@@ -949,7 +1039,7 @@
         );
         fila.appendChild(resumen);
 
-        const terminar = el('button', 'bg-alert hover:bg-alert/85 text-white font-semibold px-5 py-3 rounded-xl transition-colors', 'Finalizar ahora');
+        const terminar = el('button', 'lift bg-alert hover:bg-alert-deep text-white font-semibold px-5 py-3 rounded-xl', 'Finalizar ahora');
         terminar.addEventListener('click', async () => {
           const pendientes = alumnos.length - entregados;
           const ok = await confirmar('¿Finalizar el examen?',
@@ -988,12 +1078,12 @@
         dato('Promedio', dec(promedio)),
         dato('Aprobados', aprobados + '/' + alumnos.length, aprobados === alumnos.length ? 'text-ok' : 'text-paper'),
         dato('Incidentes', String(incidentes), incidentes ? 'text-alert' : 'text-paper'),
-        dato('Sin corregir', String(pendientes), pendientes ? 'text-amber' : 'text-paper')
+        dato('Sin corregir', String(pendientes), pendientes ? 'text-plum' : 'text-paper')
       );
       cont.appendChild(grid);
 
       if (pendientes) {
-        cont.appendChild(el('p', 'text-amber text-sm mt-4 pt-4 border-t border-white/10',
+        cont.appendChild(el('p', 'text-[#D98BA6] text-sm mt-4 pt-4 border-t border-white/10',
           'Hay respuestas de desarrollo sin corregir. Las notas con el rótulo «provisoria» todavía no son definitivas.'));
       }
     }
@@ -1007,20 +1097,40 @@
     }
 
     function renderAlumnos() {
-      const cont = $('run-alumnos');
-      cont.textContent = '';
       const { run, alumnos } = S.run;
       const total = S.run.questions.length;
+
+      // El servidor reenvía la foto completa ante cualquier cambio. Si nada de lo
+      // que se ve cambió, no redibujamos: evita el parpadeo y no corta las
+      // animaciones de los que acaban de entrar.
+      const firma = run.status + '::' + alumnos.map((a) => [
+        a.id, a.status, a.submitReason, a.tarde, a.correccion.respondidas,
+        a.correccion.nota, a.correccion.provisional, a.incidents.length,
+      ].join('|')).join('~');
+      if (firma === alumnosFirma) return;
+      alumnosFirma = firma;
+
+      const cont = $('run-alumnos');
+      cont.textContent = '';
 
       const ordenados = run.status === 'ended'
         ? [...alumnos].sort((a, b) => b.correccion.nota - a.correccion.nota || a.name.localeCompare(b.name, 'es'))
         : alumnos;
 
       ordenados.forEach((a) => {
-        const fila = el('div', 'bg-paper rounded-xl shadow ring-1 ring-white/10 px-4 py-3.5 flex flex-wrap items-center gap-3');
+        // La lista se redibuja con cada evento del servidor: animamos sólo lo que
+        // cambió, para no tener toda la tabla saltando cada vez.
+        const reciente = !alumnosVistos.has(a.id);
+        alumnosVistos.add(a.id);
+        const incidentesPrevios = incidentesVistos.get(a.id);
+        incidentesVistos.set(a.id, a.incidents.length);
+        const saltoIncidente = incidentesPrevios !== undefined && a.incidents.length > incidentesPrevios;
+
+        const fila = el('div', 'bg-paper rounded-xl shadow ring-1 ring-white/10 px-4 py-3.5 flex flex-wrap items-center gap-3'
+          + (reciente ? ' pop' : '') + (saltoIncidente ? ' destello' : ''));
 
         const punto = el('span', 'w-2.5 h-2.5 rounded-full shrink-0 ' +
-          (a.status === 'submitted' ? 'bg-muted' : a.status === 'active' ? 'bg-ok' : 'bg-amber breathe'));
+          (a.status === 'submitted' ? 'bg-muted' : a.status === 'active' ? 'bg-ok' : 'bg-accent breathe'));
         fila.appendChild(punto);
 
         const ident = el('div', 'min-w-0 flex-1');
@@ -1058,13 +1168,13 @@
           nota.appendChild(el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted',
             a.correccion.provisional ? 'Provisoria' : 'Nota'));
           nota.appendChild(el('p', 'font-mono text-lg font-bold ' +
-            (a.correccion.provisional ? 'text-amber' : a.correccion.nota >= 6 ? 'text-ok' : 'text-alert'),
+            (a.correccion.provisional ? 'text-plum' : a.correccion.nota >= 6 ? 'text-ok' : 'text-alert'),
             dec(a.correccion.nota)));
           fila.appendChild(nota);
         }
 
         if (run.status !== 'lobby') {
-          const ver = el('button', 'shrink-0 border border-line hover:bg-line/60 font-medium text-sm px-3.5 py-2 rounded-lg transition-colors',
+          const ver = el('button', 'lift shrink-0 border border-line hover:bg-line/60 font-medium text-sm px-3.5 py-2 rounded-lg',
             run.status === 'ended' ? 'Corregir' : 'Ver');
           ver.addEventListener('click', () => abrirDetalle(a.id));
           fila.appendChild(ver);
@@ -1090,6 +1200,8 @@
       if (!alumno) return;
       renderDetalleAlumno(alumno);
       $('modal-alumno').classList.remove('hidden');
+      reanimar($('modal-alumno'), 'backdrop-in');
+      reanimar($('modal-alumno').querySelector('.modal-in'), 'modal-in');
       document.body.classList.add('overflow-hidden');
     }
     function cerrarDetalle() {
@@ -1125,14 +1237,14 @@
       resumen.append(
         bloque(a.correccion.provisional ? 'Nota provisoria' : 'Nota',
           dec(a.correccion.nota) + ' / 10',
-          a.correccion.provisional ? 'text-amber' : a.correccion.nota >= 6 ? 'text-ok' : 'text-alert'),
+          a.correccion.provisional ? 'text-plum' : a.correccion.nota >= 6 ? 'text-ok' : 'text-alert'),
         bloque('Puntaje', dec(a.correccion.obtenido) + ' / ' + dec(a.correccion.total)),
         bloque('Incidentes', String(a.incidents.length), a.incidents.length ? 'text-alert' : 'text-paper')
       );
       cuerpo.appendChild(resumen);
 
       if (a.correccion.provisional) {
-        cuerpo.appendChild(el('p', 'text-sm text-amber bg-amber-soft border border-amber/25 rounded-xl px-4 py-3',
+        cuerpo.appendChild(el('p', 'text-sm text-plum bg-plum-soft border border-plum/25 rounded-xl px-4 py-3',
           'Quedan respuestas sin corregir. Marcá cada una como correcta o incorrecta para cerrar la nota.'));
       }
 
@@ -1152,7 +1264,7 @@
           el('span', 'font-mono text-[10px] text-muted ml-auto', dec(q.points) + ' pts')
         );
         const marca = el('span', 'font-mono text-[10px] uppercase tracking-[0.16em] px-2 py-0.5 rounded-full ' +
-          (d.ok === true ? 'bg-ok-soft text-ok' : d.ok === false ? 'bg-alert-soft text-alert' : 'bg-amber-soft text-amber'),
+          (d.ok === true ? 'bg-ok-soft text-ok' : d.ok === false ? 'bg-alert-soft text-alert' : 'bg-plum-soft text-plum'),
           d.ok === true ? 'Correcta' : d.ok === false ? 'Incorrecta' : 'Sin corregir');
         head.appendChild(marca);
         card.appendChild(head);
@@ -1194,7 +1306,7 @@
             acciones.appendChild(auto);
           }
           if (d.override !== null) {
-            acciones.appendChild(el('span', 'font-mono text-[10px] text-amber', 'ajustada a mano'));
+            acciones.appendChild(el('span', 'font-mono text-[10px] text-plum', 'ajustada a mano'));
           }
           body.appendChild(acciones);
         }
