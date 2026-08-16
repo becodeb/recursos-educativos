@@ -83,10 +83,11 @@ el `tailwind.config` de cada página; para cambiar la paleta alcanza con tocar a
 | `alert`       | `#C52525` rojo           | incidentes, acciones peligrosas               |
 | `plum`        | `#7D2048` bordó          | nota provisoria, respuesta sin corregir       |
 
-La página es clara, pero hay islas oscuras a propósito: la barra del examen, la caja
-del código, el panel de control de la toma y el resumen de nota. Ahí el texto se
-invierte. Por eso `ok`, `alert` y `plum` tienen una variante **`-light`**: sobre
-violeta oscuro, el rojo y el bordó plenos no llegan a contraste legible.
+El fondo es plano: sin grilla, sin degradados, sin textura. Las superficies se separan
+con **un solo recurso, el borde de 1 px**; no hay sombras salvo un susurro en los
+elementos flotantes. El color aparece únicamente donde significa algo — un estado, una
+acción, un incidente — nunca como decoración. Lo oscuro quedó reservado para lo que
+flota por encima de la página: modales, avisos y botones primarios.
 
 Sobre las animaciones: las listas que el servidor reenvía enteras (la sala, la tabla
 de alumnos, el editor) sólo se redibujan si algo cambió de verdad. Sin esa guarda, cada

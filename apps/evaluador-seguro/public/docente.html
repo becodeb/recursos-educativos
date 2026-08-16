@@ -24,10 +24,9 @@
             muted: '#786552',
             brand: { DEFAULT: '#243B7A', deep: '#1A2C5C', soft: '#E7EAF4' },
             accent: { DEFAULT: '#FF9300', deep: '#E4510B', soft: '#FFF0DA' },
-            // 'light' es la versión legible sobre las superficies oscuras (ink / panel).
-            ok: { DEFAULT: '#209B8A', deep: '#17796B', soft: '#DDF2EE', light: '#4FC9B5' },
-            alert: { DEFAULT: '#C52525', deep: '#A11C1C', soft: '#FAE6E6', light: '#F58A8A' },
-            plum: { DEFAULT: '#7D2048', soft: '#F7E6EC', light: '#E09BB6' },
+            ok: { DEFAULT: '#209B8A', deep: '#17796B', soft: '#DDF2EE' },
+            alert: { DEFAULT: '#C52525', deep: '#A11C1C', soft: '#FAE6E6' },
+            plum: { DEFAULT: '#7D2048', soft: '#F7E6EC' },
           },
           fontFamily: {
             display: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
@@ -41,23 +40,11 @@
   <style>
     :root { --ease: cubic-bezier(.2, .7, .3, 1); }
 
-    body {
-      background-color: #FFF4E5;
-      background-image:
-        radial-gradient(58rem 38rem at 8% -14%, rgba(255, 147, 0, .20), transparent 62%),
-        radial-gradient(48rem 32rem at 96% 4%, rgba(36, 59, 122, .07), transparent 64%),
-        radial-gradient(42rem 28rem at 52% 114%, rgba(228, 81, 11, .09), transparent 60%),
-        linear-gradient(rgba(124, 92, 52, .055) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(124, 92, 52, .055) 1px, transparent 1px);
-      background-size: auto, auto, auto, 28px 28px, 28px 28px;
-      background-attachment: fixed;
-    }
+    body { background-color: #FFF4E5; }
 
-    /* Las sombras de Tailwind son negras: sobre el fondo cálido se ven grises. */
-    .shadow-2xl { box-shadow: 0 18px 40px -12px rgba(93, 58, 12, .20), 0 4px 12px -4px rgba(93, 58, 12, .10) !important; }
-    .shadow-xl { box-shadow: 0 14px 30px -10px rgba(93, 58, 12, .17), 0 3px 8px -3px rgba(93, 58, 12, .09) !important; }
-    .shadow-lg { box-shadow: 0 10px 22px -8px rgba(93, 58, 12, .15), 0 2px 6px -2px rgba(93, 58, 12, .08) !important; }
-    .shadow { box-shadow: 0 4px 12px -4px rgba(93, 58, 12, .13) !important; }
+    /* Un solo recurso para separar superficies: el borde. Las sombras de Tailwind
+       son negras y sobre el fondo cálido se ensucian, así que quedan en un susurro. */
+    .shadow, .shadow-lg, .shadow-xl, .shadow-2xl { box-shadow: 0 1px 2px rgba(93, 58, 12, .05) !important; }
     :focus-visible { outline: 3px solid #FF9300; outline-offset: 2px; border-radius: 6px; }
 
     /* ── entradas ─────────────────────────────────────────── */
@@ -101,7 +88,7 @@
       from { opacity: 0; transform: scale(.88); letter-spacing: .55em; }
       to { opacity: 1; transform: scale(1); letter-spacing: .18em; }
     }
-    .codigo-in { animation: codigo-in .65s var(--ease) both, codigo-glow 3.6s ease-in-out .65s infinite; }
+    .codigo-in { animation: codigo-in .65s var(--ease) both; }
     @keyframes codigo-glow {
       0%, 100% { text-shadow: 0 0 22px rgba(255, 147, 0, .28); }
       50% { text-shadow: 0 0 38px rgba(255, 147, 0, .55); }
@@ -139,7 +126,7 @@
           <h1 class="font-display font-bold text-2xl text-ink">Evaluador Seguro</h1>
         </div>
       </header>
-      <div class="bg-paper rounded-2xl shadow-xl ring-1 ring-ink/10 border-t-4 border-t-brand p-7">
+      <div class="bg-paper rounded-2xl border border-line p-7">
         <h2 class="font-display font-semibold text-lg mb-1">Ingreso</h2>
         <p class="text-sm text-muted mb-6">Escribí la clave docente para entrar.</p>
         <form id="form-login" novalidate>
@@ -203,7 +190,7 @@
         <h2 id="editor-titulo-vista" class="font-display font-bold text-xl text-ink">Nuevo examen</h2>
       </div>
 
-      <div class="bg-paper rounded-2xl shadow-xl ring-1 ring-ink/10 border-t-4 border-t-brand p-6 md:p-8 mb-5">
+      <div class="bg-paper rounded-2xl border border-line p-6 md:p-8 mb-5">
         <div class="grid gap-4 md:grid-cols-2 mb-4">
           <div class="md:col-span-2">
             <label for="ed-title" class="block font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Título del examen</label>
@@ -234,7 +221,7 @@
 
       <div id="ed-preguntas" class="space-y-4 mb-5"></div>
 
-      <div class="bg-paper rounded-2xl shadow-lg ring-1 ring-ink/10 p-5 mb-5">
+      <div class="bg-paper rounded-2xl border border-line p-5 mb-5">
         <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-3">Agregar pregunta</p>
         <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
           <button data-add="mc" class="add-bt">Opción múltiple</button>
@@ -271,11 +258,11 @@
       </div>
 
       <!-- panel de código: visible en sala -->
-      <div id="run-panel-codigo" class="bg-paper rounded-2xl shadow-xl ring-1 ring-ink/10 border-t-4 border-t-accent p-6 md:p-8 mb-5">
+      <div id="run-panel-codigo" class="bg-paper rounded-2xl border border-line p-6 md:p-8 mb-5">
         <div class="grid md:grid-cols-[auto,1fr] gap-6 items-center">
-          <div class="bg-ink rounded-xl px-7 py-5 text-center">
-            <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-paper/40 mb-2">Código del examen</p>
-            <p id="run-codigo" class="codigo-grande text-4xl md:text-5xl text-accent">------</p>
+          <div class="bg-canvas border border-line rounded-xl px-7 py-5 text-center">
+            <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Código del examen</p>
+            <p id="run-codigo" class="codigo-grande text-4xl md:text-5xl text-accent-deep">------</p>
           </div>
           <div>
             <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Link directo</p>
@@ -289,7 +276,7 @@
       </div>
 
       <!-- controles -->
-      <div id="run-controles" class="bg-panel rounded-2xl ring-1 ring-white/10 p-5 mb-5"></div>
+      <div id="run-controles" class="bg-paper border border-line rounded-2xl p-5 mb-5"></div>
 
       <!-- alumnos -->
       <div class="flex flex-wrap items-baseline justify-between gap-3 mb-3">
@@ -535,7 +522,7 @@
       }
 
       S.examenes.forEach((ex, i) => {
-        const card = el('article', 'card rise bg-paper rounded-2xl shadow-lg ring-1 ring-ink/10 overflow-hidden flex flex-col');
+        const card = el('article', 'card rise bg-paper rounded-2xl border border-line overflow-hidden flex flex-col');
         card.style.setProperty('--i', i);
         const cuerpo = el('div', 'p-5 flex-1');
         if (ex.subject) cuerpo.appendChild(el('p', 'font-mono text-[10px] uppercase tracking-[0.18em] text-accent-deep mb-1', ex.subject));
@@ -586,7 +573,7 @@
       }
 
       datos.runs.forEach((r, i) => {
-        const fila = el('button', 'card rise w-full text-left bg-paper rounded-xl shadow ring-1 ring-ink/10 px-5 py-4 flex flex-wrap items-center gap-4');
+        const fila = el('button', 'card rise w-full text-left bg-paper rounded-xl border border-line px-5 py-4 flex flex-wrap items-center gap-4');
         fila.style.setProperty('--i', i);
         fila.addEventListener('click', () => abrirToma(r.id));
 
@@ -670,7 +657,7 @@
 
       qs.forEach((q, i) => {
         const anima = editorAnimar === -2 ? ' rise' : editorAnimar === i ? ' pop' : '';
-        const card = el('article', 'bg-paper rounded-2xl shadow-lg ring-1 ring-ink/10 overflow-hidden' + anima);
+        const card = el('article', 'bg-paper rounded-2xl border border-line overflow-hidden' + anima);
         if (editorAnimar === -2) card.style.setProperty('--i', i);
 
         // cabecera
@@ -976,8 +963,8 @@
       if (run.status === 'lobby') {
         const fila = el('div', 'flex flex-wrap items-end gap-4');
         const campo = el('div');
-        campo.appendChild(el('label', 'block font-mono text-[11px] uppercase tracking-[0.18em] text-paper/40 mb-2', 'Tiempo máximo (minutos)'));
-        const input = el('input', 'w-28 px-3 py-2.5 rounded-xl border border-white/15 bg-ink text-paper font-mono focus:border-brand outline-none');
+        campo.appendChild(el('label', 'block font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2', 'Tiempo máximo (minutos)'));
+        const input = el('input', 'w-28 px-3 py-2.5 rounded-xl border border-line bg-white text-ink font-mono focus:border-brand outline-none');
         input.type = 'number';
         input.min = '1';
         input.max = '360';
@@ -988,8 +975,8 @@
 
         const info = el('div', 'flex-1 min-w-[12rem]');
         info.append(
-          el('p', 'text-paper/80 text-sm font-medium', alumnos.length ? alumnos.length + (alumnos.length === 1 ? ' alumno esperando' : ' alumnos esperando') : 'Todavía no entró nadie'),
-          el('p', 'text-paper/40 text-xs', 'Cuando inicies, el reloj arranca para todos a la vez.')
+          el('p', 'text-ink text-sm font-medium', alumnos.length ? alumnos.length + (alumnos.length === 1 ? ' alumno esperando' : ' alumnos esperando') : 'Todavía no entró nadie'),
+          el('p', 'text-muted text-xs', 'Cuando inicies, el reloj arranca para todos a la vez.')
         );
         fila.appendChild(info);
 
@@ -1006,7 +993,7 @@
         });
         fila.appendChild(iniciar);
 
-        const cancelar = el('button', 'text-paper/40 hover:text-alert font-medium text-sm px-3 py-3 transition-colors', 'Descartar toma');
+        const cancelar = el('button', 'text-muted hover:text-alert font-medium text-sm px-3 py-3 transition-colors', 'Descartar toma');
         cancelar.addEventListener('click', async () => {
           const ok = await confirmar('¿Descartar esta toma?', 'Se anula el código y los alumnos que ya entraron quedan afuera.', 'Descartar');
           if (!ok) return;
@@ -1022,15 +1009,15 @@
       if (run.status === 'running') {
         const fila = el('div', 'flex flex-wrap items-center gap-4');
         const reloj = el('div');
-        reloj.appendChild(el('p', 'font-mono text-[11px] uppercase tracking-[0.18em] text-paper/40 mb-1', 'Tiempo restante'));
-        const t = el('p', 'font-mono text-3xl font-bold text-paper tabular-nums', '--:--');
+        reloj.appendChild(el('p', 'font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-1', 'Tiempo restante'));
+        const t = el('p', 'font-mono text-3xl font-bold text-ink tabular-nums', '--:--');
         t.id = 'run-reloj';
         reloj.appendChild(t);
         fila.appendChild(reloj);
 
         const ajustes = el('div', 'flex items-center gap-2');
         [['−5 min', -5], ['+5 min', 5], ['+10 min', 10]].forEach(([txt, min]) => {
-          const b = el('button', 'border border-white/15 hover:border-white/40 text-paper/70 hover:text-paper font-mono text-xs px-3 py-2 rounded-lg transition-colors', txt);
+          const b = el('button', 'border border-line hover:border-ink/40 text-muted hover:text-ink font-mono text-xs px-3 py-2 rounded-lg transition-colors', txt);
           b.addEventListener('click', async () => {
             try { await api('/api/runs/' + run.id + '/extend', { method: 'POST', body: { minutes: min } }); toast('Tiempo ajustado'); }
             catch (ex) { toast(ex.message); }
@@ -1042,8 +1029,8 @@
         const entregados = alumnos.filter((a) => a.status === 'submitted').length;
         const resumen = el('div', 'flex-1 min-w-[10rem]');
         resumen.append(
-          el('p', 'text-paper/80 text-sm font-medium', entregados + ' de ' + alumnos.length + ' ya entregaron'),
-          el('p', 'text-paper/40 text-xs', 'El examen se cierra solo cuando se acaba el tiempo.')
+          el('p', 'text-ink text-sm font-medium', entregados + ' de ' + alumnos.length + ' ya entregaron'),
+          el('p', 'text-muted text-xs', 'El examen se cierra solo cuando se acaba el tiempo.')
         );
         fila.appendChild(resumen);
 
@@ -1077,21 +1064,21 @@
       const dato = (etiqueta, valor, cls) => {
         const d = el('div');
         d.append(
-          el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-paper/40 mb-1', etiqueta),
-          el('p', 'font-mono text-2xl font-bold ' + (cls || 'text-paper'), valor)
+          el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted mb-1', etiqueta),
+          el('p', 'font-mono text-2xl font-bold ' + (cls || 'text-ink'), valor)
         );
         return d;
       };
       grid.append(
         dato('Promedio', dec(promedio)),
-        dato('Aprobados', aprobados + '/' + alumnos.length, aprobados === alumnos.length ? 'text-ok-light' : 'text-paper'),
-        dato('Incidentes', String(incidentes), incidentes ? 'text-alert-light' : 'text-paper'),
-        dato('Sin corregir', String(pendientes), pendientes ? 'text-plum-light' : 'text-paper')
+        dato('Aprobados', aprobados + '/' + alumnos.length, aprobados === alumnos.length ? 'text-ok' : 'text-ink'),
+        dato('Incidentes', String(incidentes), incidentes ? 'text-alert' : 'text-ink'),
+        dato('Sin corregir', String(pendientes), pendientes ? 'text-plum' : 'text-ink')
       );
       cont.appendChild(grid);
 
       if (pendientes) {
-        cont.appendChild(el('p', 'text-plum-light text-sm mt-4 pt-4 border-t border-white/10',
+        cont.appendChild(el('p', 'text-plum text-sm mt-4 pt-4 border-t border-line',
           'Hay respuestas de desarrollo sin corregir. Las notas con el rótulo «provisoria» todavía no son definitivas.'));
       }
     }
@@ -1134,7 +1121,7 @@
         incidentesVistos.set(a.id, a.incidents.length);
         const saltoIncidente = incidentesPrevios !== undefined && a.incidents.length > incidentesPrevios;
 
-        const fila = el('div', 'bg-paper rounded-xl shadow ring-1 ring-ink/10 px-4 py-3.5 flex flex-wrap items-center gap-3'
+        const fila = el('div', 'bg-paper rounded-xl border border-line px-4 py-3.5 flex flex-wrap items-center gap-3'
           + (reciente ? ' pop' : '') + (saltoIncidente ? ' destello' : ''));
 
         const punto = el('span', 'w-2.5 h-2.5 rounded-full shrink-0 ' +
@@ -1233,21 +1220,21 @@
       cuerpo.textContent = '';
 
       // resumen de nota
-      const resumen = el('div', 'flex flex-wrap items-center gap-5 bg-ink rounded-xl px-5 py-4');
+      const resumen = el('div', 'flex flex-wrap items-center gap-5 bg-canvas border border-line rounded-xl px-5 py-4');
       const bloque = (etiqueta, valor, cls) => {
         const d = el('div');
         d.append(
-          el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-paper/40 mb-1', etiqueta),
-          el('p', 'font-mono text-xl font-bold ' + (cls || 'text-paper'), valor)
+          el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted mb-1', etiqueta),
+          el('p', 'font-mono text-xl font-bold ' + (cls || 'text-ink'), valor)
         );
         return d;
       };
       resumen.append(
         bloque(a.correccion.provisional ? 'Nota provisoria' : 'Nota',
           dec(a.correccion.nota) + ' / 10',
-          a.correccion.provisional ? 'text-plum-light' : a.correccion.nota >= 6 ? 'text-ok-light' : 'text-alert-light'),
+          a.correccion.provisional ? 'text-plum' : a.correccion.nota >= 6 ? 'text-ok' : 'text-alert'),
         bloque('Puntaje', dec(a.correccion.obtenido) + ' / ' + dec(a.correccion.total)),
-        bloque('Incidentes', String(a.incidents.length), a.incidents.length ? 'text-alert-light' : 'text-paper')
+        bloque('Incidentes', String(a.incidents.length), a.incidents.length ? 'text-alert' : 'text-ink')
       );
       cuerpo.appendChild(resumen);
 

@@ -23,10 +23,9 @@
             muted: '#786552',
             brand: { DEFAULT: '#243B7A', deep: '#1A2C5C', soft: '#E7EAF4' },
             accent: { DEFAULT: '#FF9300', deep: '#E4510B', soft: '#FFF0DA' },
-            // 'light' es la versión legible sobre las superficies oscuras (ink / panel).
-            ok: { DEFAULT: '#209B8A', deep: '#17796B', soft: '#DDF2EE', light: '#4FC9B5' },
-            alert: { DEFAULT: '#C52525', deep: '#A11C1C', soft: '#FAE6E6', light: '#F58A8A' },
-            plum: { DEFAULT: '#7D2048', soft: '#F7E6EC', light: '#E09BB6' },
+            ok: { DEFAULT: '#209B8A', deep: '#17796B', soft: '#DDF2EE' },
+            alert: { DEFAULT: '#C52525', deep: '#A11C1C', soft: '#FAE6E6' },
+            plum: { DEFAULT: '#7D2048', soft: '#F7E6EC' },
           },
           fontFamily: {
             display: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
@@ -40,23 +39,11 @@
   <style>
     :root { --ease: cubic-bezier(.2, .7, .3, 1); }
 
-    body {
-      background-color: #FFF4E5;
-      background-image:
-        radial-gradient(58rem 38rem at 8% -14%, rgba(255, 147, 0, .20), transparent 62%),
-        radial-gradient(48rem 32rem at 96% 4%, rgba(36, 59, 122, .07), transparent 64%),
-        radial-gradient(42rem 28rem at 52% 114%, rgba(228, 81, 11, .09), transparent 60%),
-        linear-gradient(rgba(124, 92, 52, .055) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(124, 92, 52, .055) 1px, transparent 1px);
-      background-size: auto, auto, auto, 28px 28px, 28px 28px;
-      background-attachment: fixed;
-    }
+    body { background-color: #FFF4E5; }
 
-    /* Las sombras de Tailwind son negras: sobre el fondo cálido se ven grises. */
-    .shadow-2xl { box-shadow: 0 18px 40px -12px rgba(93, 58, 12, .20), 0 4px 12px -4px rgba(93, 58, 12, .10) !important; }
-    .shadow-xl { box-shadow: 0 14px 30px -10px rgba(93, 58, 12, .17), 0 3px 8px -3px rgba(93, 58, 12, .09) !important; }
-    .shadow-lg { box-shadow: 0 10px 22px -8px rgba(93, 58, 12, .15), 0 2px 6px -2px rgba(93, 58, 12, .08) !important; }
-    .shadow { box-shadow: 0 4px 12px -4px rgba(93, 58, 12, .13) !important; }
+    /* Un solo recurso para separar superficies: el borde. Las sombras de Tailwind
+       son negras y sobre el fondo cálido se ensucian, así que quedan en un susurro. */
+    .shadow, .shadow-lg, .shadow-xl, .shadow-2xl { box-shadow: 0 1px 2px rgba(93, 58, 12, .05) !important; }
     :focus-visible { outline: 3px solid #FF9300; outline-offset: 2px; border-radius: 6px; }
 
     /* ── entradas ─────────────────────────────────────────── */
@@ -108,13 +95,10 @@
     .timer-urgent { color: #FF7A45; animation: blink 1s steps(2, start) infinite; }
     @keyframes blink { to { opacity: .45; } }
     .ruler-seg {
-      flex: 1; height: 5px; border-radius: 9999px; background: rgba(255, 255, 255, .14);
+      flex: 1; height: 5px; border-radius: 9999px; background: #F0E2CC;
       transition: background-color .4s var(--ease), transform .3s var(--ease), box-shadow .4s;
     }
-    .ruler-seg.filled {
-      background: #FF9300; transform: scaleY(1.6);
-      box-shadow: 0 0 10px rgba(255, 147, 0, .45);
-    }
+    .ruler-seg.filled { background: #FF9300; transform: scaleY(1.6); }
     @keyframes breathe { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
     .breathe { animation: breathe 2.4s ease-in-out infinite; }
 
@@ -147,7 +131,7 @@
         </div>
       </header>
 
-      <div class="bg-paper rounded-2xl shadow-xl ring-1 ring-ink/10 border-t-4 border-t-accent overflow-hidden">
+      <div class="bg-paper rounded-2xl border border-line overflow-hidden">
         <div class="px-6 py-8 md:px-9">
           <h2 class="font-display font-semibold text-xl mb-1">Ingresá al examen</h2>
           <p class="text-sm text-muted mb-7">Pedile el código a tu profesor. Son 6 caracteres.</p>
@@ -198,7 +182,7 @@
 
     <!-- ============ SALA DE ESPERA ============ -->
     <section id="view-lobby" class="hidden max-w-2xl mx-auto px-4 py-10 md:py-16">
-      <div class="bg-paper rounded-2xl shadow-xl ring-1 ring-ink/10 border-t-4 border-t-accent overflow-hidden">
+      <div class="bg-paper rounded-2xl border border-line overflow-hidden">
         <div class="px-6 py-8 md:px-10 text-center">
           <div class="inline-flex items-center gap-2 bg-accent-soft text-accent-deep font-mono text-[11px] uppercase tracking-[0.18em] px-3 py-1.5 rounded-full mb-6">
             <span class="w-2 h-2 rounded-full bg-accent breathe"></span> Sala de espera
@@ -206,11 +190,11 @@
           <h2 id="lobby-titulo" class="font-display font-bold text-2xl mb-2">—</h2>
           <p id="lobby-materia" class="text-sm text-muted mb-7">—</p>
 
-          <div class="bg-ink rounded-xl px-5 py-6 mb-7">
-            <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-paper/40 mb-2">Esperando al docente</p>
-            <p class="text-paper/80 text-sm leading-relaxed">
+          <div class="bg-canvas border border-line rounded-xl px-5 py-6 mb-7">
+            <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Esperando al docente</p>
+            <p class="text-muted text-sm leading-relaxed">
               Ya estás dentro. El examen arranca cuando tu profesor lo indique.<br class="hidden md:block">
-              <strong class="text-paper">No cierres esta pestaña.</strong>
+              <strong class="text-ink">No cierres esta pestaña.</strong>
             </p>
           </div>
 
@@ -238,22 +222,22 @@
 
     <!-- ============ EXAMEN ============ -->
     <section id="view-exam" class="hidden">
-      <div class="sticky top-0 z-40 bg-panel/95 backdrop-blur border-b border-white/10">
+      <div class="sticky top-0 z-40 bg-canvas/85 backdrop-blur border-b border-line">
         <div class="max-w-3xl mx-auto px-4 py-3">
           <div class="flex items-center gap-3">
             <div id="vigil" class="vigil ok shrink-0" role="img" aria-label="Estado de vigilancia"></div>
             <div class="min-w-0 flex-1">
-              <p id="exam-titulo" class="font-display font-semibold text-paper text-sm truncate">—</p>
-              <p id="chip-incidentes" class="font-mono text-[12px] font-medium text-paper/80">0 incidentes</p>
+              <p id="exam-titulo" class="font-display font-semibold text-ink text-sm truncate">—</p>
+              <p id="chip-incidentes" class="font-mono text-[12px] font-medium text-muted">0 incidentes</p>
             </div>
             <div class="text-right shrink-0">
-              <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-paper/40">Tiempo</p>
-              <p id="reloj" class="font-mono text-xl font-bold text-paper tabular-nums">--:--</p>
+              <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">Tiempo</p>
+              <p id="reloj" class="font-mono text-xl font-bold text-ink tabular-nums">--:--</p>
             </div>
           </div>
           <div class="flex items-center gap-2 mt-3">
             <div id="regla" class="flex-1 flex gap-1"></div>
-            <p id="progreso-texto" class="font-mono text-[11px] text-paper/50 shrink-0">0/0</p>
+            <p id="progreso-texto" class="font-mono text-[11px] text-muted shrink-0">0/0</p>
           </div>
         </div>
       </div>
@@ -274,7 +258,7 @@
 
     <!-- ============ ENTREGADO ============ -->
     <section id="view-done" class="hidden max-w-lg mx-auto px-4 py-10 md:py-16">
-      <div class="bg-paper rounded-2xl shadow-xl ring-1 ring-ink/10 border-t-4 border-t-ok overflow-hidden">
+      <div class="bg-paper rounded-2xl border border-line overflow-hidden">
         <div class="px-6 py-10 md:px-10 text-center">
           <div class="w-14 h-14 rounded-full bg-ok-soft flex items-center justify-center mx-auto mb-5">
             <svg viewBox="0 0 24 24" class="w-7 h-7" aria-hidden="true">
@@ -321,7 +305,7 @@
         </div>
         <h2 id="aviso-titulo" class="font-display font-bold text-xl mb-2">—</h2>
         <p id="aviso-texto" class="text-sm text-muted mb-5">—</p>
-        <div id="aviso-detalle" class="bg-ink rounded-xl px-4 py-3 flex items-baseline justify-between mb-3"></div>
+        <div id="aviso-detalle" class="bg-canvas border border-line rounded-xl px-4 py-3 flex items-baseline justify-between mb-3"></div>
         <p id="aviso-conteo" class="font-mono text-[12px] text-muted mb-6">—</p>
         <button id="btn-continuar-aviso" class="lift w-full bg-ink hover:bg-panel text-paper font-semibold py-3 rounded-xl transition-colors">
           Volver al examen
@@ -611,7 +595,7 @@
         regla.appendChild(seg);
 
         const card = document.createElement('article');
-        card.className = 'bg-paper rounded-2xl shadow-lg ring-1 ring-ink/10 overflow-hidden rise';
+        card.className = 'bg-paper rounded-2xl border border-line overflow-hidden rise';
         card.style.setProperty('--i', i);
         card.id = 'card-' + q.id;
 
@@ -781,7 +765,7 @@
     async function registrarIncidente(tipo, dur, at) {
       S.incidentes++;
       $('chip-incidentes').textContent = S.incidentes + (S.incidentes === 1 ? ' incidente' : ' incidentes');
-      $('chip-incidentes').className = 'font-mono text-[12px] font-medium text-alert-light';
+      $('chip-incidentes').className = 'font-mono text-[12px] font-medium text-alert';
       const v = $('vigil');
       v.classList.remove('ok');
       v.classList.add('alert');
@@ -799,10 +783,10 @@
         : 'El atajo detectado quedó en el registro que ve tu docente.';
       $('aviso-detalle').textContent = '';
       const hora = document.createElement('span');
-      hora.className = 'font-mono text-sm font-bold text-paper';
+      hora.className = 'font-mono text-sm font-bold text-ink';
       hora.textContent = hms(at);
       const etiqueta = document.createElement('span');
-      etiqueta.className = 'font-mono text-[11px] text-paper/60';
+      etiqueta.className = 'font-mono text-[11px] text-muted';
       etiqueta.textContent = label;
       $('aviso-detalle').append(hora, etiqueta);
       $('aviso-conteo').textContent = 'Incidentes acumulados: ' + S.incidentes;
@@ -813,7 +797,7 @@
       const v = $('vigil');
       v.classList.remove('alert');
       v.classList.add('ok');
-      $('chip-incidentes').className = 'font-mono text-[12px] font-medium text-paper/80';
+      $('chip-incidentes').className = 'font-mono text-[12px] font-medium text-muted';
     });
 
     function notaPerdida() {
