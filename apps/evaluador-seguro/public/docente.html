@@ -1,0 +1,1406 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Panel docente de Evaluador Seguro: armá exámenes, tomalos en vivo y corregí con el registro de auditoría a la vista.">
+  <title>Evaluador Seguro · Panel docente</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%232F5BD9' d='M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z'/%3E%3Ccircle cx='12' cy='11' r='3' fill='%23F6F8FD'/%3E%3Ccircle cx='12' cy='11' r='1.3' fill='%232F5BD9'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#0D1428',
+            panel: '#111A36',
+            paper: '#F6F8FD',
+            line: '#E2E8F4',
+            muted: '#5B6786',
+            brand: { DEFAULT: '#2F5BD9', deep: '#1D3E8F', soft: '#E8EEFC' },
+            alert: { DEFAULT: '#D64545', soft: '#FBEBEB' },
+            ok: { DEFAULT: '#1F9D6B', soft: '#E4F5EE' },
+            amber: { DEFAULT: '#C77F16', soft: '#FCF1DC' },
+          },
+          fontFamily: {
+            display: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            body: ['"Instrument Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body {
+      background-color: #0D1428;
+      background-image:
+        linear-gradient(rgba(148, 163, 216, 0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 216, 0.055) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+    :focus-visible { outline: 3px solid #2F5BD9; outline-offset: 2px; border-radius: 4px; }
+    @keyframes shake {
+      10%, 90% { transform: translateX(-2px); }
+      20%, 80% { transform: translateX(4px); }
+      30%, 50%, 70% { transform: translateX(-7px); }
+      40%, 60% { transform: translateX(7px); }
+    }
+    .shake { animation: shake .5s cubic-bezier(.36,.07,.19,.97) both; }
+    @keyframes modal-in { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
+    .modal-in { animation: modal-in .22s ease-out both; }
+    @keyframes breathe { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+    .breathe { animation: breathe 2.2s ease-in-out infinite; }
+    .codigo-grande {
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      letter-spacing: .18em; font-weight: 700;
+    }
+    .timer-urgent { color: #D64545; animation: blink 1s steps(2, start) infinite; }
+    @keyframes blink { to { opacity: .5; } }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body class="font-body text-ink antialiased min-h-screen">
+
+  <main id="app" class="min-h-screen">
+
+    <!-- ============ LOGIN ============ -->
+    <section id="view-login" class="hidden max-w-md mx-auto px-4 py-16 md:py-24">
+      <header class="flex items-center gap-3 mb-8">
+        <svg viewBox="0 0 24 24" class="w-11 h-11 shrink-0" aria-hidden="true">
+          <path fill="#2F5BD9" d="M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z"/>
+          <path fill="#0D1428" d="M12 7.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm0 1.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4z"/>
+        </svg>
+        <div>
+          <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-brand">Panel docente</p>
+          <h1 class="font-display font-bold text-2xl text-paper">Evaluador Seguro</h1>
+        </div>
+      </header>
+      <div class="bg-paper rounded-2xl shadow-2xl ring-1 ring-white/10 border-t-4 border-t-brand p-7">
+        <h2 class="font-display font-semibold text-lg mb-1">Ingreso</h2>
+        <p class="text-sm text-muted mb-6">Escribí la clave docente para entrar.</p>
+        <form id="form-login" novalidate>
+          <label for="campo-clave" class="block font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Clave</label>
+          <input id="campo-clave" type="password" autocomplete="current-password"
+                 class="w-full px-3.5 py-3 rounded-xl border border-line bg-white focus:border-brand outline-none mb-4">
+          <p id="error-login" class="hidden text-sm font-medium text-alert bg-alert-soft border border-alert/20 rounded-lg px-3 py-2 mb-4" role="alert"></p>
+          <button type="submit" class="w-full bg-brand hover:bg-brand-deep text-white font-semibold py-3 rounded-xl transition-colors">Entrar</button>
+        </form>
+      </div>
+      <p class="text-center text-xs text-paper/35 mt-6">
+        ¿Sos alumno? <a href="/" class="underline hover:text-paper/70">Ingresá con tu código</a>
+      </p>
+    </section>
+
+    <!-- ============ ESCRITORIO ============ -->
+    <section id="view-dash" class="hidden max-w-5xl mx-auto px-4 py-8 md:py-12">
+      <header class="flex flex-wrap items-center gap-3 mb-8">
+        <svg viewBox="0 0 24 24" class="w-10 h-10 shrink-0" aria-hidden="true">
+          <path fill="#2F5BD9" d="M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z"/>
+          <path fill="#0D1428" d="M12 7.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm0 1.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4z"/>
+        </svg>
+        <div class="flex-1 min-w-0">
+          <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-brand">Panel docente</p>
+          <h1 class="font-display font-bold text-xl md:text-2xl text-paper">Evaluador Seguro</h1>
+        </div>
+        <button id="btn-logout" class="font-mono text-[11px] uppercase tracking-[0.16em] text-paper/50 hover:text-paper border border-white/15 hover:border-white/40 rounded-lg px-3 py-2 transition-colors">
+          Salir
+        </button>
+      </header>
+
+      <div class="flex items-center gap-1 mb-6 bg-white/5 p-1 rounded-xl w-fit">
+        <button data-tab="examenes" class="tab-bt font-medium text-sm px-4 py-2 rounded-lg transition-colors">Mis exámenes</button>
+        <button data-tab="tomas" class="tab-bt font-medium text-sm px-4 py-2 rounded-lg transition-colors">Tomas</button>
+      </div>
+
+      <!-- examenes -->
+      <div id="tab-examenes">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+          <p class="text-paper/60 text-sm">Armá un examen una vez y tomalo todas las veces que quieras.</p>
+          <button id="btn-nuevo-examen" class="bg-brand hover:bg-brand-deep text-white font-semibold text-sm px-4 py-2.5 rounded-xl transition-colors">
+            + Crear examen
+          </button>
+        </div>
+        <div id="lista-examenes" class="grid gap-4 md:grid-cols-2"></div>
+      </div>
+
+      <!-- tomas -->
+      <div id="tab-tomas" class="hidden">
+        <p class="text-paper/60 text-sm mb-5">Cada vez que iniciás un examen se crea una toma con su propio código y sus propios resultados.</p>
+        <div id="lista-tomas" class="space-y-3"></div>
+      </div>
+    </section>
+
+    <!-- ============ EDITOR ============ -->
+    <section id="view-editor" class="hidden max-w-3xl mx-auto px-4 py-8 md:py-12">
+      <div class="flex items-center gap-3 mb-6">
+        <button id="btn-volver-editor" class="font-mono text-[11px] uppercase tracking-[0.16em] text-paper/50 hover:text-paper border border-white/15 hover:border-white/40 rounded-lg px-3 py-2 transition-colors">
+          ← Volver
+        </button>
+        <h2 id="editor-titulo-vista" class="font-display font-bold text-xl text-paper">Nuevo examen</h2>
+      </div>
+
+      <div class="bg-paper rounded-2xl shadow-2xl ring-1 ring-white/10 border-t-4 border-t-brand p-6 md:p-8 mb-5">
+        <div class="grid gap-4 md:grid-cols-2 mb-4">
+          <div class="md:col-span-2">
+            <label for="ed-title" class="block font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Título del examen</label>
+            <input id="ed-title" maxlength="120" placeholder="Evaluación integradora · Unidad 3"
+                   class="w-full px-3.5 py-3 rounded-xl border border-line bg-white focus:border-brand outline-none">
+          </div>
+          <div>
+            <label for="ed-subject" class="block font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Materia</label>
+            <input id="ed-subject" maxlength="60" placeholder="Matemática"
+                   class="w-full px-3.5 py-3 rounded-xl border border-line bg-white focus:border-brand outline-none">
+          </div>
+          <div>
+            <label for="ed-time" class="block font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Tiempo (minutos)</label>
+            <input id="ed-time" type="number" min="1" max="360" value="30"
+                   class="w-full px-3.5 py-3 rounded-xl border border-line bg-white focus:border-brand outline-none font-mono">
+          </div>
+          <div class="md:col-span-2">
+            <label for="ed-instructions" class="block font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Consigna general <span class="normal-case tracking-normal">(opcional)</span></label>
+            <textarea id="ed-instructions" rows="2" maxlength="800" placeholder="Leé con atención. No se permite el uso de calculadora."
+                      class="w-full px-3.5 py-3 rounded-xl border border-line bg-white focus:border-brand outline-none resize-y"></textarea>
+          </div>
+        </div>
+        <div class="flex items-center justify-between gap-3 pt-4 border-t border-line text-sm">
+          <span class="text-muted">Puntaje total</span>
+          <span id="ed-puntaje" class="font-mono font-bold text-brand">0 pts</span>
+        </div>
+      </div>
+
+      <div id="ed-preguntas" class="space-y-4 mb-5"></div>
+
+      <div class="bg-paper/95 rounded-2xl shadow-lg ring-1 ring-white/10 p-5 mb-5">
+        <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-3">Agregar pregunta</p>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
+          <button data-add="mc" class="add-bt">Opción múltiple</button>
+          <button data-add="ms" class="add-bt">Varias correctas</button>
+          <button data-add="tf" class="add-bt">Verdadero / Falso</button>
+          <button data-add="sa" class="add-bt">Respuesta corta</button>
+          <button data-add="long" class="add-bt">Desarrollo</button>
+        </div>
+      </div>
+
+      <p id="error-editor" class="hidden text-sm font-medium text-alert bg-alert-soft border border-alert/20 rounded-lg px-3 py-2 mb-4" role="alert"></p>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button id="btn-guardar-examen" class="flex-1 bg-brand hover:bg-brand-deep text-white font-semibold py-3.5 rounded-xl transition-colors">
+          Guardar examen
+        </button>
+        <button id="btn-cancelar-editor" class="sm:w-40 border border-white/15 text-paper/70 hover:text-paper hover:border-white/40 font-semibold py-3.5 rounded-xl transition-colors">
+          Cancelar
+        </button>
+      </div>
+    </section>
+
+    <!-- ============ TOMA (sala / vivo / resultados) ============ -->
+    <section id="view-run" class="hidden max-w-5xl mx-auto px-4 py-8 md:py-12">
+      <div class="flex items-center gap-3 mb-6">
+        <button id="btn-volver-run" class="font-mono text-[11px] uppercase tracking-[0.16em] text-paper/50 hover:text-paper border border-white/15 hover:border-white/40 rounded-lg px-3 py-2 transition-colors">
+          ← Volver
+        </button>
+        <div class="min-w-0 flex-1">
+          <h2 id="run-titulo" class="font-display font-bold text-xl text-paper truncate">—</h2>
+          <p id="run-materia" class="font-mono text-[11px] uppercase tracking-[0.16em] text-paper/40">—</p>
+        </div>
+        <span id="run-estado" class="shrink-0 font-mono text-[11px] uppercase tracking-[0.16em] px-3 py-1.5 rounded-full">—</span>
+      </div>
+
+      <!-- panel de código: visible en sala -->
+      <div id="run-panel-codigo" class="bg-paper rounded-2xl shadow-2xl ring-1 ring-white/10 border-t-4 border-t-brand p-6 md:p-8 mb-5">
+        <div class="grid md:grid-cols-[auto,1fr] gap-6 items-center">
+          <div class="text-center md:text-left">
+            <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Código del examen</p>
+            <p id="run-codigo" class="codigo-grande text-4xl md:text-5xl text-brand">------</p>
+          </div>
+          <div>
+            <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Link directo</p>
+            <div class="flex gap-2">
+              <input id="run-link" readonly class="flex-1 min-w-0 px-3 py-2.5 rounded-lg border border-line bg-line/30 font-mono text-xs">
+              <button id="btn-copiar-link" class="shrink-0 bg-ink hover:bg-panel text-paper font-medium text-sm px-4 rounded-lg transition-colors">Copiar</button>
+            </div>
+            <p class="text-xs text-muted mt-2">Pasales el link o el código. Van a entrar a la sala de espera.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- controles -->
+      <div id="run-controles" class="bg-panel rounded-2xl ring-1 ring-white/10 p-5 mb-5"></div>
+
+      <!-- alumnos -->
+      <div class="flex flex-wrap items-baseline justify-between gap-3 mb-3">
+        <h3 id="run-subtitulo-alumnos" class="font-display font-semibold text-paper">Alumnos</h3>
+        <div class="flex items-center gap-3">
+          <button id="btn-informe" class="hidden font-mono text-[11px] uppercase tracking-[0.16em] text-paper/50 hover:text-paper border border-white/15 hover:border-white/40 rounded-lg px-3 py-2 transition-colors">
+            Descargar informe
+          </button>
+          <p id="run-conteo" class="font-mono text-sm text-paper/50">0</p>
+        </div>
+      </div>
+      <div id="run-alumnos" class="space-y-2.5"></div>
+      <p id="run-vacio" class="hidden text-center text-paper/40 text-sm py-10 border border-dashed border-white/15 rounded-2xl">
+        Todavía no entró nadie. Compartí el código.
+      </p>
+    </section>
+
+  </main>
+
+  <!-- ============ MODAL: DETALLE DE ALUMNO ============ -->
+  <div id="modal-alumno" class="hidden fixed inset-0 z-[70] bg-ink/85 backdrop-blur-sm overflow-y-auto p-4 py-8">
+    <div class="modal-in bg-paper rounded-2xl max-w-3xl w-full mx-auto shadow-2xl overflow-hidden">
+      <header class="flex items-start justify-between gap-4 px-6 py-5 border-b border-line">
+        <div class="min-w-0">
+          <h2 id="det-nombre" class="font-display font-bold text-xl truncate">—</h2>
+          <p id="det-meta" class="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">—</p>
+        </div>
+        <button id="btn-cerrar-alumno" class="shrink-0 text-muted hover:text-ink text-2xl leading-none px-2" aria-label="Cerrar">×</button>
+      </header>
+      <div id="det-cuerpo" class="px-6 py-6 space-y-6"></div>
+      <footer class="px-6 py-4 border-t border-line flex flex-wrap gap-3 justify-end">
+        <button id="btn-informe-alumno" class="border border-line hover:bg-line/40 font-semibold text-sm px-4 py-2.5 rounded-xl transition-colors">
+          Copiar informe
+        </button>
+        <button id="btn-cerrar-alumno-2" class="bg-ink hover:bg-panel text-paper font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors">
+          Cerrar
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: CONFIRMAR ============ -->
+  <div id="modal-confirm" class="hidden fixed inset-0 z-[75] bg-ink/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="modal-in bg-paper rounded-2xl max-w-md w-full p-7 shadow-2xl">
+      <h2 id="confirm-titulo" class="font-display font-bold text-xl mb-2">—</h2>
+      <p id="confirm-texto" class="text-sm text-muted mb-6">—</p>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button id="btn-confirm-no" class="flex-1 border border-line hover:bg-line/40 font-semibold py-3 rounded-xl transition-colors">Cancelar</button>
+        <button id="btn-confirm-si" class="flex-1 bg-alert hover:bg-alert/85 text-white font-semibold py-3 rounded-xl transition-colors">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-[90] bg-ink text-paper text-sm font-medium px-4 py-2.5 rounded-full shadow-2xl ring-1 ring-white/10"></div>
+
+  <noscript>
+    <div class="fixed inset-0 z-[95] bg-ink flex items-center justify-center p-6">
+      <p class="text-paper font-semibold text-center">Esta aplicación requiere JavaScript para funcionar.</p>
+    </div>
+  </noscript>
+
+  <script>
+    'use strict';
+
+    // ── utilidades ──────────────────────────────────────────────────
+    const $ = (id) => document.getElementById(id);
+    const two = (n) => String(n).padStart(2, '0');
+    const dec = (n) => (Math.round(n * 10) / 10).toFixed(1).replace('.', ',');
+    const hms = (ts) => { const d = new Date(ts); return two(d.getHours()) + ':' + two(d.getMinutes()) + ':' + two(d.getSeconds()); };
+    const fecha = (ts) => {
+      const d = new Date(ts);
+      return two(d.getDate()) + '/' + two(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + two(d.getHours()) + ':' + two(d.getMinutes());
+    };
+    const dur = (ms) => (ms < 1000 ? '—' : dec(ms / 1000) + ' s');
+
+    function el(tag, cls, txt) {
+      const n = document.createElement(tag);
+      if (cls) n.className = cls;
+      if (txt != null) n.textContent = txt;
+      return n;
+    }
+
+    const TIPOS_EVENTO = {
+      'cambio-de-pestana': 'Cambio de pestaña / ventana oculta',
+      'ventana-sin-foco': 'Ventana sin foco',
+      'atajo-f12': 'Atajo detectado (F12)',
+      'atajo-copiar-pegar': 'Atajo detectado (Ctrl+C / Ctrl+V)',
+      'salida-pantalla-completa': 'Salida de pantalla completa',
+      'cierre-pestana': 'Cierre de pestaña · sesión interrumpida',
+    };
+    const NOMBRE_TIPO = {
+      mc: 'Opción múltiple', ms: 'Varias correctas', tf: 'Verdadero o falso',
+      sa: 'Respuesta corta', long: 'Desarrollo',
+    };
+    const MOTIVO = { manual: 'entregó', tiempo: 'se acabó el tiempo', docente: 'cerrado por el docente' };
+
+    let toastTimeout = null;
+    function toast(msg) {
+      const t = $('toast');
+      t.textContent = msg;
+      t.classList.remove('hidden');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => t.classList.add('hidden'), 2800);
+    }
+
+    async function api(ruta, opciones = {}) {
+      const res = await fetch(ruta, {
+        method: opciones.method || 'GET',
+        headers: opciones.body ? { 'Content-Type': 'application/json' } : undefined,
+        body: opciones.body ? JSON.stringify(opciones.body) : undefined,
+        credentials: 'same-origin',
+      });
+      let datos = {};
+      try { datos = await res.json(); } catch { /* respuesta sin cuerpo */ }
+      if (res.status === 401 && !ruta.includes('/login')) {
+        mostrarLogin();
+        throw new Error('Se cerró la sesión. Volvé a entrar.');
+      }
+      if (!res.ok || datos.ok === false) throw new Error(datos.error || 'No se pudo completar la operación.');
+      return datos;
+    }
+
+    function show(view) {
+      ['login', 'dash', 'editor', 'run'].forEach((v) => $('view-' + v).classList.toggle('hidden', v !== view));
+      window.scrollTo(0, 0);
+    }
+
+    // Confirmación reutilizable, resuelta con promesa.
+    let confirmarResolver = null;
+    function confirmar(titulo, texto, etiqueta) {
+      $('confirm-titulo').textContent = titulo;
+      $('confirm-texto').textContent = texto;
+      $('btn-confirm-si').textContent = etiqueta || 'Confirmar';
+      $('modal-confirm').classList.remove('hidden');
+      return new Promise((resolve) => { confirmarResolver = resolve; });
+    }
+    function cerrarConfirm(valor) {
+      $('modal-confirm').classList.add('hidden');
+      if (confirmarResolver) { confirmarResolver(valor); confirmarResolver = null; }
+    }
+    $('btn-confirm-no').addEventListener('click', () => cerrarConfirm(false));
+    $('btn-confirm-si').addEventListener('click', () => cerrarConfirm(true));
+
+    // ── estado ──────────────────────────────────────────────────────
+    const S = {
+      examenes: [],
+      editando: null,      // { id|null, questions: [...] }
+      run: null,           // foto de la toma abierta
+      fuente: null,        // EventSource
+      alumnoAbierto: null,
+      desfase: 0,
+      relojId: null,
+      tab: 'examenes',
+    };
+    const ahoraServidor = () => Date.now() + S.desfase;
+
+    // ── login ───────────────────────────────────────────────────────
+    function mostrarLogin() {
+      cerrarStream();
+      show('login');
+      $('campo-clave').value = '';
+      $('campo-clave').focus();
+    }
+
+    $('form-login').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const err = $('error-login');
+      err.classList.add('hidden');
+      try {
+        await api('/api/teacher/login', { method: 'POST', body: { password: $('campo-clave').value } });
+        await abrirEscritorio();
+      } catch (ex) {
+        err.textContent = ex.message;
+        err.classList.remove('hidden');
+        err.classList.remove('shake');
+        void err.offsetWidth;
+        err.classList.add('shake');
+      }
+    });
+
+    $('btn-logout').addEventListener('click', async () => {
+      await api('/api/teacher/logout', { method: 'POST' }).catch(() => {});
+      mostrarLogin();
+    });
+
+    // ── escritorio ──────────────────────────────────────────────────
+    async function abrirEscritorio() {
+      cerrarStream();
+      show('dash');
+      pintarTabs();
+      await Promise.all([cargarExamenes(), cargarTomas()]);
+    }
+
+    function pintarTabs() {
+      document.querySelectorAll('.tab-bt').forEach((b) => {
+        const activa = b.dataset.tab === S.tab;
+        b.className = 'tab-bt font-medium text-sm px-4 py-2 rounded-lg transition-colors ' +
+          (activa ? 'bg-paper text-ink' : 'text-paper/55 hover:text-paper');
+      });
+      $('tab-examenes').classList.toggle('hidden', S.tab !== 'examenes');
+      $('tab-tomas').classList.toggle('hidden', S.tab !== 'tomas');
+    }
+    document.querySelectorAll('.tab-bt').forEach((b) => {
+      b.addEventListener('click', () => { S.tab = b.dataset.tab; pintarTabs(); });
+    });
+
+    async function cargarExamenes() {
+      const datos = await api('/api/exams');
+      S.examenes = datos.exams;
+      const cont = $('lista-examenes');
+      cont.textContent = '';
+
+      if (!S.examenes.length) {
+        const vacio = el('div', 'md:col-span-2 text-center py-14 border border-dashed border-white/15 rounded-2xl');
+        vacio.append(
+          el('p', 'text-paper/60 font-medium mb-1', 'Todavía no creaste ningún examen.'),
+          el('p', 'text-paper/35 text-sm', 'Tocá «Crear examen» para armar el primero.')
+        );
+        cont.appendChild(vacio);
+        return;
+      }
+
+      S.examenes.forEach((ex) => {
+        const card = el('article', 'bg-paper rounded-2xl shadow-lg ring-1 ring-white/10 overflow-hidden flex flex-col');
+        const cuerpo = el('div', 'p-5 flex-1');
+        if (ex.subject) cuerpo.appendChild(el('p', 'font-mono text-[10px] uppercase tracking-[0.18em] text-brand mb-1', ex.subject));
+        cuerpo.appendChild(el('h3', 'font-display font-bold text-lg leading-snug mb-3', ex.title));
+
+        const datos2 = el('div', 'flex flex-wrap gap-x-4 gap-y-1 font-mono text-[11px] text-muted');
+        datos2.append(
+          el('span', null, ex.questions.length + (ex.questions.length === 1 ? ' pregunta' : ' preguntas')),
+          el('span', null, dec(ex.puntajeTotal) + ' pts'),
+          el('span', null, Math.round(ex.timeLimit / 60) + ' min'),
+          el('span', null, ex.tomas + (ex.tomas === 1 ? ' toma' : ' tomas'))
+        );
+        cuerpo.appendChild(datos2);
+
+        const pie = el('div', 'flex flex-wrap gap-2 px-5 py-4 border-t border-line bg-line/20');
+        const iniciar = el('button', 'bg-brand hover:bg-brand-deep text-white font-semibold text-sm px-4 py-2 rounded-lg transition-colors', 'Iniciar toma');
+        iniciar.addEventListener('click', () => nuevaToma(ex));
+        const editar = el('button', 'border border-line hover:bg-line/60 font-medium text-sm px-3 py-2 rounded-lg transition-colors', 'Editar');
+        editar.addEventListener('click', () => abrirEditor(ex));
+        const duplicar = el('button', 'border border-line hover:bg-line/60 font-medium text-sm px-3 py-2 rounded-lg transition-colors', 'Duplicar');
+        duplicar.addEventListener('click', async () => {
+          try { await api('/api/exams/' + ex.id + '/duplicate', { method: 'POST' }); await cargarExamenes(); toast('Examen duplicado'); }
+          catch (e2) { toast(e2.message); }
+        });
+        const borrar = el('button', 'ml-auto text-alert hover:bg-alert-soft font-medium text-sm px-3 py-2 rounded-lg transition-colors', 'Eliminar');
+        borrar.addEventListener('click', async () => {
+          const ok = await confirmar('¿Eliminar el examen?', `«${ex.title}» va a desaparecer de tu lista. Las tomas ya rendidas y sus resultados se conservan.`, 'Eliminar');
+          if (!ok) return;
+          try { await api('/api/exams/' + ex.id, { method: 'DELETE' }); await cargarExamenes(); toast('Examen eliminado'); }
+          catch (e2) { toast(e2.message); }
+        });
+        pie.append(iniciar, editar, duplicar, borrar);
+
+        card.append(cuerpo, pie);
+        cont.appendChild(card);
+      });
+    }
+
+    async function cargarTomas() {
+      const datos = await api('/api/runs');
+      const cont = $('lista-tomas');
+      cont.textContent = '';
+
+      if (!datos.runs.length) {
+        cont.appendChild(el('p', 'text-center text-paper/40 text-sm py-14 border border-dashed border-white/15 rounded-2xl',
+          'Cuando inicies un examen, la toma aparece acá.'));
+        return;
+      }
+
+      datos.runs.forEach((r) => {
+        const fila = el('button', 'w-full text-left bg-paper rounded-xl shadow ring-1 ring-white/10 px-5 py-4 flex flex-wrap items-center gap-4 hover:ring-brand transition');
+        fila.addEventListener('click', () => abrirToma(r.id));
+
+        fila.appendChild(el('span', 'codigo-grande text-xl text-brand shrink-0', r.code));
+
+        const medio = el('div', 'min-w-0 flex-1');
+        medio.append(
+          el('p', 'font-semibold truncate', r.title),
+          el('p', 'font-mono text-[11px] text-muted', fecha(r.createdAt))
+        );
+        fila.appendChild(medio);
+
+        const nums = el('div', 'flex items-center gap-4 font-mono text-[11px] text-muted shrink-0');
+        nums.append(
+          el('span', null, r.alumnos + ' alum.'),
+          el('span', null, r.entregados + ' entreg.'),
+          el('span', r.incidentes ? 'text-alert font-bold' : null, r.incidentes + ' inc.')
+        );
+        fila.appendChild(nums);
+        fila.appendChild(chipEstado(r.status));
+        cont.appendChild(fila);
+      });
+    }
+
+    function chipEstado(status) {
+      const mapa = {
+        lobby: ['Sala de espera', 'bg-amber-soft text-amber'],
+        running: ['En curso', 'bg-ok-soft text-ok'],
+        ended: ['Cerrada', 'bg-line text-muted'],
+      };
+      const [texto, cls] = mapa[status] || ['—', 'bg-line text-muted'];
+      return el('span', 'shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] px-2.5 py-1 rounded-full ' + cls, texto);
+    }
+
+    $('btn-nuevo-examen').addEventListener('click', () => abrirEditor(null));
+
+    // ── editor de exámenes ──────────────────────────────────────────
+    function nuevaPregunta(tipo) {
+      const base = { type: tipo, text: '', points: 1 };
+      if (tipo === 'mc') return { ...base, options: ['', ''], correct: 0 };
+      if (tipo === 'ms') return { ...base, options: ['', ''], correct: [] };
+      if (tipo === 'tf') return { ...base, correct: true };
+      if (tipo === 'sa') return { ...base, accepted: [''] };
+      return base;
+    }
+
+    function abrirEditor(examen) {
+      S.editando = examen
+        ? { id: examen.id, questions: JSON.parse(JSON.stringify(examen.questions)) }
+        : { id: null, questions: [nuevaPregunta('mc')] };
+      $('editor-titulo-vista').textContent = examen ? 'Editar examen' : 'Nuevo examen';
+      $('ed-title').value = examen ? examen.title : '';
+      $('ed-subject').value = examen ? examen.subject : '';
+      $('ed-instructions').value = examen ? examen.instructions : '';
+      $('ed-time').value = examen ? Math.round(examen.timeLimit / 60) : 30;
+      $('error-editor').classList.add('hidden');
+      renderEditor();
+      show('editor');
+    }
+
+    document.querySelectorAll('[data-add]').forEach((b) => {
+      b.className = 'add-bt border border-line hover:border-brand hover:bg-brand-soft font-medium text-sm px-3 py-2.5 rounded-xl transition-colors';
+      b.addEventListener('click', () => {
+        S.editando.questions.push(nuevaPregunta(b.dataset.add));
+        renderEditor();
+        const tarjetas = $('ed-preguntas').children;
+        if (tarjetas.length) tarjetas[tarjetas.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    });
+
+    function renderEditor() {
+      const cont = $('ed-preguntas');
+      cont.textContent = '';
+      const qs = S.editando.questions;
+
+      qs.forEach((q, i) => {
+        const card = el('article', 'bg-paper rounded-2xl shadow-lg ring-1 ring-white/10 overflow-hidden');
+
+        // cabecera
+        const head = el('header', 'flex flex-wrap items-center gap-2 px-5 py-3 border-b border-line bg-line/20');
+        head.appendChild(el('span', 'font-mono text-[11px] font-bold text-brand bg-brand-soft px-2 py-1 rounded', two(i + 1)));
+        head.appendChild(el('span', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted', NOMBRE_TIPO[q.type]));
+
+        const acciones = el('div', 'ml-auto flex items-center gap-1');
+        const mkBt = (txt, aria, fn, extra) => {
+          const b = el('button', 'w-8 h-8 rounded-lg border border-line hover:bg-line/60 text-muted hover:text-ink transition-colors text-sm ' + (extra || ''), txt);
+          b.setAttribute('aria-label', aria);
+          b.addEventListener('click', fn);
+          return b;
+        };
+        acciones.append(
+          mkBt('↑', 'Subir pregunta', () => { if (i > 0) { [qs[i - 1], qs[i]] = [qs[i], qs[i - 1]]; renderEditor(); } }),
+          mkBt('↓', 'Bajar pregunta', () => { if (i < qs.length - 1) { [qs[i + 1], qs[i]] = [qs[i], qs[i + 1]]; renderEditor(); } }),
+          mkBt('⧉', 'Duplicar pregunta', () => { qs.splice(i + 1, 0, JSON.parse(JSON.stringify(q))); renderEditor(); }),
+          mkBt('×', 'Eliminar pregunta', () => { qs.splice(i, 1); renderEditor(); }, 'text-alert hover:bg-alert-soft')
+        );
+        head.appendChild(acciones);
+
+        // cuerpo
+        const cuerpo = el('div', 'p-5 space-y-4');
+
+        const enunciado = el('textarea', 'w-full px-3.5 py-3 rounded-xl border border-line bg-white focus:border-brand outline-none resize-y');
+        enunciado.rows = 2;
+        enunciado.maxLength = 600;
+        enunciado.placeholder = 'Escribí el enunciado de la pregunta';
+        enunciado.value = q.text;
+        enunciado.addEventListener('input', () => { q.text = enunciado.value; });
+        cuerpo.appendChild(enunciado);
+
+        cuerpo.appendChild(camposDe(q));
+
+        // puntaje
+        const fila = el('div', 'flex items-center gap-3 pt-3 border-t border-line');
+        fila.appendChild(el('label', 'font-mono text-[11px] uppercase tracking-[0.18em] text-muted', 'Puntaje'));
+        const pts = el('input', 'w-24 px-3 py-2 rounded-lg border border-line bg-white focus:border-brand outline-none font-mono text-sm');
+        pts.type = 'number';
+        pts.min = '0.5';
+        pts.step = '0.5';
+        pts.value = q.points;
+        pts.addEventListener('input', () => { q.points = Number(pts.value); actualizarPuntaje(); });
+        fila.appendChild(pts);
+        cuerpo.appendChild(fila);
+
+        card.append(head, cuerpo);
+        cont.appendChild(card);
+      });
+
+      if (!qs.length) {
+        cont.appendChild(el('p', 'text-center text-paper/40 text-sm py-10 border border-dashed border-white/15 rounded-2xl',
+          'Agregá la primera pregunta con los botones de abajo.'));
+      }
+      actualizarPuntaje();
+    }
+
+    function actualizarPuntaje() {
+      const total = S.editando.questions.reduce((a, q) => a + (Number(q.points) || 0), 0);
+      $('ed-puntaje').textContent = dec(total) + ' pts';
+    }
+
+    function camposDe(q) {
+      // Verdadero / Falso
+      if (q.type === 'tf') {
+        const wrap = el('div', 'flex gap-2');
+        [['Verdadero', true], ['Falso', false]].forEach(([txt, val]) => {
+          const label = el('label', 'flex-1 flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border cursor-pointer transition-colors ' +
+            (q.correct === val ? 'border-ok bg-ok-soft' : 'border-line hover:border-brand'));
+          const input = el('input');
+          input.type = 'radio';
+          input.name = 'tf-' + Math.random().toString(36).slice(2);
+          input.className = 'w-4 h-4 accent-[#1F9D6B]';
+          input.checked = q.correct === val;
+          input.addEventListener('change', () => { q.correct = val; renderEditor(); });
+          label.append(input, el('span', 'text-sm font-medium', txt));
+          wrap.appendChild(label);
+        });
+        const nota = el('div');
+        nota.append(wrap, el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted mt-2', 'Marcá la respuesta correcta'));
+        return nota;
+      }
+
+      // Respuesta corta: lista de respuestas aceptadas
+      if (q.type === 'sa') {
+        const wrap = el('div');
+        wrap.appendChild(el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted mb-2',
+          'Respuestas aceptadas · no distingue mayúsculas ni tildes'));
+        const lista = el('div', 'space-y-2');
+        q.accepted.forEach((a, k) => {
+          const fila = el('div', 'flex gap-2');
+          const input = el('input', 'flex-1 px-3.5 py-2.5 rounded-xl border border-line bg-white focus:border-brand outline-none text-sm');
+          input.maxLength = 120;
+          input.value = a;
+          input.placeholder = 'fotosíntesis';
+          input.addEventListener('input', () => { q.accepted[k] = input.value; });
+          fila.appendChild(input);
+          if (q.accepted.length > 1) {
+            const quitar = el('button', 'shrink-0 w-10 rounded-xl border border-line hover:bg-alert-soft text-alert transition-colors', '×');
+            quitar.setAttribute('aria-label', 'Quitar respuesta aceptada');
+            quitar.addEventListener('click', () => { q.accepted.splice(k, 1); renderEditor(); });
+            fila.appendChild(quitar);
+          }
+          lista.appendChild(fila);
+        });
+        wrap.appendChild(lista);
+        const sumar = el('button', 'mt-2 font-medium text-sm text-brand hover:underline', '+ Agregar otra variante aceptada');
+        sumar.addEventListener('click', () => { q.accepted.push(''); renderEditor(); });
+        wrap.appendChild(sumar);
+        return wrap;
+      }
+
+      // Desarrollo
+      if (q.type === 'long') {
+        return el('p', 'text-sm text-muted bg-line/30 border border-line rounded-xl px-3.5 py-3',
+          'Las preguntas de desarrollo no se autocorrigen: las vas a corregir vos, una por una, en la pantalla de resultados.');
+      }
+
+      // Opción múltiple (una o varias correctas)
+      const wrap = el('div');
+      wrap.appendChild(el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted mb-2',
+        q.type === 'ms' ? 'Opciones · marcá todas las correctas' : 'Opciones · marcá la correcta'));
+      const grupo = 'op-' + Math.random().toString(36).slice(2);
+      const lista = el('div', 'space-y-2');
+
+      q.options.forEach((op, k) => {
+        const esCorrecta = q.type === 'ms' ? q.correct.includes(k) : q.correct === k;
+        const fila = el('div', 'flex gap-2 items-center px-2 py-1.5 rounded-xl border transition-colors ' +
+          (esCorrecta ? 'border-ok bg-ok-soft' : 'border-line'));
+
+        const marca = el('input');
+        marca.type = q.type === 'ms' ? 'checkbox' : 'radio';
+        marca.name = grupo;
+        marca.className = 'w-4 h-4 accent-[#1F9D6B] shrink-0 ml-1.5';
+        marca.checked = esCorrecta;
+        marca.setAttribute('aria-label', 'Marcar la opción ' + (k + 1) + ' como correcta');
+        marca.addEventListener('change', () => {
+          if (q.type === 'ms') {
+            const set = new Set(q.correct);
+            if (marca.checked) set.add(k); else set.delete(k);
+            q.correct = [...set].sort((a, b) => a - b);
+          } else {
+            q.correct = k;
+          }
+          renderEditor();
+        });
+
+        const input = el('input', 'flex-1 min-w-0 px-2.5 py-2 rounded-lg border border-transparent bg-transparent focus:bg-white focus:border-line outline-none text-sm');
+        input.maxLength = 240;
+        input.value = op;
+        input.placeholder = 'Opción ' + (k + 1);
+        input.addEventListener('input', () => { q.options[k] = input.value; });
+
+        fila.append(marca, input);
+
+        if (q.options.length > 2) {
+          const quitar = el('button', 'shrink-0 w-8 h-8 rounded-lg hover:bg-alert-soft text-alert transition-colors', '×');
+          quitar.setAttribute('aria-label', 'Quitar opción');
+          quitar.addEventListener('click', () => {
+            q.options.splice(k, 1);
+            if (q.type === 'ms') q.correct = q.correct.filter((c) => c !== k).map((c) => (c > k ? c - 1 : c));
+            else if (q.correct === k) q.correct = 0;
+            else if (q.correct > k) q.correct--;
+            renderEditor();
+          });
+          fila.appendChild(quitar);
+        }
+        lista.appendChild(fila);
+      });
+
+      wrap.appendChild(lista);
+      if (q.options.length < 8) {
+        const sumar = el('button', 'mt-2 font-medium text-sm text-brand hover:underline', '+ Agregar opción');
+        sumar.addEventListener('click', () => { q.options.push(''); renderEditor(); });
+        wrap.appendChild(sumar);
+      }
+      return wrap;
+    }
+
+    $('btn-guardar-examen').addEventListener('click', guardarExamen);
+    $('btn-cancelar-editor').addEventListener('click', abrirEscritorio);
+    $('btn-volver-editor').addEventListener('click', abrirEscritorio);
+
+    async function guardarExamen() {
+      const err = $('error-editor');
+      err.classList.add('hidden');
+      const cuerpo = {
+        title: $('ed-title').value.trim(),
+        subject: $('ed-subject').value.trim(),
+        instructions: $('ed-instructions').value.trim(),
+        timeLimit: Math.round(Number($('ed-time').value) * 60),
+        questions: S.editando.questions,
+      };
+      try {
+        if (S.editando.id) await api('/api/exams/' + S.editando.id, { method: 'PUT', body: cuerpo });
+        else await api('/api/exams', { method: 'POST', body: cuerpo });
+        toast('Examen guardado');
+        await abrirEscritorio();
+      } catch (ex) {
+        err.textContent = ex.message;
+        err.classList.remove('hidden');
+        err.classList.remove('shake');
+        void err.offsetWidth;
+        err.classList.add('shake');
+        err.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    // ── tomas ───────────────────────────────────────────────────────
+    async function nuevaToma(examen) {
+      try {
+        const datos = await api('/api/exams/' + examen.id + '/runs', { method: 'POST', body: { timeLimit: examen.timeLimit } });
+        await abrirToma(datos.run.id);
+      } catch (ex) {
+        toast(ex.message);
+      }
+    }
+
+    function cerrarStream() {
+      if (S.fuente) { S.fuente.close(); S.fuente = null; }
+      if (S.relojId) { clearInterval(S.relojId); S.relojId = null; }
+    }
+
+    async function abrirToma(runId) {
+      cerrarStream();
+      try {
+        const foto = await api('/api/runs/' + runId);
+        aplicarFoto(foto);
+        show('run');
+        const fuente = new EventSource('/api/runs/' + runId + '/stream');
+        S.fuente = fuente;
+        fuente.addEventListener('estado', (ev) => {
+          try { aplicarFoto(JSON.parse(ev.data)); } catch { /* payload corrupto */ }
+        });
+        fuente.addEventListener('incidente', (ev) => {
+          try {
+            const d = JSON.parse(ev.data);
+            toast('⚠ ' + d.name + ' · ' + (TIPOS_EVENTO[d.incident.type] || 'evento'));
+          } catch { /* payload corrupto */ }
+        });
+        S.relojId = setInterval(pintarRelojToma, 500);
+      } catch (ex) {
+        toast(ex.message);
+      }
+    }
+
+    $('btn-volver-run').addEventListener('click', abrirEscritorio);
+
+    function aplicarFoto(foto) {
+      if (!foto || !foto.run) return;
+      S.run = foto;
+      if (typeof foto.now === 'number') S.desfase = foto.now - Date.now();
+      renderToma();
+      if (S.alumnoAbierto) {
+        const alumno = foto.alumnos.find((a) => a.id === S.alumnoAbierto);
+        if (alumno) renderDetalleAlumno(alumno);
+        else cerrarDetalle();
+      }
+    }
+
+    function renderToma() {
+      const { run, alumnos } = S.run;
+
+      $('run-titulo').textContent = run.title;
+      $('run-materia').textContent = (run.subject || 'Examen') + ' · ' + fecha(run.createdAt);
+      const estado = $('run-estado');
+      const chip = chipEstado(run.status);
+      estado.className = chip.className.replace('shrink-0 ', '') + ' shrink-0';
+      estado.textContent = chip.textContent;
+
+      $('run-panel-codigo').classList.toggle('hidden', run.status === 'ended');
+      $('run-codigo').textContent = run.code;
+      $('run-link').value = location.origin + '/?c=' + run.code;
+
+      renderControles();
+
+      const entregados = alumnos.filter((a) => a.status === 'submitted').length;
+      $('run-subtitulo-alumnos').textContent = run.status === 'ended' ? 'Resultados' : 'Alumnos';
+      $('run-conteo').textContent = run.status === 'lobby'
+        ? alumnos.length + ' en la sala'
+        : entregados + ' / ' + alumnos.length + ' entregados';
+      $('btn-informe').classList.toggle('hidden', run.status !== 'ended' || !alumnos.length);
+      $('run-vacio').classList.toggle('hidden', alumnos.length > 0);
+
+      renderAlumnos();
+    }
+
+    function renderControles() {
+      const cont = $('run-controles');
+      cont.textContent = '';
+      const { run, alumnos } = S.run;
+
+      if (run.status === 'lobby') {
+        const fila = el('div', 'flex flex-wrap items-end gap-4');
+        const campo = el('div');
+        campo.appendChild(el('label', 'block font-mono text-[11px] uppercase tracking-[0.18em] text-paper/40 mb-2', 'Tiempo máximo (minutos)'));
+        const input = el('input', 'w-28 px-3 py-2.5 rounded-xl border border-white/15 bg-ink text-paper font-mono focus:border-brand outline-none');
+        input.type = 'number';
+        input.min = '1';
+        input.max = '360';
+        input.value = Math.round(run.timeLimit / 60);
+        input.id = 'run-minutos';
+        campo.appendChild(input);
+        fila.appendChild(campo);
+
+        const info = el('div', 'flex-1 min-w-[12rem]');
+        info.append(
+          el('p', 'text-paper/80 text-sm font-medium', alumnos.length ? alumnos.length + (alumnos.length === 1 ? ' alumno esperando' : ' alumnos esperando') : 'Todavía no entró nadie'),
+          el('p', 'text-paper/40 text-xs', 'Cuando inicies, el reloj arranca para todos a la vez.')
+        );
+        fila.appendChild(info);
+
+        const iniciar = el('button', 'bg-ok hover:bg-ok/85 text-white font-semibold px-6 py-3 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed', 'Iniciar examen');
+        iniciar.disabled = alumnos.length === 0;
+        iniciar.addEventListener('click', async () => {
+          const minutos = Number($('run-minutos').value);
+          const ok = await confirmar('¿Iniciar el examen?',
+            `Arranca para ${alumnos.length} ${alumnos.length === 1 ? 'alumno' : 'alumnos'} con ${minutos} minutos de tiempo. Los que entren después van a tener el tiempo que quede.`,
+            'Iniciar');
+          if (!ok) return;
+          try { await api('/api/runs/' + run.id + '/start', { method: 'POST', body: { timeLimit: Math.round(minutos * 60) } }); }
+          catch (ex) { toast(ex.message); }
+        });
+        fila.appendChild(iniciar);
+
+        const cancelar = el('button', 'text-paper/40 hover:text-alert font-medium text-sm px-3 py-3 transition-colors', 'Descartar toma');
+        cancelar.addEventListener('click', async () => {
+          const ok = await confirmar('¿Descartar esta toma?', 'Se anula el código y los alumnos que ya entraron quedan afuera.', 'Descartar');
+          if (!ok) return;
+          try { await api('/api/runs/' + run.id, { method: 'DELETE' }); await abrirEscritorio(); toast('Toma descartada'); }
+          catch (ex) { toast(ex.message); }
+        });
+        fila.appendChild(cancelar);
+
+        cont.appendChild(fila);
+        return;
+      }
+
+      if (run.status === 'running') {
+        const fila = el('div', 'flex flex-wrap items-center gap-4');
+        const reloj = el('div');
+        reloj.appendChild(el('p', 'font-mono text-[11px] uppercase tracking-[0.18em] text-paper/40 mb-1', 'Tiempo restante'));
+        const t = el('p', 'font-mono text-3xl font-bold text-paper tabular-nums', '--:--');
+        t.id = 'run-reloj';
+        reloj.appendChild(t);
+        fila.appendChild(reloj);
+
+        const ajustes = el('div', 'flex items-center gap-2');
+        [['−5 min', -5], ['+5 min', 5], ['+10 min', 10]].forEach(([txt, min]) => {
+          const b = el('button', 'border border-white/15 hover:border-white/40 text-paper/70 hover:text-paper font-mono text-xs px-3 py-2 rounded-lg transition-colors', txt);
+          b.addEventListener('click', async () => {
+            try { await api('/api/runs/' + run.id + '/extend', { method: 'POST', body: { minutes: min } }); toast('Tiempo ajustado'); }
+            catch (ex) { toast(ex.message); }
+          });
+          ajustes.appendChild(b);
+        });
+        fila.appendChild(ajustes);
+
+        const entregados = alumnos.filter((a) => a.status === 'submitted').length;
+        const resumen = el('div', 'flex-1 min-w-[10rem]');
+        resumen.append(
+          el('p', 'text-paper/80 text-sm font-medium', entregados + ' de ' + alumnos.length + ' ya entregaron'),
+          el('p', 'text-paper/40 text-xs', 'El examen se cierra solo cuando se acaba el tiempo.')
+        );
+        fila.appendChild(resumen);
+
+        const terminar = el('button', 'bg-alert hover:bg-alert/85 text-white font-semibold px-5 py-3 rounded-xl transition-colors', 'Finalizar ahora');
+        terminar.addEventListener('click', async () => {
+          const pendientes = alumnos.length - entregados;
+          const ok = await confirmar('¿Finalizar el examen?',
+            pendientes > 0
+              ? `${pendientes} ${pendientes === 1 ? 'alumno todavía está respondiendo' : 'alumnos todavía están respondiendo'}. Se guarda lo que hayan escrito hasta ahora.`
+              : 'Todos entregaron. Se cierra la toma y pasás a los resultados.',
+            'Finalizar');
+          if (!ok) return;
+          try { await api('/api/runs/' + run.id + '/end', { method: 'POST' }); }
+          catch (ex) { toast(ex.message); }
+        });
+        fila.appendChild(terminar);
+
+        cont.appendChild(fila);
+        pintarRelojToma();
+        return;
+      }
+
+      // cerrada
+      const notas = alumnos.map((a) => a.correccion.nota);
+      const promedio = notas.length ? notas.reduce((a, b) => a + b, 0) / notas.length : 0;
+      const aprobados = notas.filter((n) => n >= 6).length;
+      const incidentes = alumnos.reduce((a, b) => a + b.incidents.length, 0);
+      const pendientes = alumnos.filter((a) => a.correccion.provisional).length;
+
+      const grid = el('div', 'grid grid-cols-2 md:grid-cols-4 gap-4');
+      const dato = (etiqueta, valor, cls) => {
+        const d = el('div');
+        d.append(
+          el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-paper/40 mb-1', etiqueta),
+          el('p', 'font-mono text-2xl font-bold ' + (cls || 'text-paper'), valor)
+        );
+        return d;
+      };
+      grid.append(
+        dato('Promedio', dec(promedio)),
+        dato('Aprobados', aprobados + '/' + alumnos.length, aprobados === alumnos.length ? 'text-ok' : 'text-paper'),
+        dato('Incidentes', String(incidentes), incidentes ? 'text-alert' : 'text-paper'),
+        dato('Sin corregir', String(pendientes), pendientes ? 'text-amber' : 'text-paper')
+      );
+      cont.appendChild(grid);
+
+      if (pendientes) {
+        cont.appendChild(el('p', 'text-amber text-sm mt-4 pt-4 border-t border-white/10',
+          'Hay respuestas de desarrollo sin corregir. Las notas con el rótulo «provisoria» todavía no son definitivas.'));
+      }
+    }
+
+    function pintarRelojToma() {
+      const t = $('run-reloj');
+      if (!t || !S.run || !S.run.run.endsAt) return;
+      const restante = Math.max(0, Math.round((S.run.run.endsAt - ahoraServidor()) / 1000));
+      t.textContent = two(Math.floor(restante / 60)) + ':' + two(restante % 60);
+      t.classList.toggle('timer-urgent', restante <= 60);
+    }
+
+    function renderAlumnos() {
+      const cont = $('run-alumnos');
+      cont.textContent = '';
+      const { run, alumnos } = S.run;
+      const total = S.run.questions.length;
+
+      const ordenados = run.status === 'ended'
+        ? [...alumnos].sort((a, b) => b.correccion.nota - a.correccion.nota || a.name.localeCompare(b.name, 'es'))
+        : alumnos;
+
+      ordenados.forEach((a) => {
+        const fila = el('div', 'bg-paper rounded-xl shadow ring-1 ring-white/10 px-4 py-3.5 flex flex-wrap items-center gap-3');
+
+        const punto = el('span', 'w-2.5 h-2.5 rounded-full shrink-0 ' +
+          (a.status === 'submitted' ? 'bg-muted' : a.status === 'active' ? 'bg-ok' : 'bg-amber breathe'));
+        fila.appendChild(punto);
+
+        const ident = el('div', 'min-w-0 flex-1');
+        const nombre = el('p', 'font-semibold truncate', a.name);
+        ident.appendChild(nombre);
+        const sub = el('p', 'font-mono text-[11px] text-muted truncate');
+        const partes = [];
+        if (a.course) partes.push(a.course);
+        if (run.status === 'lobby') partes.push('entró ' + hms(a.joinedAt));
+        else if (a.status === 'submitted') partes.push((MOTIVO[a.submitReason] || 'entregó') + ' ' + hms(a.submittedAt));
+        else partes.push('respondiendo');
+        if (a.tarde) partes.push('ingreso tardío');
+        sub.textContent = partes.join(' · ');
+        ident.appendChild(sub);
+        fila.appendChild(ident);
+
+        if (run.status !== 'lobby') {
+          const prog = el('div', 'shrink-0 text-right');
+          prog.append(
+            el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted', 'Respondió'),
+            el('p', 'font-mono text-sm font-bold', a.correccion.respondidas + '/' + total)
+          );
+          fila.appendChild(prog);
+
+          const inc = el('div', 'shrink-0 text-right w-20');
+          inc.append(
+            el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted', 'Incidentes'),
+            el('p', 'font-mono text-sm font-bold ' + (a.incidents.length ? 'text-alert' : 'text-muted'), String(a.incidents.length))
+          );
+          fila.appendChild(inc);
+        }
+
+        if (run.status === 'ended') {
+          const nota = el('div', 'shrink-0 text-right w-24');
+          nota.appendChild(el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted',
+            a.correccion.provisional ? 'Provisoria' : 'Nota'));
+          nota.appendChild(el('p', 'font-mono text-lg font-bold ' +
+            (a.correccion.provisional ? 'text-amber' : a.correccion.nota >= 6 ? 'text-ok' : 'text-alert'),
+            dec(a.correccion.nota)));
+          fila.appendChild(nota);
+        }
+
+        if (run.status !== 'lobby') {
+          const ver = el('button', 'shrink-0 border border-line hover:bg-line/60 font-medium text-sm px-3.5 py-2 rounded-lg transition-colors',
+            run.status === 'ended' ? 'Corregir' : 'Ver');
+          ver.addEventListener('click', () => abrirDetalle(a.id));
+          fila.appendChild(ver);
+        } else {
+          const sacar = el('button', 'shrink-0 text-muted hover:text-alert font-medium text-sm px-3 py-2 transition-colors', 'Quitar');
+          sacar.addEventListener('click', async () => {
+            const ok = await confirmar('¿Sacar a este alumno de la sala?', `${a.name} va a poder volver a entrar con el código.`, 'Sacar');
+            if (!ok) return;
+            try { await api('/api/runs/' + run.id + '/students/' + a.id, { method: 'DELETE' }); }
+            catch (ex) { toast(ex.message); }
+          });
+          fila.appendChild(sacar);
+        }
+
+        cont.appendChild(fila);
+      });
+    }
+
+    // ── detalle / corrección de un alumno ───────────────────────────
+    function abrirDetalle(id) {
+      S.alumnoAbierto = id;
+      const alumno = S.run.alumnos.find((a) => a.id === id);
+      if (!alumno) return;
+      renderDetalleAlumno(alumno);
+      $('modal-alumno').classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+    }
+    function cerrarDetalle() {
+      S.alumnoAbierto = null;
+      $('modal-alumno').classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+    $('btn-cerrar-alumno').addEventListener('click', cerrarDetalle);
+    $('btn-cerrar-alumno-2').addEventListener('click', cerrarDetalle);
+
+    function renderDetalleAlumno(a) {
+      const { questions, run } = S.run;
+      $('det-nombre').textContent = a.name;
+      const meta = [a.course || 'sin curso'];
+      if (a.status === 'submitted') meta.push((MOTIVO[a.submitReason] || 'entregó') + ' ' + hms(a.submittedAt));
+      else meta.push('respondiendo');
+      if (a.tarde) meta.push('ingreso tardío');
+      $('det-meta').textContent = meta.join(' · ');
+
+      const cuerpo = $('det-cuerpo');
+      cuerpo.textContent = '';
+
+      // resumen de nota
+      const resumen = el('div', 'flex flex-wrap items-center gap-5 bg-ink rounded-xl px-5 py-4');
+      const bloque = (etiqueta, valor, cls) => {
+        const d = el('div');
+        d.append(
+          el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-paper/40 mb-1', etiqueta),
+          el('p', 'font-mono text-xl font-bold ' + (cls || 'text-paper'), valor)
+        );
+        return d;
+      };
+      resumen.append(
+        bloque(a.correccion.provisional ? 'Nota provisoria' : 'Nota',
+          dec(a.correccion.nota) + ' / 10',
+          a.correccion.provisional ? 'text-amber' : a.correccion.nota >= 6 ? 'text-ok' : 'text-alert'),
+        bloque('Puntaje', dec(a.correccion.obtenido) + ' / ' + dec(a.correccion.total)),
+        bloque('Incidentes', String(a.incidents.length), a.incidents.length ? 'text-alert' : 'text-paper')
+      );
+      cuerpo.appendChild(resumen);
+
+      if (a.correccion.provisional) {
+        cuerpo.appendChild(el('p', 'text-sm text-amber bg-amber-soft border border-amber/25 rounded-xl px-4 py-3',
+          'Quedan respuestas sin corregir. Marcá cada una como correcta o incorrecta para cerrar la nota.'));
+      }
+
+      // respuestas
+      const seccion = el('section');
+      seccion.appendChild(el('h3', 'font-display font-semibold mb-3', 'Respuestas'));
+      const lista = el('div', 'space-y-3');
+
+      questions.forEach((q, i) => {
+        const d = a.correccion.detalle.find((x) => x.id === q.id);
+        const card = el('article', 'border border-line rounded-xl overflow-hidden');
+
+        const head = el('header', 'flex flex-wrap items-center gap-2 px-4 py-2.5 bg-line/25 border-b border-line');
+        head.append(
+          el('span', 'font-mono text-[11px] font-bold text-brand bg-brand-soft px-1.5 py-0.5 rounded', two(i + 1)),
+          el('span', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted', NOMBRE_TIPO[q.type]),
+          el('span', 'font-mono text-[10px] text-muted ml-auto', dec(q.points) + ' pts')
+        );
+        const marca = el('span', 'font-mono text-[10px] uppercase tracking-[0.16em] px-2 py-0.5 rounded-full ' +
+          (d.ok === true ? 'bg-ok-soft text-ok' : d.ok === false ? 'bg-alert-soft text-alert' : 'bg-amber-soft text-amber'),
+          d.ok === true ? 'Correcta' : d.ok === false ? 'Incorrecta' : 'Sin corregir');
+        head.appendChild(marca);
+        card.appendChild(head);
+
+        const body = el('div', 'px-4 py-3.5 space-y-3');
+        body.appendChild(el('p', 'text-sm font-medium leading-relaxed', q.text));
+
+        const resp = el('div', 'bg-line/25 rounded-lg px-3.5 py-2.5');
+        resp.appendChild(el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted mb-1', 'Respondió'));
+        const texto = textoRespuesta(q, a.answers[q.id]);
+        resp.appendChild(el('p', 'text-sm whitespace-pre-wrap ' + (texto === '(sin responder)' ? 'text-muted italic' : 'font-medium'), texto));
+        body.appendChild(resp);
+
+        const esperada = textoEsperado(q);
+        if (esperada) {
+          const exp = el('p', 'font-mono text-[11px] text-muted');
+          exp.textContent = 'Esperada: ' + esperada;
+          body.appendChild(exp);
+        }
+
+        // corrección manual
+        if (run.status === 'ended' || q.type === 'long') {
+          const acciones = el('div', 'flex flex-wrap items-center gap-2 pt-1');
+          acciones.appendChild(el('span', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted mr-1', 'Corrección'));
+          const opciones = [
+            ['Correcta', true, 'border-ok text-ok bg-ok-soft'],
+            ['Incorrecta', false, 'border-alert text-alert bg-alert-soft'],
+          ];
+          opciones.forEach(([txt, valor, activo]) => {
+            const puesto = d.override === valor;
+            const b = el('button', 'font-medium text-xs px-3 py-1.5 rounded-lg border transition-colors ' +
+              (puesto ? activo : 'border-line text-muted hover:bg-line/50'), txt);
+            b.addEventListener('click', () => aplicarOverride(a.id, q.id, puesto ? null : valor));
+            acciones.appendChild(b);
+          });
+          if (d.override !== null && d.auto !== null) {
+            const auto = el('button', 'font-medium text-xs px-3 py-1.5 rounded-lg border border-line text-muted hover:bg-line/50 transition-colors', 'Volver al automático');
+            auto.addEventListener('click', () => aplicarOverride(a.id, q.id, null));
+            acciones.appendChild(auto);
+          }
+          if (d.override !== null) {
+            acciones.appendChild(el('span', 'font-mono text-[10px] text-amber', 'ajustada a mano'));
+          }
+          body.appendChild(acciones);
+        }
+
+        card.appendChild(body);
+        lista.appendChild(card);
+      });
+      seccion.appendChild(lista);
+      cuerpo.appendChild(seccion);
+
+      // auditoría
+      const audit = el('section');
+      const cab = el('div', 'flex items-baseline justify-between mb-3');
+      cab.append(
+        el('h3', 'font-display font-semibold', 'Registro de actividad'),
+        el('span', 'font-mono text-[11px] ' + (a.incidents.length ? 'text-alert font-bold' : 'text-muted'),
+          a.incidents.length + (a.incidents.length === 1 ? ' evento' : ' eventos'))
+      );
+      audit.appendChild(cab);
+
+      if (!a.incidents.length) {
+        audit.appendChild(el('p', 'text-sm text-ok bg-ok-soft border border-ok/25 rounded-xl px-4 py-3',
+          'Sin eventos. El alumno no salió de la ventana del examen en ningún momento.'));
+      } else {
+        const tabla = el('div', 'border border-line rounded-xl overflow-hidden divide-y divide-line');
+        a.incidents.forEach((inc) => {
+          const fila = el('div', 'flex flex-wrap items-center gap-3 px-4 py-2.5');
+          fila.append(
+            el('span', 'font-mono text-sm font-bold shrink-0', hms(inc.at)),
+            el('span', 'text-sm flex-1 min-w-0', TIPOS_EVENTO[inc.type] || 'Evento de foco'),
+            el('span', 'font-mono text-[11px] text-muted shrink-0', dur(inc.dur))
+          );
+          tabla.appendChild(fila);
+        });
+        audit.appendChild(tabla);
+
+        const totalFuera = a.incidents.reduce((s, i2) => s + i2.dur, 0);
+        if (totalFuera >= 1000) {
+          audit.appendChild(el('p', 'font-mono text-[11px] text-muted mt-2',
+            'Tiempo total fuera de la ventana: ' + dur(totalFuera)));
+        }
+      }
+      cuerpo.appendChild(audit);
+    }
+
+    function textoRespuesta(q, val) {
+      if (val === undefined || val === null || (Array.isArray(val) && !val.length) ||
+          (typeof val === 'string' && !val.trim())) return '(sin responder)';
+      if (q.type === 'mc') return q.options[Number(val)] ?? '(opción inválida)';
+      if (q.type === 'tf') return val === true || val === 'true' ? 'Verdadero' : 'Falso';
+      if (q.type === 'ms') return val.map((k) => q.options[k]).filter(Boolean).join(' · ');
+      return String(val);
+    }
+
+    function textoEsperado(q) {
+      if (q.type === 'mc') return q.options[q.correct];
+      if (q.type === 'tf') return q.correct ? 'Verdadero' : 'Falso';
+      if (q.type === 'ms') return q.correct.map((k) => q.options[k]).join(' · ');
+      if (q.type === 'sa') return q.accepted.join(' / ');
+      return null;
+    }
+
+    async function aplicarOverride(alumnoId, qid, valor) {
+      try {
+        await api('/api/runs/' + S.run.run.id + '/students/' + alumnoId + '/override', {
+          method: 'POST', body: { questionId: qid, value: valor },
+        });
+      } catch (ex) {
+        toast(ex.message);
+      }
+    }
+
+    // ── informes ────────────────────────────────────────────────────
+    function informeAlumno(a) {
+      const { questions, run } = S.run;
+      const L = [];
+      L.push('EVALUADOR SEGURO · INFORME DE EXAMEN');
+      L.push('='.repeat(52));
+      L.push('Examen: ' + run.title + (run.subject ? ' (' + run.subject + ')' : ''));
+      L.push('Código de toma: ' + run.code);
+      L.push('Alumno: ' + a.name + (a.course ? ' · ' + a.course : ''));
+      L.push('Ingresó: ' + fecha(a.joinedAt) + (a.tarde ? '  [ingreso tardío]' : ''));
+      if (a.submittedAt) L.push('Cerró: ' + fecha(a.submittedAt) + ' (' + (MOTIVO[a.submitReason] || 'entregó') + ')');
+      L.push('');
+      L.push('NOTA: ' + dec(a.correccion.nota) + ' / 10' + (a.correccion.provisional ? '  [PROVISORIA · faltan correcciones]' : ''));
+      L.push('Puntaje: ' + dec(a.correccion.obtenido) + ' de ' + dec(a.correccion.total));
+      L.push('');
+      L.push('-'.repeat(52));
+      L.push('RESPUESTAS');
+      L.push('-'.repeat(52));
+      questions.forEach((q, i) => {
+        const d = a.correccion.detalle.find((x) => x.id === q.id);
+        const marca = d.ok === true ? '[OK]' : d.ok === false ? '[X ]' : '[? ]';
+        L.push('');
+        L.push(marca + ' ' + two(i + 1) + '. ' + q.text + '  (' + dec(q.points) + ' pts · ' + NOMBRE_TIPO[q.type] + ')');
+        L.push('     Respondió: ' + textoRespuesta(q, a.answers[q.id]));
+        const esperada = textoEsperado(q);
+        if (esperada) L.push('     Esperada:  ' + esperada);
+        if (d.override !== null) L.push('     · corrección ajustada a mano por el docente');
+      });
+      L.push('');
+      L.push('-'.repeat(52));
+      L.push('REGISTRO DE ACTIVIDAD · ' + a.incidents.length + (a.incidents.length === 1 ? ' evento' : ' eventos'));
+      L.push('-'.repeat(52));
+      if (!a.incidents.length) {
+        L.push('Sin eventos registrados.');
+      } else {
+        a.incidents.forEach((inc) => {
+          L.push(hms(inc.at) + '  ' + (TIPOS_EVENTO[inc.type] || inc.type).padEnd(38) + dur(inc.dur));
+        });
+        const total = a.incidents.reduce((s, i2) => s + i2.dur, 0);
+        if (total >= 1000) L.push('Tiempo total fuera de la ventana: ' + dur(total));
+      }
+      L.push('');
+      L.push('Generado el ' + fecha(Date.now()) + ' · Evaluador Seguro');
+      return L.join('\n');
+    }
+
+    $('btn-informe-alumno').addEventListener('click', async () => {
+      const a = S.run.alumnos.find((x) => x.id === S.alumnoAbierto);
+      if (!a) return;
+      try {
+        await navigator.clipboard.writeText(informeAlumno(a));
+        toast('Informe copiado al portapapeles');
+      } catch {
+        toast('Tu navegador no dejó copiar. Probá descargar el informe completo.');
+      }
+    });
+
+    $('btn-informe').addEventListener('click', () => {
+      const { run, alumnos } = S.run;
+      const partes = [informeToma(), ...alumnos.map((a) => informeAlumno(a))];
+      descargar('informe-' + run.code + '.txt', partes.join('\n\n' + '#'.repeat(52) + '\n\n'));
+    });
+
+    function informeToma() {
+      const { run, alumnos } = S.run;
+      const notas = alumnos.map((a) => a.correccion.nota);
+      const promedio = notas.length ? notas.reduce((a, b) => a + b, 0) / notas.length : 0;
+      const L = [];
+      L.push('EVALUADOR SEGURO · RESUMEN DE LA TOMA');
+      L.push('='.repeat(52));
+      L.push('Examen: ' + run.title + (run.subject ? ' (' + run.subject + ')' : ''));
+      L.push('Código: ' + run.code);
+      L.push('Inicio: ' + (run.startedAt ? fecha(run.startedAt) : '—'));
+      L.push('Cierre: ' + (run.endedAt ? fecha(run.endedAt) : '—'));
+      L.push('Duración prevista: ' + Math.round(run.timeLimit / 60) + ' min');
+      L.push('');
+      L.push('Alumnos: ' + alumnos.length + ' · Promedio: ' + dec(promedio) +
+        ' · Aprobados: ' + notas.filter((n) => n >= 6).length);
+      L.push('');
+      L.push('NOTA   INC.  ALUMNO');
+      alumnos
+        .slice()
+        .sort((a, b) => b.correccion.nota - a.correccion.nota || a.name.localeCompare(b.name, 'es'))
+        .forEach((a) => {
+          L.push(
+            (dec(a.correccion.nota) + (a.correccion.provisional ? '*' : ' ')).padEnd(7) +
+            String(a.incidents.length).padEnd(6) +
+            a.name + (a.course ? ' · ' + a.course : '')
+          );
+        });
+      L.push('');
+      L.push('* nota provisoria: quedan respuestas sin corregir.');
+      return L.join('\n');
+    }
+
+    function descargar(nombre, texto) {
+      const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = nombre;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    $('btn-copiar-link').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText($('run-link').value);
+        toast('Link copiado');
+      } catch {
+        $('run-link').select();
+        toast('Copialo con Ctrl+C');
+      }
+    });
+
+    // ── atajos ──────────────────────────────────────────────────────
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      if (!$('modal-confirm').classList.contains('hidden')) return cerrarConfirm(false);
+      if (!$('modal-alumno').classList.contains('hidden')) return cerrarDetalle();
+    });
+
+    // ── arranque ────────────────────────────────────────────────────
+    (async function iniciar() {
+      try {
+        const datos = await api('/api/teacher/me');
+        if (datos.ok) await abrirEscritorio();
+        else mostrarLogin();
+      } catch {
+        mostrarLogin();
+      }
+    })();
+  </script>
+</body>
+</html>

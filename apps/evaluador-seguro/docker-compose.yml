@@ -4,5 +4,13 @@ services:
       context: .
       dockerfile: Dockerfile
     expose:
-      - "80"
+      - "8080"
+    environment:
+      # Cambiala antes de exponer la app fuera de la red del aula.
+      TEACHER_PASSWORD: ${TEACHER_PASSWORD:-profe123}
+    volumes:
+      - evaluador-datos:/data
     restart: unless-stopped
+
+volumes:
+  evaluador-datos:
