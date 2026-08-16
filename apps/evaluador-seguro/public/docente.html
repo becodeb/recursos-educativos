@@ -11,219 +11,155 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            ink: '#17122B',
-            panel: '#241A3F',
-            canvas: '#FFF4E5',
-            paper: '#FFFFFF',
-            line: '#F0E2CC',
-            muted: '#786552',
-            brand: { DEFAULT: '#243B7A', deep: '#1A2C5C', soft: '#E7EAF4' },
-            accent: { DEFAULT: '#FF9300', deep: '#E4510B', soft: '#FFF0DA' },
-            ok: { DEFAULT: '#209B8A', deep: '#17796B', soft: '#DDF2EE' },
-            alert: { DEFAULT: '#C52525', deep: '#A11C1C', soft: '#FAE6E6' },
-            plum: { DEFAULT: '#7D2048', soft: '#F7E6EC' },
-          },
-          fontFamily: {
-            display: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-            body: ['"Instrument Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
-          },
-        },
-      },
-    };
-  </script>
-  <style>
-    :root { --ease: cubic-bezier(.2, .7, .3, 1); }
-
-    body { background-color: #FFF4E5; }
-
-    /* Un solo recurso para separar superficies: el borde. Las sombras de Tailwind
-       son negras y sobre el fondo cálido se ensucian, así que quedan en un susurro. */
-    .shadow, .shadow-lg, .shadow-xl, .shadow-2xl { box-shadow: 0 1px 2px rgba(93, 58, 12, .05) !important; }
-    :focus-visible { outline: 3px solid #FF9300; outline-offset: 2px; border-radius: 6px; }
-
-    /* ── entradas ─────────────────────────────────────────── */
-    @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-    @keyframes pop { 0% { opacity: 0; transform: scale(.9); } 60% { transform: scale(1.02); } 100% { opacity: 1; transform: scale(1); } }
-    .rise { animation: rise .42s var(--ease) both; animation-delay: calc(var(--i, 0) * 55ms); }
-    .pop { animation: pop .32s var(--ease) both; animation-delay: calc(var(--i, 0) * 45ms); }
-    .view-in { animation: rise .4s var(--ease) both; }
-
-    /* ── interacción ──────────────────────────────────────── */
-    .lift { transition: transform .18s var(--ease), box-shadow .24s, background-color .2s, border-color .2s, color .2s; }
-    .lift:hover:not(:disabled) { transform: translateY(-2px); }
-    .lift:active:not(:disabled) { transform: translateY(0) scale(.99); }
-    .card {
-      transition: transform .24s var(--ease), box-shadow .24s, outline-color .24s;
-      outline: 2px solid transparent; outline-offset: -1px;
-    }
-    .card:hover { transform: translateY(-3px); outline-color: #FF9300; }
-
-    /* ── avisos ───────────────────────────────────────────── */
-    @keyframes shake {
-      10%, 90% { transform: translateX(-2px); }
-      20%, 80% { transform: translateX(4px); }
-      30%, 50%, 70% { transform: translateX(-7px); }
-      40%, 60% { transform: translateX(7px); }
-    }
-    .shake { animation: shake .5s cubic-bezier(.36,.07,.19,.97) both; }
-    @keyframes modal-in { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
-    .modal-in { animation: modal-in .26s var(--ease) both; }
-    @keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
-    .backdrop-in { animation: backdrop-in .22s ease-out both; }
-    @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 14px); } to { opacity: 1; transform: translate(-50%, 0); } }
-    .toast-in { animation: toast-in .3s var(--ease) both; }
-
-    /* ── código de la toma ────────────────────────────────── */
-    .codigo-grande {
-      font-family: "JetBrains Mono", ui-monospace, monospace;
-      letter-spacing: .18em; font-weight: 700;
-    }
-    @keyframes codigo-in {
-      from { opacity: 0; transform: scale(.88); letter-spacing: .55em; }
-      to { opacity: 1; transform: scale(1); letter-spacing: .18em; }
-    }
-    .codigo-in { animation: codigo-in .65s var(--ease) both; }
-    @keyframes codigo-glow {
-      0%, 100% { text-shadow: 0 0 22px rgba(255, 147, 0, .28); }
-      50% { text-shadow: 0 0 38px rgba(255, 147, 0, .55); }
-    }
-
-    /* ── estados en vivo ──────────────────────────────────── */
-    .timer-urgent { color: #FF7A45; animation: blink 1s steps(2, start) infinite; }
-    @keyframes blink { to { opacity: .45; } }
-    @keyframes breathe { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
-    .breathe { animation: breathe 2.2s ease-in-out infinite; }
-    @keyframes destello {
-      from { box-shadow: 0 0 0 0 rgba(197, 37, 37, .55); }
-      to { box-shadow: 0 0 0 14px rgba(197, 37, 37, 0); }
-    }
-    .destello { animation: destello .9s ease-out 2; }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation: none !important; transition: none !important; }
-    }
-  </style>
+  <script src="/tema.js"></script>
+  <link rel="stylesheet" href="/estilo.css">
 </head>
-<body class="font-body text-ink antialiased min-h-screen">
+<body class="font-body text-ink antialiased min-h-dvh flex flex-col">
 
-  <main id="app" class="min-h-screen">
+  <!-- Cabecera persistente: identidad a la izquierda, sesión a la derecha.
+       Se oculta en el ingreso, donde la marca ya aparece en la tarjeta. -->
+  <header id="barra-superior" class="hidden sticky top-0 z-40 bg-canvas/90 backdrop-blur border-b border-line">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 md:h-16 flex items-center gap-3">
+      <svg viewBox="0 0 24 24" class="w-8 h-8 shrink-0" aria-hidden="true">
+        <path fill="#FF9300" d="M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z"/>
+        <path fill="#17122B" d="M12 7.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm0 1.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4z"/>
+      </svg>
+      <div class="min-w-0">
+        <p class="font-display font-bold text-[15px] leading-none">Evaluador Seguro</p>
+        <p class="t-eyebrow leading-none mt-1 hidden sm:block">Panel docente</p>
+      </div>
+      <nav id="miga" class="hidden md:flex items-center gap-1.5 ml-3 min-w-0" aria-label="Ubicación"></nav>
+      <button id="btn-logout" class="btn btn-ghost btn-sm ml-auto shrink-0">Salir</button>
+    </div>
+  </header>
+
+  <main id="app" class="flex-1">
 
     <!-- ============ LOGIN ============ -->
-    <section id="view-login" class="hidden max-w-md mx-auto px-4 py-16 md:py-24">
+    <section id="view-login" class="hidden max-w-md mx-auto px-4 sm:px-6 py-14 md:py-24">
       <header class="flex items-center gap-3 mb-8">
-        <svg viewBox="0 0 24 24" class="w-11 h-11 shrink-0" aria-hidden="true">
+        <svg viewBox="0 0 24 24" class="w-12 h-12 shrink-0" aria-hidden="true">
           <path fill="#FF9300" d="M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z"/>
           <path fill="#17122B" d="M12 7.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm0 1.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4z"/>
         </svg>
         <div>
-          <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">Panel docente</p>
-          <h1 class="font-display font-bold text-2xl text-ink">Evaluador Seguro</h1>
+          <p class="t-eyebrow text-accent-deep">Panel docente</p>
+          <h1 class="t-h1">Evaluador Seguro</h1>
         </div>
       </header>
-      <div class="bg-paper rounded-2xl border border-line p-7">
-        <h2 class="font-display font-semibold text-lg mb-1">Ingreso</h2>
-        <p class="text-sm text-muted mb-6">Escribí la clave docente para entrar.</p>
-        <form id="form-login" novalidate>
-          <label for="campo-clave" class="block font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Clave</label>
-          <input id="campo-clave" type="password" autocomplete="current-password"
-                 class="w-full px-3.5 py-3 rounded-xl border border-line bg-white focus:border-brand outline-none mb-4">
-          <p id="error-login" class="hidden text-sm font-medium text-alert bg-alert-soft border border-alert/20 rounded-lg px-3 py-2 mb-4" role="alert"></p>
-          <button type="submit" class="lift w-full bg-brand hover:bg-brand-deep text-white font-semibold py-3 rounded-xl">Entrar</button>
-        </form>
+
+      <div class="card card-lg rise">
+        <div class="card-body sm:p-7">
+          <h2 class="t-h2 mb-1.5">Ingreso</h2>
+          <p class="t-hint mb-6">Escribí la clave docente para entrar al panel.</p>
+          <form id="form-login" novalidate class="space-y-4">
+            <div class="field">
+              <label for="campo-clave" class="t-label">Clave</label>
+              <input id="campo-clave" type="password" autocomplete="current-password" placeholder="••••••••" class="input">
+            </div>
+            <p id="error-login" class="hidden chip chip-alert !flex w-full !rounded-xl px-3.5 py-2.5 text-sm" role="alert"></p>
+            <button type="submit" class="btn btn-primary btn-lg btn-block">Entrar</button>
+          </form>
+        </div>
       </div>
-      <p class="text-center text-xs text-muted mt-6">
+
+      <p class="text-center t-hint mt-6">
         ¿Sos alumno? <a href="/" class="underline hover:text-ink">Ingresá con tu código</a>
       </p>
     </section>
 
     <!-- ============ ESCRITORIO ============ -->
-    <section id="view-dash" class="hidden max-w-5xl mx-auto px-4 py-8 md:py-12">
-      <header class="flex flex-wrap items-center gap-3 mb-8">
-        <svg viewBox="0 0 24 24" class="w-10 h-10 shrink-0" aria-hidden="true">
-          <path fill="#FF9300" d="M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z"/>
-          <path fill="#17122B" d="M12 7.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm0 1.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4z"/>
-        </svg>
-        <div class="flex-1 min-w-0">
-          <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">Panel docente</p>
-          <h1 class="font-display font-bold text-xl md:text-2xl text-ink">Evaluador Seguro</h1>
+    <section id="view-dash" class="hidden max-w-6xl mx-auto px-4 sm:px-6 py-7 md:py-10">
+
+      <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+        <div class="min-w-0">
+          <h1 class="t-display mb-1">Tus exámenes</h1>
+          <p class="t-hint max-w-prose">Armá un examen una vez y tomalo todas las veces que quieras.</p>
         </div>
-        <button id="btn-logout" class="lift font-mono text-[11px] uppercase tracking-[0.16em] text-muted hover:text-ink border border-ink/15 hover:border-ink/40 rounded-lg px-3 py-2 transition-colors">
-          Salir
+        <button id="btn-nuevo-examen" class="btn btn-primary btn-md shrink-0">
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.6"
+               stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          Crear examen
         </button>
-      </header>
-
-      <div class="flex items-center gap-1 mb-6 bg-ink/5 p-1 rounded-xl w-fit">
-        <button data-tab="examenes" class="tab-bt font-medium text-sm px-4 py-2 rounded-lg transition-colors">Mis exámenes</button>
-        <button data-tab="tomas" class="tab-bt font-medium text-sm px-4 py-2 rounded-lg transition-colors">Tomas</button>
       </div>
 
-      <!-- examenes -->
-      <div id="tab-examenes">
-        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
-          <p class="text-muted text-sm">Armá un examen una vez y tomalo todas las veces que quieras.</p>
-          <button id="btn-nuevo-examen" class="lift bg-brand hover:bg-brand-deep text-white font-semibold text-sm px-4 py-2.5 rounded-xl transition-colors">
-            + Crear examen
-          </button>
-        </div>
-        <div id="lista-examenes" class="grid gap-4 md:grid-cols-2"></div>
+      <!-- resumen: da presencia a la sección y contexto de un vistazo -->
+      <div id="dash-resumen" class="space-y-4 mb-6"></div>
+
+      <div class="segmented mb-5" role="tablist" aria-label="Secciones del panel">
+        <button data-tab="examenes" role="tab" aria-selected="true" class="tab-bt">Mis exámenes</button>
+        <button data-tab="tomas" role="tab" aria-selected="false" class="tab-bt">Tomas</button>
       </div>
 
-      <!-- tomas -->
-      <div id="tab-tomas" class="hidden">
-        <p class="text-muted text-sm mb-5">Cada vez que iniciás un examen se crea una toma con su propio código y sus propios resultados.</p>
+      <div id="tab-examenes" role="tabpanel">
+        <div id="lista-examenes" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
+      </div>
+
+      <div id="tab-tomas" class="hidden" role="tabpanel">
+        <p class="t-hint mb-4 max-w-prose">
+          Cada vez que iniciás un examen se crea una toma, con su propio código y sus propios resultados.
+        </p>
         <div id="lista-tomas" class="space-y-3"></div>
       </div>
     </section>
 
     <!-- ============ EDITOR ============ -->
-    <section id="view-editor" class="hidden max-w-3xl mx-auto px-4 py-8 md:py-12">
+    <section id="view-editor" class="hidden max-w-3xl mx-auto px-4 sm:px-6 py-7 md:py-10">
+
       <div class="flex items-center gap-3 mb-6">
-        <button id="btn-volver-editor" class="lift font-mono text-[11px] uppercase tracking-[0.16em] text-muted hover:text-ink border border-ink/15 hover:border-ink/40 rounded-lg px-3 py-2 transition-colors">
-          ← Volver
+        <button id="btn-volver-editor" class="btn btn-ghost btn-icono shrink-0" aria-label="Volver al panel">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 19l-7-7 7-7"/></svg>
         </button>
-        <h2 id="editor-titulo-vista" class="font-display font-bold text-xl text-ink">Nuevo examen</h2>
+        <div class="min-w-0">
+          <h1 id="editor-titulo-vista" class="t-h1">Nuevo examen</h1>
+          <p class="t-hint">Los cambios se guardan cuando tocás «Guardar».</p>
+        </div>
       </div>
 
-      <div class="bg-paper rounded-2xl border border-line p-6 md:p-8 mb-5">
-        <div class="grid gap-4 md:grid-cols-2 mb-4">
-          <div class="md:col-span-2">
-            <label for="ed-title" class="block font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Título del examen</label>
-            <input id="ed-title" maxlength="120" placeholder="Evaluación integradora · Unidad 3"
-                   class="w-full px-3.5 py-3 rounded-xl border border-line bg-white focus:border-brand outline-none">
-          </div>
-          <div>
-            <label for="ed-subject" class="block font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Materia</label>
-            <input id="ed-subject" maxlength="60" placeholder="Matemática"
-                   class="w-full px-3.5 py-3 rounded-xl border border-line bg-white focus:border-brand outline-none">
-          </div>
-          <div>
-            <label for="ed-time" class="block font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Tiempo (minutos)</label>
-            <input id="ed-time" type="number" min="1" max="360" value="30"
-                   class="w-full px-3.5 py-3 rounded-xl border border-line bg-white focus:border-brand outline-none font-mono">
-          </div>
-          <div class="md:col-span-2">
-            <label for="ed-instructions" class="block font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Consigna general <span class="normal-case tracking-normal">(opcional)</span></label>
-            <textarea id="ed-instructions" rows="2" maxlength="800" placeholder="Leé con atención. No se permite el uso de calculadora."
-                      class="w-full px-3.5 py-3 rounded-xl border border-line bg-white focus:border-brand outline-none resize-y"></textarea>
+      <div class="card card-lg mb-5">
+        <div class="card-body sm:p-7">
+          <h2 class="t-h3 mb-4">Datos del examen</h2>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div class="field sm:col-span-2">
+              <label for="ed-title" class="t-label">Título</label>
+              <input id="ed-title" maxlength="120" placeholder="Evaluación integradora · Unidad 3" class="input">
+            </div>
+            <div class="field">
+              <label for="ed-subject" class="t-label">Materia</label>
+              <input id="ed-subject" maxlength="60" placeholder="Matemática" class="input">
+            </div>
+            <div class="field">
+              <label for="ed-time" class="t-label">Tiempo (minutos)</label>
+              <input id="ed-time" type="number" min="1" max="360" value="30" class="input t-num">
+            </div>
+            <div class="field sm:col-span-2">
+              <label for="ed-instructions" class="t-label">
+                Consigna general <span class="font-normal t-muted">(opcional)</span>
+              </label>
+              <textarea id="ed-instructions" rows="2" maxlength="800"
+                        placeholder="Leé con atención. No se permite el uso de calculadora."
+                        class="textarea"></textarea>
+              <p class="t-hint mt-1.5">Se muestra arriba de todo, antes de la primera pregunta.</p>
+            </div>
           </div>
         </div>
-        <div class="flex items-center justify-between gap-3 pt-4 border-t border-line text-sm">
-          <span class="text-muted">Puntaje total</span>
-          <span id="ed-puntaje" class="font-mono font-bold text-brand">0 pts</span>
+        <div class="card-foot flex items-center justify-between gap-3">
+          <span class="t-label">Puntaje total</span>
+          <span id="ed-puntaje" class="t-num font-bold text-brand">0 pts</span>
         </div>
+      </div>
+
+      <div class="flex items-baseline justify-between gap-3 mb-3">
+        <h2 class="t-h3">Preguntas</h2>
+        <span id="ed-conteo" class="t-hint t-num">0</span>
       </div>
 
       <div id="ed-preguntas" class="space-y-4 mb-5"></div>
 
-      <div class="bg-paper rounded-2xl border border-line p-5 mb-5">
-        <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-3">Agregar pregunta</p>
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
+      <div class="card p-4 sm:p-5 mb-5">
+        <p class="t-label mb-3">Agregar pregunta</p>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
           <button data-add="mc" class="add-bt">Opción múltiple</button>
           <button data-add="ms" class="add-bt">Varias correctas</button>
           <button data-add="tf" class="add-bt">Verdadero / Falso</button>
@@ -232,109 +168,131 @@
         </div>
       </div>
 
-      <p id="error-editor" class="hidden text-sm font-medium text-alert bg-alert-soft border border-alert/20 rounded-lg px-3 py-2 mb-4" role="alert"></p>
+      <p id="error-editor" class="hidden chip chip-alert !flex w-full !rounded-xl px-3.5 py-2.5 text-sm mb-4" role="alert"></p>
 
-      <div class="flex flex-col sm:flex-row gap-3">
-        <button id="btn-guardar-examen" class="lift flex-1 bg-brand hover:bg-brand-deep text-white font-semibold py-3.5 rounded-xl transition-colors">
-          Guardar examen
-        </button>
-        <button id="btn-cancelar-editor" class="lift sm:w-40 border border-ink/15 text-muted hover:text-ink hover:border-ink/40 font-semibold py-3.5 rounded-xl transition-colors">
-          Cancelar
-        </button>
+      <div class="barra-acciones">
+        <div class="flex flex-col-reverse sm:flex-row gap-3">
+          <button id="btn-cancelar-editor" class="btn btn-outline btn-lg sm:w-40">Cancelar</button>
+          <button id="btn-guardar-examen" class="btn btn-primary btn-lg sm:flex-1">Guardar examen</button>
+        </div>
       </div>
     </section>
 
     <!-- ============ TOMA (sala / vivo / resultados) ============ -->
-    <section id="view-run" class="hidden max-w-5xl mx-auto px-4 py-8 md:py-12">
-      <div class="flex items-center gap-3 mb-6">
-        <button id="btn-volver-run" class="lift font-mono text-[11px] uppercase tracking-[0.16em] text-muted hover:text-ink border border-ink/15 hover:border-ink/40 rounded-lg px-3 py-2 transition-colors">
-          ← Volver
+    <section id="view-run" class="hidden max-w-6xl mx-auto px-4 sm:px-6 py-7 md:py-10">
+
+      <div class="flex items-start gap-3 mb-5">
+        <button id="btn-volver-run" class="btn btn-ghost btn-icono shrink-0 mt-0.5" aria-label="Volver al panel">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 19l-7-7 7-7"/></svg>
         </button>
         <div class="min-w-0 flex-1">
-          <h2 id="run-titulo" class="font-display font-bold text-xl text-ink truncate">—</h2>
-          <p id="run-materia" class="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">—</p>
+          <div class="flex items-center gap-2.5 flex-wrap mb-1">
+            <h1 id="run-titulo" class="t-h1 min-w-0">—</h1>
+            <span id="run-estado" class="chip chip-neutro shrink-0">—</span>
+          </div>
+          <p id="run-materia" class="t-hint">—</p>
         </div>
-        <span id="run-estado" class="shrink-0 font-mono text-[11px] uppercase tracking-[0.16em] px-3 py-1.5 rounded-full">—</span>
       </div>
 
-      <!-- panel de código: visible en sala -->
-      <div id="run-panel-codigo" class="bg-paper rounded-2xl border border-line p-6 md:p-8 mb-5">
-        <div class="grid md:grid-cols-[auto,1fr] gap-6 items-center">
-          <div class="bg-canvas border border-line rounded-xl px-7 py-5 text-center">
-            <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Código del examen</p>
-            <p id="run-codigo" class="codigo-grande text-4xl md:text-5xl text-accent-deep">------</p>
+      <!-- panel de código: sólo mientras el examen no terminó -->
+      <div id="run-panel-codigo" class="card card-lg overflow-hidden mb-5">
+        <div class="grid md:grid-cols-[minmax(0,auto),minmax(0,1fr)]">
+          <div class="bg-canvas border-b md:border-b-0 md:border-r border-line px-6 py-6 text-center">
+            <p class="t-eyebrow mb-2">Código del examen</p>
+            <p id="run-codigo" class="codigo-grande">------</p>
           </div>
-          <div>
-            <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Link directo</p>
+          <div class="p-5 sm:p-6 flex flex-col justify-center">
+            <label for="run-link" class="t-label mb-2">Link directo para los alumnos</label>
             <div class="flex gap-2">
-              <input id="run-link" readonly class="flex-1 min-w-0 px-3 py-2.5 rounded-lg border border-line bg-line/30 font-mono text-xs">
-              <button id="btn-copiar-link" class="lift shrink-0 bg-ink hover:bg-panel text-paper font-medium text-sm px-4 rounded-lg">Copiar</button>
+              <input id="run-link" readonly class="input input-lectura t-num !text-xs min-w-0">
+              <button id="btn-copiar-link" class="btn btn-dark btn-md shrink-0">Copiar</button>
             </div>
-            <p class="text-xs text-muted mt-2">Pasales el link o el código. Van a entrar a la sala de espera.</p>
+            <p class="t-hint mt-2.5">Pasales el link o dictales el código. Entran a la sala de espera y esperan tu señal.</p>
           </div>
         </div>
       </div>
 
-      <!-- controles -->
-      <div id="run-controles" class="bg-paper border border-line rounded-2xl p-5 mb-5"></div>
+      <!-- controles: cambian según el estado de la toma -->
+      <div id="run-controles" class="card p-5 md:p-6 mb-6"></div>
 
-      <!-- alumnos -->
       <div class="flex flex-wrap items-baseline justify-between gap-3 mb-3">
-        <h3 id="run-subtitulo-alumnos" class="font-display font-semibold text-ink">Alumnos</h3>
-        <div class="flex items-center gap-3">
-          <button id="btn-informe" class="lift hidden font-mono text-[11px] uppercase tracking-[0.16em] text-muted hover:text-ink border border-ink/15 hover:border-ink/40 rounded-lg px-3 py-2 transition-colors">
-            Descargar informe
-          </button>
-          <p id="run-conteo" class="font-mono text-sm text-muted">0</p>
+        <div class="flex items-baseline gap-2.5 min-w-0">
+          <h2 id="run-subtitulo-alumnos" class="t-h2">Alumnos</h2>
+          <p id="run-conteo" class="t-hint t-num">0</p>
         </div>
+        <button id="btn-informe" class="btn btn-outline btn-sm hidden">
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/>
+          </svg>
+          Descargar informe
+        </button>
       </div>
+
       <div id="run-alumnos" class="space-y-2.5"></div>
-      <p id="run-vacio" class="hidden text-center text-muted text-sm py-10 border border-dashed border-ink/15 rounded-2xl">
-        Todavía no entró nadie. Compartí el código.
-      </p>
+
+      <div id="run-vacio" class="hidden vacio">
+        <span class="vacio-icono">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0112 0M17 11h4M19 9v4"/>
+          </svg>
+        </span>
+        <p class="t-h3">Todavía no entró nadie</p>
+        <p class="t-hint max-w-xs">Compartí el código o el link. Los vas a ver aparecer acá sin recargar.</p>
+      </div>
     </section>
 
   </main>
 
+  <footer class="border-t border-line mt-10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-5 flex flex-wrap items-center justify-between gap-3">
+      <p class="t-hint">Evaluador Seguro · panel docente</p>
+      <a href="/" class="t-hint underline hover:text-ink">Vista de alumno</a>
+    </div>
+  </footer>
+
   <!-- ============ MODAL: DETALLE DE ALUMNO ============ -->
-  <div id="modal-alumno" class="hidden fixed inset-0 z-[70] bg-ink/85 backdrop-blur-sm overflow-y-auto p-4 py-8">
-    <div class="modal-in bg-paper rounded-2xl max-w-3xl w-full mx-auto shadow-2xl overflow-hidden">
-      <header class="flex items-start justify-between gap-4 px-6 py-5 border-b border-line">
+  <div id="modal-alumno" class="hidden overlay z-[70] !items-stretch sm:!items-center !p-0 sm:!p-4 overflow-y-auto">
+    <div class="modal-in sheet max-w-3xl mx-auto my-0 sm:my-auto !max-h-none sm:!max-h-[calc(100dvh-2rem)] !rounded-none sm:!rounded-2xl">
+      <header class="flex items-start justify-between gap-4 px-5 sm:px-6 py-4 border-b border-line shrink-0">
         <div class="min-w-0">
-          <h2 id="det-nombre" class="font-display font-bold text-xl truncate">—</h2>
-          <p id="det-meta" class="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">—</p>
+          <h2 id="det-nombre" class="t-h2 truncate">—</h2>
+          <p id="det-meta" class="t-hint">—</p>
         </div>
-        <button id="btn-cerrar-alumno" class="shrink-0 text-muted hover:text-ink text-2xl leading-none px-2" aria-label="Cerrar">×</button>
+        <button id="btn-cerrar-alumno" class="btn btn-ghost btn-icono shrink-0" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
       </header>
-      <div id="det-cuerpo" class="px-6 py-6 space-y-6"></div>
-      <footer class="px-6 py-4 border-t border-line flex flex-wrap gap-3 justify-end">
-        <button id="btn-informe-alumno" class="lift border border-line hover:bg-line/40 font-semibold text-sm px-4 py-2.5 rounded-xl transition-colors">
-          Copiar informe
-        </button>
-        <button id="btn-cerrar-alumno-2" class="lift bg-ink hover:bg-panel text-paper font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors">
-          Cerrar
-        </button>
+      <div id="det-cuerpo" class="sheet-cuerpo px-5 sm:px-6 py-6 space-y-6 flex-1"></div>
+      <footer class="px-5 sm:px-6 py-4 border-t border-line flex flex-wrap gap-3 justify-end shrink-0 bg-canvas/60">
+        <button id="btn-informe-alumno" class="btn btn-outline btn-sm">Copiar informe</button>
+        <button id="btn-cerrar-alumno-2" class="btn btn-dark btn-sm">Cerrar</button>
       </footer>
     </div>
   </div>
 
   <!-- ============ MODAL: CONFIRMAR ============ -->
-  <div id="modal-confirm" class="hidden fixed inset-0 z-[75] bg-ink/85 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="modal-in bg-paper rounded-2xl max-w-md w-full p-7 shadow-2xl">
-      <h2 id="confirm-titulo" class="font-display font-bold text-xl mb-2">—</h2>
-      <p id="confirm-texto" class="text-sm text-muted mb-6">—</p>
-      <div class="flex flex-col sm:flex-row gap-3">
-        <button id="btn-confirm-no" class="lift flex-1 border border-line hover:bg-line/40 font-semibold py-3 rounded-xl transition-colors">Cancelar</button>
-        <button id="btn-confirm-si" class="lift flex-1 bg-alert hover:bg-alert/85 text-white font-semibold py-3 rounded-xl transition-colors">Confirmar</button>
+  <div id="modal-confirm" class="hidden overlay z-[75]">
+    <div class="modal-in sheet max-w-md">
+      <div class="p-6 sm:p-7">
+        <h2 id="confirm-titulo" class="t-h2 mb-2">—</h2>
+        <p id="confirm-texto" class="t-sm t-muted mb-6">—</p>
+        <div class="flex flex-col-reverse sm:flex-row gap-3">
+          <button id="btn-confirm-no" class="btn btn-outline btn-md sm:flex-1">Cancelar</button>
+          <button id="btn-confirm-si" class="btn btn-danger btn-md sm:flex-1">Confirmar</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <div id="toast" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-[90] bg-ink text-paper text-sm font-medium px-4 py-2.5 rounded-full shadow-2xl ring-1 ring-white/10"></div>
+  <div id="toast" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-[90] bg-ink text-white text-sm font-medium px-4 py-2.5 rounded-full shadow-pop max-w-[calc(100vw-2rem)] text-center"></div>
 
   <noscript>
     <div class="fixed inset-0 z-[95] bg-ink flex items-center justify-center p-6">
-      <p class="text-paper font-semibold text-center">Esta aplicación requiere JavaScript para funcionar.</p>
+      <p class="text-white font-semibold text-center">Esta aplicación requiere JavaScript para funcionar.</p>
     </div>
   </noscript>
 
@@ -408,9 +366,28 @@
       return datos;
     }
 
+    const RUTA = { dash: [], editor: ['Examen'], run: ['Toma'] };
     let vistaActual = null;
-    function show(view) {
+
+    /** Ubica al docente: la cabecera desaparece en el ingreso y la miga dice dónde está. */
+    function pintarUbicacion(view, detalle) {
+      $('barra-superior').classList.toggle('hidden', view === 'login');
+      const miga = $('miga');
+      miga.textContent = '';
+      const tramos = RUTA[view] || [];
+      if (!tramos.length && !detalle) return;
+      const inicio = el('button', 'btn btn-ghost btn-xs', 'Panel');
+      inicio.addEventListener('click', abrirEscritorio);
+      miga.appendChild(inicio);
+      [...tramos, detalle].filter(Boolean).forEach((t, i, arr) => {
+        miga.appendChild(el('span', 'miga-sep', '/'));
+        miga.appendChild(el('span', 't-xs truncate max-w-[16rem]' + (i === arr.length - 1 ? ' miga-actual' : ' t-muted'), t));
+      });
+    }
+
+    function show(view, detalle) {
       ['login', 'dash', 'editor', 'run'].forEach((v) => $('view-' + v).classList.toggle('hidden', v !== view));
+      pintarUbicacion(view, detalle);
       if (view !== vistaActual) {
         vistaActual = view;
         reanimar($('view-' + view), 'view-in');
@@ -440,6 +417,7 @@
     // ── estado ──────────────────────────────────────────────────────
     const S = {
       examenes: [],
+      tomas: [],
       editando: null,      // { id|null, questions: [...] }
       run: null,           // foto de la toma abierta
       fuente: null,        // EventSource
@@ -489,14 +467,88 @@
       cerrarStream();
       show('dash');
       pintarTabs();
+      esqueletos();
       await Promise.all([cargarExamenes(), cargarTomas()]);
+      pintarResumen();
+    }
+
+    /** Marcas de carga: la pantalla no aparece vacía mientras viajan los datos. */
+    function esqueletos() {
+      $('dash-resumen').textContent = '';
+      const barra = el('div', 'card px-5 py-4 md:px-6 md:py-5 stat-grid');
+      for (let i = 0; i < 4; i++) {
+        const bloque = el('div', 'stat');
+        bloque.append(el('div', 'skel h-2.5 w-16 mb-2'), el('div', 'skel h-6 w-12'));
+        barra.appendChild(bloque);
+      }
+      $('dash-resumen').appendChild(barra);
+
+      const cont = $('lista-examenes');
+      cont.textContent = '';
+      for (let i = 0; i < 3; i++) {
+        const c = el('div', 'card overflow-hidden');
+        const cuerpo = el('div', 'p-5 space-y-3');
+        cuerpo.append(
+          el('div', 'skel h-2.5 w-20'),
+          el('div', 'skel h-5 w-3/4'),
+          el('div', 'skel h-3 w-1/2'),
+          el('div', 'skel h-6 w-2/3')
+        );
+        const pie = el('div', 'card-foot flex gap-2');
+        pie.append(el('div', 'skel h-8 w-24'), el('div', 'skel h-8 w-16'));
+        c.append(cuerpo, pie);
+        cont.appendChild(c);
+      }
+    }
+
+    /** Estado general del curso, y un atajo si quedó una toma abierta. */
+    function pintarResumen() {
+      const cont = $('dash-resumen');
+      cont.textContent = '';
+      const tomas = S.tomas || [];
+
+      // Retomar una toma abierta sin tener que buscarla en la pestaña de tomas.
+      const activa = tomas.find((r) => r.status === 'running') || tomas.find((r) => r.status === 'lobby');
+      if (activa) {
+        const aviso = el('button', 'card card-link w-full text-left px-5 py-4 flex flex-wrap items-center gap-x-4 gap-y-3 border-l-4 !border-l-ok');
+        aviso.addEventListener('click', () => abrirToma(activa.id));
+        const izq = el('div', 'min-w-0 flex-1');
+        izq.append(
+          el('p', 't-h3 truncate', activa.title),
+          el('p', 't-hint', activa.status === 'running'
+            ? activa.alumnos + ' rindiendo ahora mismo'
+            : activa.alumnos + (activa.alumnos === 1 ? ' alumno esperando en la sala' : ' alumnos esperando en la sala'))
+        );
+        aviso.append(chipEstado(activa.status), izq,
+          el('span', 'codigo-grande !text-lg shrink-0', activa.code),
+          el('span', 'btn btn-primary btn-sm shrink-0 pointer-events-none', 'Abrir'));
+        cont.appendChild(aviso);
+      }
+
+      const cerradas = tomas.filter((r) => r.status === 'ended');
+      const evaluados = cerradas.reduce((a, r) => a + r.alumnos, 0);
+      const incidentes = tomas.reduce((a, r) => a + r.incidentes, 0);
+
+      const barra = el('div', 'card px-5 py-4 md:px-6 md:py-5 stat-grid');
+      const dato = (k, v, cls) => {
+        const d = el('div', 'stat');
+        d.append(el('p', 'stat-k', k), el('p', 'stat-v ' + (cls || ''), v));
+        return d;
+      };
+      barra.append(
+        dato('Exámenes', String(S.examenes.length)),
+        dato('Tomas', String(tomas.length)),
+        dato('Alumnos evaluados', String(evaluados)),
+        dato('Incidentes', String(incidentes), incidentes ? 'text-alert' : '')
+      );
+      cont.appendChild(barra);
     }
 
     function pintarTabs() {
       document.querySelectorAll('.tab-bt').forEach((b) => {
         const activa = b.dataset.tab === S.tab;
-        b.className = 'tab-bt lift font-medium text-sm px-4 py-2 rounded-lg ' +
-          (activa ? 'bg-paper text-ink shadow' : 'text-muted hover:text-ink');
+        b.className = 'tab-bt';
+        b.setAttribute('aria-selected', String(activa));
       });
       $('tab-examenes').classList.toggle('hidden', S.tab !== 'examenes');
       $('tab-tomas').classList.toggle('hidden', S.tab !== 'tomas');
@@ -512,42 +564,58 @@
       cont.textContent = '';
 
       if (!S.examenes.length) {
-        const vacio = el('div', 'md:col-span-2 text-center py-14 border border-dashed border-ink/15 rounded-2xl');
+        const vacio = el('div', 'sm:col-span-2 xl:col-span-3 vacio');
         vacio.append(
-          el('p', 'text-ink font-medium mb-1', 'Todavía no creaste ningún examen.'),
-          el('p', 'text-muted text-sm', 'Tocá «Crear examen» para armar el primero.')
+          el('p', 't-h3', 'Todavía no creaste ningún examen'),
+          el('p', 't-hint max-w-xs', 'Tocá «Crear examen» para armar el primero. Después lo vas a poder tomar todas las veces que quieras.')
         );
         cont.appendChild(vacio);
         return;
       }
 
       S.examenes.forEach((ex, i) => {
-        const card = el('article', 'card rise bg-paper rounded-2xl border border-line overflow-hidden flex flex-col');
+        const card = el('article', 'card rise overflow-hidden flex flex-col');
         card.style.setProperty('--i', i);
-        const cuerpo = el('div', 'p-5 flex-1');
-        if (ex.subject) cuerpo.appendChild(el('p', 'font-mono text-[10px] uppercase tracking-[0.18em] text-accent-deep mb-1', ex.subject));
+        const cuerpo = el('div', 'p-5 flex-1 min-w-0');
+        if (ex.subject) cuerpo.appendChild(el('p', 't-eyebrow text-accent-deep mb-1.5', ex.subject));
         cuerpo.appendChild(el('h3', 'font-display font-bold text-lg leading-snug mb-3', ex.title));
 
-        const datos2 = el('div', 'flex flex-wrap gap-x-4 gap-y-1 font-mono text-[11px] text-muted');
+        // Datos duros primero, y debajo de qué está hecho el examen: sin abrirlo
+        // ya se sabe si es todo opción múltiple o si tiene desarrollo para corregir.
+        const datos2 = el('div', 'flex flex-wrap items-center gap-x-4 gap-y-1 t-num text-xs text-muted mb-3');
         datos2.append(
           el('span', null, ex.questions.length + (ex.questions.length === 1 ? ' pregunta' : ' preguntas')),
           el('span', null, dec(ex.puntajeTotal) + ' pts'),
-          el('span', null, Math.round(ex.timeLimit / 60) + ' min'),
-          el('span', null, ex.tomas + (ex.tomas === 1 ? ' toma' : ' tomas'))
+          el('span', null, Math.round(ex.timeLimit / 60) + ' min')
         );
         cuerpo.appendChild(datos2);
 
-        const pie = el('div', 'flex flex-wrap gap-2 px-5 py-4 border-t border-line bg-line/20');
-        const iniciar = el('button', 'lift bg-brand hover:bg-brand-deep text-white font-semibold text-sm px-4 py-2 rounded-lg', 'Iniciar toma');
+        const porTipo = new Map();
+        ex.questions.forEach((q) => porTipo.set(q.type, (porTipo.get(q.type) || 0) + 1));
+        const tipos = el('div', 'flex flex-wrap gap-1.5');
+        [...porTipo].forEach(([tipo, n]) => {
+          tipos.appendChild(el('span', 'chip ' + (tipo === 'long' ? 'chip-plum' : 'chip-neutro'),
+            n + ' · ' + NOMBRE_TIPO[tipo]));
+        });
+        cuerpo.appendChild(tipos);
+
+        if (ex.tomas) {
+          cuerpo.appendChild(el('p', 't-hint mt-3',
+            ex.tomas + (ex.tomas === 1 ? ' toma tomada' : ' tomas tomadas')
+            + (ex.ultimaToma ? ' · última el ' + fecha(ex.ultimaToma) : '')));
+        }
+
+        const pie = el('div', 'card-foot flex flex-wrap items-center gap-2');
+        const iniciar = el('button', 'btn btn-primary btn-sm', 'Iniciar toma');
         iniciar.addEventListener('click', () => nuevaToma(ex));
-        const editar = el('button', 'lift border border-line hover:bg-line/60 font-medium text-sm px-3 py-2 rounded-lg', 'Editar');
+        const editar = el('button', 'btn btn-outline btn-sm', 'Editar');
         editar.addEventListener('click', () => abrirEditor(ex));
-        const duplicar = el('button', 'lift border border-line hover:bg-line/60 font-medium text-sm px-3 py-2 rounded-lg', 'Duplicar');
+        const duplicar = el('button', 'btn btn-outline btn-sm', 'Duplicar');
         duplicar.addEventListener('click', async () => {
           try { await api('/api/exams/' + ex.id + '/duplicate', { method: 'POST' }); await cargarExamenes(); toast('Examen duplicado'); }
           catch (e2) { toast(e2.message); }
         });
-        const borrar = el('button', 'ml-auto text-alert hover:bg-alert-soft font-medium text-sm px-3 py-2 rounded-lg transition-colors', 'Eliminar');
+        const borrar = el('button', 'btn btn-ghost-danger btn-sm ml-auto', 'Eliminar');
         borrar.addEventListener('click', async () => {
           const ok = await confirmar('¿Eliminar el examen?', `«${ex.title}» va a desaparecer de tu lista. Las tomas ya rendidas y sus resultados se conservan.`, 'Eliminar');
           if (!ok) return;
@@ -563,30 +631,31 @@
 
     async function cargarTomas() {
       const datos = await api('/api/runs');
+      S.tomas = datos.runs;
       const cont = $('lista-tomas');
       cont.textContent = '';
 
       if (!datos.runs.length) {
-        cont.appendChild(el('p', 'text-center text-muted text-sm py-14 border border-dashed border-ink/15 rounded-2xl',
+        cont.appendChild(el('p', 'vacio t-hint',
           'Cuando inicies un examen, la toma aparece acá.'));
         return;
       }
 
       datos.runs.forEach((r, i) => {
-        const fila = el('button', 'card rise w-full text-left bg-paper rounded-xl border border-line px-5 py-4 flex flex-wrap items-center gap-4');
+        const fila = el('button', 'card card-link rise w-full text-left px-4 sm:px-5 py-4 flex flex-wrap items-center gap-x-4 gap-y-2.5');
         fila.style.setProperty('--i', i);
         fila.addEventListener('click', () => abrirToma(r.id));
 
-        fila.appendChild(el('span', 'codigo-grande text-xl text-accent-deep shrink-0', r.code));
+        fila.appendChild(el('span', 'codigo-grande !text-xl shrink-0', r.code));
 
         const medio = el('div', 'min-w-0 flex-1');
         medio.append(
           el('p', 'font-semibold truncate', r.title),
-          el('p', 'font-mono text-[11px] text-muted', fecha(r.createdAt))
+          el('p', 't-hint t-num', fecha(r.createdAt))
         );
         fila.appendChild(medio);
 
-        const nums = el('div', 'flex items-center gap-4 font-mono text-[11px] text-muted shrink-0');
+        const nums = el('div', 'flex items-center gap-4 t-num text-xs text-muted shrink-0');
         nums.append(
           el('span', null, r.alumnos + ' alum.'),
           el('span', null, r.entregados + ' entreg.'),
@@ -600,12 +669,12 @@
 
     function chipEstado(status) {
       const mapa = {
-        lobby: ['Sala de espera', 'bg-accent-soft text-accent-deep'],
-        running: ['En curso', 'bg-ok-soft text-ok'],
-        ended: ['Cerrada', 'bg-line text-muted'],
+        lobby: ['Sala de espera', 'chip-accent chip-punto'],
+        running: ['En curso', 'chip-ok chip-punto'],
+        ended: ['Cerrada', 'chip-neutro'],
       };
-      const [texto, cls] = mapa[status] || ['—', 'bg-line text-muted'];
-      return el('span', 'shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] px-2.5 py-1 rounded-full ' + cls, texto);
+      const [texto, cls] = mapa[status] || ['—', 'chip-neutro'];
+      return el('span', 'chip shrink-0 ' + cls, texto);
     }
 
     $('btn-nuevo-examen').addEventListener('click', () => abrirEditor(null));
@@ -636,11 +705,11 @@
       $('ed-time').value = examen ? Math.round(examen.timeLimit / 60) : 30;
       $('error-editor').classList.add('hidden');
       renderEditor();
-      show('editor');
+      show('editor', examen ? examen.title : 'Nuevo');
     }
 
     document.querySelectorAll('[data-add]').forEach((b) => {
-      b.className = 'add-bt border border-line hover:border-brand hover:bg-brand-soft font-medium text-sm px-3 py-2.5 rounded-xl transition-colors';
+      b.className = 'add-bt';
       b.addEventListener('click', () => {
         S.editando.questions.push(nuevaPregunta(b.dataset.add));
         editorAnimar = S.editando.questions.length - 1;
@@ -657,17 +726,17 @@
 
       qs.forEach((q, i) => {
         const anima = editorAnimar === -2 ? ' rise' : editorAnimar === i ? ' pop' : '';
-        const card = el('article', 'bg-paper rounded-2xl border border-line overflow-hidden' + anima);
+        const card = el('article', 'card overflow-hidden' + anima);
         if (editorAnimar === -2) card.style.setProperty('--i', i);
 
         // cabecera
-        const head = el('header', 'flex flex-wrap items-center gap-2 px-5 py-3 border-b border-line bg-line/20');
-        head.appendChild(el('span', 'font-mono text-[11px] font-bold text-brand bg-brand-soft px-2 py-1 rounded', two(i + 1)));
-        head.appendChild(el('span', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted', NOMBRE_TIPO[q.type]));
+        const head = el('header', 'card-head !py-2.5 bg-canvas/60');
+        head.appendChild(el('span', 'ordinal', two(i + 1)));
+        head.appendChild(el('span', 'chip chip-neutro', NOMBRE_TIPO[q.type]));
 
         const acciones = el('div', 'ml-auto flex items-center gap-1');
         const mkBt = (txt, aria, fn, extra) => {
-          const b = el('button', 'w-8 h-8 rounded-lg border border-line hover:bg-line/60 text-muted hover:text-ink transition-colors text-sm ' + (extra || ''), txt);
+          const b = el('button', 'btn btn-outline btn-icono ' + (extra || ''), txt);
           b.setAttribute('aria-label', aria);
           b.addEventListener('click', fn);
           return b;
@@ -681,9 +750,9 @@
         head.appendChild(acciones);
 
         // cuerpo
-        const cuerpo = el('div', 'p-5 space-y-4');
+        const cuerpo = el('div', 'card-body space-y-4');
 
-        const enunciado = el('textarea', 'w-full px-3.5 py-3 rounded-xl border border-line bg-white focus:border-brand outline-none resize-y');
+        const enunciado = el('textarea', 'textarea');
         enunciado.rows = 2;
         enunciado.maxLength = 600;
         enunciado.placeholder = 'Escribí el enunciado de la pregunta';
@@ -694,9 +763,9 @@
         cuerpo.appendChild(camposDe(q));
 
         // puntaje
-        const fila = el('div', 'flex items-center gap-3 pt-3 border-t border-line');
-        fila.appendChild(el('label', 'font-mono text-[11px] uppercase tracking-[0.18em] text-muted', 'Puntaje'));
-        const pts = el('input', 'w-24 px-3 py-2 rounded-lg border border-line bg-white focus:border-brand outline-none font-mono text-sm');
+        const fila = el('div', 'flex items-center gap-3 pt-3.5 border-t border-line');
+        fila.appendChild(el('label', 't-label', 'Puntaje'));
+        const pts = el('input', 'input t-num !w-24 !py-2');
         pts.type = 'number';
         pts.min = '0.5';
         pts.step = '0.5';
@@ -710,10 +779,11 @@
       });
 
       if (!qs.length) {
-        cont.appendChild(el('p', 'text-center text-muted text-sm py-10 border border-dashed border-ink/15 rounded-2xl',
+        cont.appendChild(el('p', 'vacio t-hint',
           'Agregá la primera pregunta con los botones de abajo.'));
       }
       editorAnimar = -1;
+      $('ed-conteo').textContent = qs.length + (qs.length === 1 ? ' pregunta' : ' preguntas');
       actualizarPuntaje();
     }
 
@@ -727,38 +797,37 @@
       if (q.type === 'tf') {
         const wrap = el('div', 'flex gap-2');
         [['Verdadero', true], ['Falso', false]].forEach(([txt, val]) => {
-          const label = el('label', 'flex-1 flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border cursor-pointer transition-colors ' +
-            (q.correct === val ? 'border-ok bg-ok-soft' : 'border-line hover:border-brand'));
+          const label = el('label', 'opcion opcion-clave flex-1');
           const input = el('input');
           input.type = 'radio';
           input.name = 'tf-' + Math.random().toString(36).slice(2);
-          input.className = 'w-4 h-4 accent-[#209B8A]';
+          input.className = '';
           input.checked = q.correct === val;
           input.addEventListener('change', () => { q.correct = val; renderEditor(); });
-          label.append(input, el('span', 'text-sm font-medium', txt));
+          label.append(input, el('span', 'opcion-texto font-medium', txt));
           wrap.appendChild(label);
         });
         const nota = el('div');
-        nota.append(wrap, el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted mt-2', 'Marcá la respuesta correcta'));
+        nota.append(wrap, el('p', 't-hint mt-2', 'Marcá cuál es la respuesta correcta.'));
         return nota;
       }
 
       // Respuesta corta: lista de respuestas aceptadas
       if (q.type === 'sa') {
         const wrap = el('div');
-        wrap.appendChild(el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted mb-2',
-          'Respuestas aceptadas · no distingue mayúsculas ni tildes'));
+        wrap.appendChild(el('p', 't-label mb-2', 'Respuestas aceptadas'));
+        wrap.appendChild(el('p', 't-hint mb-2.5', 'No distingue mayúsculas ni tildes. Sumá las variantes que darías por buenas.'));
         const lista = el('div', 'space-y-2');
         q.accepted.forEach((a, k) => {
           const fila = el('div', 'flex gap-2');
-          const input = el('input', 'flex-1 px-3.5 py-2.5 rounded-xl border border-line bg-white focus:border-brand outline-none text-sm');
+          const input = el('input', 'input !py-2.5 flex-1 min-w-0');
           input.maxLength = 120;
           input.value = a;
           input.placeholder = 'fotosíntesis';
           input.addEventListener('input', () => { q.accepted[k] = input.value; });
           fila.appendChild(input);
           if (q.accepted.length > 1) {
-            const quitar = el('button', 'shrink-0 w-10 rounded-xl border border-line hover:bg-alert-soft text-alert transition-colors', '×');
+            const quitar = el('button', 'btn btn-outline btn-icono shrink-0 !text-alert', '×');
             quitar.setAttribute('aria-label', 'Quitar respuesta aceptada');
             quitar.addEventListener('click', () => { q.accepted.splice(k, 1); renderEditor(); });
             fila.appendChild(quitar);
@@ -766,7 +835,7 @@
           lista.appendChild(fila);
         });
         wrap.appendChild(lista);
-        const sumar = el('button', 'mt-2 font-medium text-sm text-brand hover:underline', '+ Agregar otra variante aceptada');
+        const sumar = el('button', 'btn btn-ghost btn-sm mt-2 !text-brand', '+ Agregar otra variante aceptada');
         sumar.addEventListener('click', () => { q.accepted.push(''); renderEditor(); });
         wrap.appendChild(sumar);
         return wrap;
@@ -774,26 +843,25 @@
 
       // Desarrollo
       if (q.type === 'long') {
-        return el('p', 'text-sm text-muted bg-line/30 border border-line rounded-xl px-3.5 py-3',
+        return el('p', 'panel-inset t-sm t-muted px-3.5 py-3',
           'Las preguntas de desarrollo no se autocorrigen: las vas a corregir vos, una por una, en la pantalla de resultados.');
       }
 
       // Opción múltiple (una o varias correctas)
       const wrap = el('div');
-      wrap.appendChild(el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted mb-2',
-        q.type === 'ms' ? 'Opciones · marcá todas las correctas' : 'Opciones · marcá la correcta'));
+      wrap.appendChild(el('p', 't-label mb-2', 'Opciones'));
+      wrap.appendChild(el('p', 't-hint mb-2.5', q.type === 'ms' ? 'Marcá todas las que sean correctas.' : 'Marcá cuál es la correcta.'));
       const grupo = 'op-' + Math.random().toString(36).slice(2);
       const lista = el('div', 'space-y-2');
 
       q.options.forEach((op, k) => {
         const esCorrecta = q.type === 'ms' ? q.correct.includes(k) : q.correct === k;
-        const fila = el('div', 'flex gap-2 items-center px-2 py-1.5 rounded-xl border transition-colors ' +
-          (esCorrecta ? 'border-ok bg-ok-soft' : 'border-line'));
+        const fila = el('div', 'opcion opcion-clave !px-2.5 !py-1.5');
 
         const marca = el('input');
         marca.type = q.type === 'ms' ? 'checkbox' : 'radio';
         marca.name = grupo;
-        marca.className = 'w-4 h-4 accent-[#209B8A] shrink-0 ml-1.5';
+        marca.className = 'shrink-0';
         marca.checked = esCorrecta;
         marca.setAttribute('aria-label', 'Marcar la opción ' + (k + 1) + ' como correcta');
         marca.addEventListener('change', () => {
@@ -807,7 +875,7 @@
           renderEditor();
         });
 
-        const input = el('input', 'flex-1 min-w-0 px-2.5 py-2 rounded-lg border border-transparent bg-transparent focus:bg-white focus:border-line outline-none text-sm');
+        const input = el('input', 'flex-1 min-w-0 px-2 py-1.5 rounded-lg border border-transparent bg-transparent text-sm outline-none focus:bg-paper focus:border-line2');
         input.maxLength = 240;
         input.value = op;
         input.placeholder = 'Opción ' + (k + 1);
@@ -816,7 +884,7 @@
         fila.append(marca, input);
 
         if (q.options.length > 2) {
-          const quitar = el('button', 'shrink-0 w-8 h-8 rounded-lg hover:bg-alert-soft text-alert transition-colors', '×');
+          const quitar = el('button', 'btn btn-ghost-danger btn-icono shrink-0', '×');
           quitar.setAttribute('aria-label', 'Quitar opción');
           quitar.addEventListener('click', () => {
             q.options.splice(k, 1);
@@ -832,7 +900,7 @@
 
       wrap.appendChild(lista);
       if (q.options.length < 8) {
-        const sumar = el('button', 'mt-2 font-medium text-sm text-brand hover:underline', '+ Agregar opción');
+        const sumar = el('button', 'btn btn-ghost btn-sm mt-2 !text-brand', '+ Agregar opción');
         sumar.addEventListener('click', () => { q.options.push(''); renderEditor(); });
         wrap.appendChild(sumar);
       }
@@ -892,7 +960,7 @@
       try {
         const foto = await api('/api/runs/' + runId);
         aplicarFoto(foto);
-        show('run');
+        show('run', foto.run.title);
         const fuente = new EventSource('/api/runs/' + runId + '/stream');
         S.fuente = fuente;
         fuente.addEventListener('estado', (ev) => {
@@ -961,10 +1029,10 @@
       const { run, alumnos } = S.run;
 
       if (run.status === 'lobby') {
-        const fila = el('div', 'flex flex-wrap items-end gap-4');
+        const fila = el('div', 'flex flex-wrap items-end gap-4 gap-y-5');
         const campo = el('div');
-        campo.appendChild(el('label', 'block font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2', 'Tiempo máximo (minutos)'));
-        const input = el('input', 'w-28 px-3 py-2.5 rounded-xl border border-line bg-white text-ink font-mono focus:border-brand outline-none');
+        campo.appendChild(el('label', 't-label block mb-1.5', 'Tiempo máximo (minutos)'));
+        const input = el('input', 'input t-num !w-28');
         input.type = 'number';
         input.min = '1';
         input.max = '360';
@@ -973,14 +1041,14 @@
         campo.appendChild(input);
         fila.appendChild(campo);
 
-        const info = el('div', 'flex-1 min-w-[12rem]');
+        const info = el('div', 'flex-1 min-w-[12rem] pb-0.5');
         info.append(
-          el('p', 'text-ink text-sm font-medium', alumnos.length ? alumnos.length + (alumnos.length === 1 ? ' alumno esperando' : ' alumnos esperando') : 'Todavía no entró nadie'),
-          el('p', 'text-muted text-xs', 'Cuando inicies, el reloj arranca para todos a la vez.')
+          el('p', 't-h3', alumnos.length ? alumnos.length + (alumnos.length === 1 ? ' alumno esperando' : ' alumnos esperando') : 'Todavía no entró nadie'),
+          el('p', 't-hint', 'Cuando inicies, el reloj arranca para todos a la vez.')
         );
         fila.appendChild(info);
 
-        const iniciar = el('button', 'lift bg-ok hover:bg-ok-deep text-white font-semibold px-6 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed', 'Iniciar examen');
+        const iniciar = el('button', 'btn btn-ok btn-lg', 'Iniciar examen');
         iniciar.disabled = alumnos.length === 0;
         iniciar.addEventListener('click', async () => {
           const minutos = Number($('run-minutos').value);
@@ -993,7 +1061,7 @@
         });
         fila.appendChild(iniciar);
 
-        const cancelar = el('button', 'text-muted hover:text-alert font-medium text-sm px-3 py-3 transition-colors', 'Descartar toma');
+        const cancelar = el('button', 'btn btn-ghost-danger btn-sm', 'Descartar toma');
         cancelar.addEventListener('click', async () => {
           const ok = await confirmar('¿Descartar esta toma?', 'Se anula el código y los alumnos que ya entraron quedan afuera.', 'Descartar');
           if (!ok) return;
@@ -1007,17 +1075,17 @@
       }
 
       if (run.status === 'running') {
-        const fila = el('div', 'flex flex-wrap items-center gap-4');
+        const fila = el('div', 'flex flex-wrap items-center gap-4 gap-y-5');
         const reloj = el('div');
-        reloj.appendChild(el('p', 'font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-1', 'Tiempo restante'));
-        const t = el('p', 'font-mono text-3xl font-bold text-ink tabular-nums', '--:--');
+        reloj.appendChild(el('p', 'stat-k mb-0.5', 'Tiempo restante'));
+        const t = el('p', 'reloj text-3xl md:text-4xl', '--:--');
         t.id = 'run-reloj';
         reloj.appendChild(t);
         fila.appendChild(reloj);
 
         const ajustes = el('div', 'flex items-center gap-2');
         [['−5 min', -5], ['+5 min', 5], ['+10 min', 10]].forEach(([txt, min]) => {
-          const b = el('button', 'border border-line hover:border-ink/40 text-muted hover:text-ink font-mono text-xs px-3 py-2 rounded-lg transition-colors', txt);
+          const b = el('button', 'btn btn-outline btn-sm t-num', txt);
           b.addEventListener('click', async () => {
             try { await api('/api/runs/' + run.id + '/extend', { method: 'POST', body: { minutes: min } }); toast('Tiempo ajustado'); }
             catch (ex) { toast(ex.message); }
@@ -1029,12 +1097,12 @@
         const entregados = alumnos.filter((a) => a.status === 'submitted').length;
         const resumen = el('div', 'flex-1 min-w-[10rem]');
         resumen.append(
-          el('p', 'text-ink text-sm font-medium', entregados + ' de ' + alumnos.length + ' ya entregaron'),
-          el('p', 'text-muted text-xs', 'El examen se cierra solo cuando se acaba el tiempo.')
+          el('p', 't-h3', entregados + ' de ' + alumnos.length + ' ya entregaron'),
+          el('p', 't-hint', 'El examen se cierra solo cuando se acaba el tiempo.')
         );
         fila.appendChild(resumen);
 
-        const terminar = el('button', 'lift bg-alert hover:bg-alert-deep text-white font-semibold px-5 py-3 rounded-xl', 'Finalizar ahora');
+        const terminar = el('button', 'btn btn-danger btn-md', 'Finalizar ahora');
         terminar.addEventListener('click', async () => {
           const pendientes = alumnos.length - entregados;
           const ok = await confirmar('¿Finalizar el examen?',
@@ -1060,25 +1128,25 @@
       const incidentes = alumnos.reduce((a, b) => a + b.incidents.length, 0);
       const pendientes = alumnos.filter((a) => a.correccion.provisional).length;
 
-      const grid = el('div', 'grid grid-cols-2 md:grid-cols-4 gap-4');
+      const grid = el('div', 'stat-grid');
       const dato = (etiqueta, valor, cls) => {
         const d = el('div');
         d.append(
-          el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted mb-1', etiqueta),
-          el('p', 'font-mono text-2xl font-bold ' + (cls || 'text-ink'), valor)
+          el('p', 'stat-k', etiqueta),
+          el('p', 'stat-v ' + (cls || ''), valor)
         );
         return d;
       };
       grid.append(
         dato('Promedio', dec(promedio)),
-        dato('Aprobados', aprobados + '/' + alumnos.length, aprobados === alumnos.length ? 'text-ok' : 'text-ink'),
+        dato('Aprobados', aprobados + '/' + alumnos.length, aprobados === alumnos.length ? 'text-ok-ink' : 'text-ink'),
         dato('Incidentes', String(incidentes), incidentes ? 'text-alert' : 'text-ink'),
         dato('Sin corregir', String(pendientes), pendientes ? 'text-plum' : 'text-ink')
       );
       cont.appendChild(grid);
 
       if (pendientes) {
-        cont.appendChild(el('p', 'text-plum text-sm mt-4 pt-4 border-t border-line',
+        cont.appendChild(el('p', 't-sm text-plum mt-4 pt-4 border-t border-line',
           'Hay respuestas de desarrollo sin corregir. Las notas con el rótulo «provisoria» todavía no son definitivas.'));
       }
     }
@@ -1121,17 +1189,20 @@
         incidentesVistos.set(a.id, a.incidents.length);
         const saltoIncidente = incidentesPrevios !== undefined && a.incidents.length > incidentesPrevios;
 
-        const fila = el('div', 'bg-paper rounded-xl border border-line px-4 py-3.5 flex flex-wrap items-center gap-3'
+        // En teléfono la fila se apila (identidad arriba, métricas abajo); en
+        // escritorio es una tabla. Lo resuelve la grilla de .fila-alumno.
+        const fila = el('div', 'card fila-alumno'
           + (reciente ? ' pop' : '') + (saltoIncidente ? ' destello' : ''));
 
-        const punto = el('span', 'w-2.5 h-2.5 rounded-full shrink-0 ' +
+        const punto = el('span', 'fa-punto w-2.5 h-2.5 rounded-full ' +
           (a.status === 'submitted' ? 'bg-muted' : a.status === 'active' ? 'bg-ok' : 'bg-accent breathe'));
+        punto.title = a.status === 'submitted' ? 'Entregado' : a.status === 'active' ? 'Respondiendo' : 'Esperando';
         fila.appendChild(punto);
 
-        const ident = el('div', 'min-w-0 flex-1');
+        const ident = el('div', 'fa-ident min-w-0');
         const nombre = el('p', 'font-semibold truncate', a.name);
         ident.appendChild(nombre);
-        const sub = el('p', 'font-mono text-[11px] text-muted truncate');
+        const sub = el('p', 't-hint truncate');
         const partes = [];
         if (a.course) partes.push(a.course);
         if (run.status === 'lobby') partes.push('entró ' + hms(a.joinedAt));
@@ -1142,39 +1213,41 @@
         ident.appendChild(sub);
         fila.appendChild(ident);
 
+        const metricas = el('div', 'fa-metricas');
         if (run.status !== 'lobby') {
-          const prog = el('div', 'shrink-0 text-right');
+          const prog = el('div', 'stat md:text-right');
           prog.append(
-            el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted', 'Respondió'),
-            el('p', 'font-mono text-sm font-bold', a.correccion.respondidas + '/' + total)
+            el('p', 'stat-k', 'Respondió'),
+            el('p', 'stat-v stat-v-sm', a.correccion.respondidas + '/' + total)
           );
-          fila.appendChild(prog);
+          metricas.appendChild(prog);
 
-          const inc = el('div', 'shrink-0 text-right w-20');
+          const inc = el('div', 'stat md:text-right md:w-16');
           inc.append(
-            el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted', 'Incidentes'),
-            el('p', 'font-mono text-sm font-bold ' + (a.incidents.length ? 'text-alert' : 'text-muted'), String(a.incidents.length))
+            el('p', 'stat-k', 'Incidentes'),
+            el('p', 'stat-v stat-v-sm ' + (a.incidents.length ? 'text-alert' : 'text-muted'), String(a.incidents.length))
           );
-          fila.appendChild(inc);
+          metricas.appendChild(inc);
         }
 
         if (run.status === 'ended') {
-          const nota = el('div', 'shrink-0 text-right w-24');
-          nota.appendChild(el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted',
-            a.correccion.provisional ? 'Provisoria' : 'Nota'));
-          nota.appendChild(el('p', 'font-mono text-lg font-bold ' +
-            (a.correccion.provisional ? 'text-plum' : a.correccion.nota >= 6 ? 'text-ok' : 'text-alert'),
+          const nota = el('div', 'stat md:text-right md:w-20');
+          nota.appendChild(el('p', 'stat-k', a.correccion.provisional ? 'Provisoria' : 'Nota'));
+          nota.appendChild(el('p', 'stat-v ' +
+            (a.correccion.provisional ? 'text-plum' : a.correccion.nota >= 6 ? 'text-ok-ink' : 'text-alert'),
             dec(a.correccion.nota)));
-          fila.appendChild(nota);
+          metricas.appendChild(nota);
         }
+        if (metricas.childElementCount) fila.appendChild(metricas);
 
         if (run.status !== 'lobby') {
-          const ver = el('button', 'lift shrink-0 border border-line hover:bg-line/60 font-medium text-sm px-3.5 py-2 rounded-lg',
+          const ver = el('button', 'fa-accion btn btn-outline btn-sm',
             run.status === 'ended' ? 'Corregir' : 'Ver');
+          ver.setAttribute('aria-label', (run.status === 'ended' ? 'Corregir a ' : 'Ver a ') + a.name);
           ver.addEventListener('click', () => abrirDetalle(a.id));
           fila.appendChild(ver);
         } else {
-          const sacar = el('button', 'shrink-0 text-muted hover:text-alert font-medium text-sm px-3 py-2 transition-colors', 'Quitar');
+          const sacar = el('button', 'fa-accion btn btn-ghost-danger btn-sm', 'Quitar');
           sacar.addEventListener('click', async () => {
             const ok = await confirmar('¿Sacar a este alumno de la sala?', `${a.name} va a poder volver a entrar con el código.`, 'Sacar');
             if (!ok) return;
@@ -1220,26 +1293,26 @@
       cuerpo.textContent = '';
 
       // resumen de nota
-      const resumen = el('div', 'flex flex-wrap items-center gap-5 bg-canvas border border-line rounded-xl px-5 py-4');
+      const resumen = el('div', 'panel-inset grid grid-cols-3 gap-4 px-5 py-4');
       const bloque = (etiqueta, valor, cls) => {
         const d = el('div');
         d.append(
-          el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted mb-1', etiqueta),
-          el('p', 'font-mono text-xl font-bold ' + (cls || 'text-ink'), valor)
+          el('p', 'stat-k', etiqueta),
+          el('p', 'stat-v ' + (cls || ''), valor)
         );
         return d;
       };
       resumen.append(
         bloque(a.correccion.provisional ? 'Nota provisoria' : 'Nota',
           dec(a.correccion.nota) + ' / 10',
-          a.correccion.provisional ? 'text-plum' : a.correccion.nota >= 6 ? 'text-ok' : 'text-alert'),
+          a.correccion.provisional ? 'text-plum' : a.correccion.nota >= 6 ? 'text-ok-ink' : 'text-alert'),
         bloque('Puntaje', dec(a.correccion.obtenido) + ' / ' + dec(a.correccion.total)),
         bloque('Incidentes', String(a.incidents.length), a.incidents.length ? 'text-alert' : 'text-ink')
       );
       cuerpo.appendChild(resumen);
 
       if (a.correccion.provisional) {
-        cuerpo.appendChild(el('p', 'text-sm text-plum bg-plum-soft border border-plum/25 rounded-xl px-4 py-3',
+        cuerpo.appendChild(el('p', 'chip chip-plum !flex !rounded-xl px-4 py-3 text-sm !whitespace-normal',
           'Quedan respuestas sin corregir. Marcá cada una como correcta o incorrecta para cerrar la nota.'));
       }
 
@@ -1250,58 +1323,57 @@
 
       questions.forEach((q, i) => {
         const d = a.correccion.detalle.find((x) => x.id === q.id);
-        const card = el('article', 'border border-line rounded-xl overflow-hidden');
+        const card = el('article', 'card overflow-hidden');
 
-        const head = el('header', 'flex flex-wrap items-center gap-2 px-4 py-2.5 bg-line/25 border-b border-line');
+        const head = el('header', 'card-head !px-4 !py-2.5 bg-canvas/60');
         head.append(
-          el('span', 'font-mono text-[11px] font-bold text-brand bg-brand-soft px-1.5 py-0.5 rounded', two(i + 1)),
-          el('span', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted', NOMBRE_TIPO[q.type]),
-          el('span', 'font-mono text-[10px] text-muted ml-auto', dec(q.points) + ' pts')
+          el('span', 'ordinal', two(i + 1)),
+          el('span', 'chip chip-neutro', NOMBRE_TIPO[q.type]),
+          el('span', 't-num text-xs text-muted ml-auto', dec(q.points) + ' pts')
         );
-        const marca = el('span', 'font-mono text-[10px] uppercase tracking-[0.16em] px-2 py-0.5 rounded-full ' +
-          (d.ok === true ? 'bg-ok-soft text-ok' : d.ok === false ? 'bg-alert-soft text-alert' : 'bg-plum-soft text-plum'),
+        const marca = el('span', 'chip ' +
+          (d.ok === true ? 'chip-ok' : d.ok === false ? 'chip-alert' : 'chip-plum'),
           d.ok === true ? 'Correcta' : d.ok === false ? 'Incorrecta' : 'Sin corregir');
         head.appendChild(marca);
         card.appendChild(head);
 
-        const body = el('div', 'px-4 py-3.5 space-y-3');
-        body.appendChild(el('p', 'text-sm font-medium leading-relaxed', q.text));
+        const body = el('div', 'px-4 py-4 space-y-3');
+        body.appendChild(el('p', 't-body font-medium leading-snug', q.text));
 
-        const resp = el('div', 'bg-line/25 rounded-lg px-3.5 py-2.5');
-        resp.appendChild(el('p', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted mb-1', 'Respondió'));
+        const resp = el('div', 'panel-inset px-3.5 py-2.5');
+        resp.appendChild(el('p', 'stat-k mb-1', 'Respondió'));
         const texto = textoRespuesta(q, a.answers[q.id]);
-        resp.appendChild(el('p', 'text-sm whitespace-pre-wrap ' + (texto === '(sin responder)' ? 'text-muted italic' : 'font-medium'), texto));
+        resp.appendChild(el('p', 't-sm whitespace-pre-wrap ' + (texto === '(sin responder)' ? 'text-muted italic' : 'font-medium'), texto));
         body.appendChild(resp);
 
         const esperada = textoEsperado(q);
         if (esperada) {
-          const exp = el('p', 'font-mono text-[11px] text-muted');
+          const exp = el('p', 't-hint');
           exp.textContent = 'Esperada: ' + esperada;
           body.appendChild(exp);
         }
 
         // corrección manual
         if (run.status === 'ended' || q.type === 'long') {
-          const acciones = el('div', 'flex flex-wrap items-center gap-2 pt-1');
-          acciones.appendChild(el('span', 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted mr-1', 'Corrección'));
+          const acciones = el('div', 'flex flex-wrap items-center gap-2 pt-1.5 border-t border-line mt-1');
+          acciones.appendChild(el('span', 't-label mr-1', 'Corrección'));
           const opciones = [
-            ['Correcta', true, 'border-ok text-ok bg-ok-soft'],
-            ['Incorrecta', false, 'border-alert text-alert bg-alert-soft'],
+            ['Correcta', true, 'btn-ok'],
+            ['Incorrecta', false, 'btn-danger'],
           ];
           opciones.forEach(([txt, valor, activo]) => {
             const puesto = d.override === valor;
-            const b = el('button', 'font-medium text-xs px-3 py-1.5 rounded-lg border transition-colors ' +
-              (puesto ? activo : 'border-line text-muted hover:bg-line/50'), txt);
+            const b = el('button', 'btn btn-xs ' + (puesto ? activo : 'btn-outline !text-muted'), txt);
             b.addEventListener('click', () => aplicarOverride(a.id, q.id, puesto ? null : valor));
             acciones.appendChild(b);
           });
           if (d.override !== null && d.auto !== null) {
-            const auto = el('button', 'font-medium text-xs px-3 py-1.5 rounded-lg border border-line text-muted hover:bg-line/50 transition-colors', 'Volver al automático');
+            const auto = el('button', 'btn btn-ghost btn-xs', 'Volver al automático');
             auto.addEventListener('click', () => aplicarOverride(a.id, q.id, null));
             acciones.appendChild(auto);
           }
           if (d.override !== null) {
-            acciones.appendChild(el('span', 'font-mono text-[10px] text-plum', 'ajustada a mano'));
+            acciones.appendChild(el('span', 'chip chip-plum !text-[11px] !py-0.5', 'ajustada a mano'));
           }
           body.appendChild(acciones);
         }
@@ -1314,25 +1386,25 @@
 
       // auditoría
       const audit = el('section');
-      const cab = el('div', 'flex items-baseline justify-between mb-3');
+      const cab = el('div', 'flex items-baseline justify-between gap-3 mb-3');
       cab.append(
         el('h3', 'font-display font-semibold', 'Registro de actividad'),
-        el('span', 'font-mono text-[11px] ' + (a.incidents.length ? 'text-alert font-bold' : 'text-muted'),
+        el('span', 't-num text-xs ' + (a.incidents.length ? 'text-alert font-bold' : 'text-muted'),
           a.incidents.length + (a.incidents.length === 1 ? ' evento' : ' eventos'))
       );
       audit.appendChild(cab);
 
       if (!a.incidents.length) {
-        audit.appendChild(el('p', 'text-sm text-ok bg-ok-soft border border-ok/25 rounded-xl px-4 py-3',
+        audit.appendChild(el('p', 'chip chip-ok !flex !rounded-xl px-4 py-3 text-sm !whitespace-normal',
           'Sin eventos. El alumno no salió de la ventana del examen en ningún momento.'));
       } else {
-        const tabla = el('div', 'border border-line rounded-xl overflow-hidden divide-y divide-line');
+        const tabla = el('div', 'card overflow-hidden divide-y divide-line');
         a.incidents.forEach((inc) => {
-          const fila = el('div', 'flex flex-wrap items-center gap-3 px-4 py-2.5');
+          const fila = el('div', 'flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2.5');
           fila.append(
-            el('span', 'font-mono text-sm font-bold shrink-0', hms(inc.at)),
-            el('span', 'text-sm flex-1 min-w-0', TIPOS_EVENTO[inc.type] || 'Evento de foco'),
-            el('span', 'font-mono text-[11px] text-muted shrink-0', dur(inc.dur))
+            el('span', 't-num text-sm font-bold shrink-0', hms(inc.at)),
+            el('span', 't-sm flex-1 min-w-[10rem]', TIPOS_EVENTO[inc.type] || 'Evento de foco'),
+            el('span', 't-hint t-num shrink-0', dur(inc.dur))
           );
           tabla.appendChild(fila);
         });
@@ -1340,7 +1412,7 @@
 
         const totalFuera = a.incidents.reduce((s, i2) => s + i2.dur, 0);
         if (totalFuera >= 1000) {
-          audit.appendChild(el('p', 'font-mono text-[11px] text-muted mt-2',
+          audit.appendChild(el('p', 't-hint t-num mt-2',
             'Tiempo total fuera de la ventana: ' + dur(totalFuera)));
         }
       }

@@ -10,209 +10,156 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            ink: '#17122B',
-            panel: '#241A3F',
-            canvas: '#FFF4E5',
-            paper: '#FFFFFF',
-            line: '#F0E2CC',
-            muted: '#786552',
-            brand: { DEFAULT: '#243B7A', deep: '#1A2C5C', soft: '#E7EAF4' },
-            accent: { DEFAULT: '#FF9300', deep: '#E4510B', soft: '#FFF0DA' },
-            ok: { DEFAULT: '#209B8A', deep: '#17796B', soft: '#DDF2EE' },
-            alert: { DEFAULT: '#C52525', deep: '#A11C1C', soft: '#FAE6E6' },
-            plum: { DEFAULT: '#7D2048', soft: '#F7E6EC' },
-          },
-          fontFamily: {
-            display: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-            body: ['"Instrument Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
-          },
-        },
-      },
-    };
-  </script>
-  <style>
-    :root { --ease: cubic-bezier(.2, .7, .3, 1); }
-
-    body { background-color: #FFF4E5; }
-
-    /* Un solo recurso para separar superficies: el borde. Las sombras de Tailwind
-       son negras y sobre el fondo cálido se ensucian, así que quedan en un susurro. */
-    .shadow, .shadow-lg, .shadow-xl, .shadow-2xl { box-shadow: 0 1px 2px rgba(93, 58, 12, .05) !important; }
-    :focus-visible { outline: 3px solid #FF9300; outline-offset: 2px; border-radius: 6px; }
-
-    /* ── entradas ─────────────────────────────────────────── */
-    @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-    @keyframes pop { 0% { opacity: 0; transform: scale(.9); } 60% { transform: scale(1.02); } 100% { opacity: 1; transform: scale(1); } }
-    .rise { animation: rise .42s var(--ease) both; animation-delay: calc(var(--i, 0) * 55ms); }
-    .pop { animation: pop .32s var(--ease) both; animation-delay: calc(var(--i, 0) * 45ms); }
-    .view-in { animation: rise .4s var(--ease) both; }
-
-    /* ── interacción ──────────────────────────────────────── */
-    .lift { transition: transform .18s var(--ease), box-shadow .24s, background-color .2s, border-color .2s, color .2s; }
-    .lift:hover:not(:disabled) { transform: translateY(-2px); }
-    .lift:active:not(:disabled) { transform: translateY(0) scale(.99); }
-    .opcion { transition: transform .18s var(--ease), border-color .2s, background-color .2s; }
-    .opcion:hover { transform: translateX(3px); }
-    .opcion:has(input:checked) { border-color: #243B7A; background-color: #E7EAF4; }
-
-    /* ── vigilancia ───────────────────────────────────────── */
-    .vigil { width: 12px; height: 12px; border-radius: 9999px; background: #6E6480; transition: background .3s, box-shadow .3s; }
-    .vigil.ok { background: #209B8A; animation: vigil-breathe 3.4s ease-in-out infinite; }
-    @keyframes vigil-breathe {
-      0%, 100% { box-shadow: 0 0 0 4px rgba(32, 155, 138, .16), 0 0 12px rgba(32, 155, 138, .45); }
-      50% { box-shadow: 0 0 0 5px rgba(32, 155, 138, .26), 0 0 20px rgba(32, 155, 138, .70); }
-    }
-    .vigil.alert { background: #C52525; animation: vigil-pulse 1s ease-in-out 3; }
-    @keyframes vigil-pulse {
-      0%, 100% { box-shadow: 0 0 0 4px rgba(197, 37, 37, .22), 0 0 10px rgba(197, 37, 37, .45); }
-      50% { box-shadow: 0 0 0 9px rgba(197, 37, 37, .08), 0 0 24px rgba(197, 37, 37, .80); }
-    }
-
-    /* ── avisos ───────────────────────────────────────────── */
-    @keyframes shake {
-      10%, 90% { transform: translateX(-2px); }
-      20%, 80% { transform: translateX(4px); }
-      30%, 50%, 70% { transform: translateX(-7px); }
-      40%, 60% { transform: translateX(7px); }
-    }
-    .shake { animation: shake .5s cubic-bezier(.36,.07,.19,.97) both; }
-    @keyframes modal-in { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
-    .modal-in { animation: modal-in .26s var(--ease) both; }
-    @keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
-    .backdrop-in { animation: backdrop-in .22s ease-out both; }
-    @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 14px); } to { opacity: 1; transform: translate(-50%, 0); } }
-    .toast-in { animation: toast-in .3s var(--ease) both; }
-    @keyframes tilde { to { stroke-dashoffset: 0; } }
-    .tilde-anim { animation: tilde .55s var(--ease) .15s both; }
-
-    /* ── tiempo y progreso ────────────────────────────────── */
-    .timer-urgent { color: #FF7A45; animation: blink 1s steps(2, start) infinite; }
-    @keyframes blink { to { opacity: .45; } }
-    .ruler-seg {
-      flex: 1; height: 5px; border-radius: 9999px; background: #F0E2CC;
-      transition: background-color .4s var(--ease), transform .3s var(--ease), box-shadow .4s;
-    }
-    .ruler-seg.filled { background: #FF9300; transform: scaleY(1.6); }
-    @keyframes breathe { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
-    .breathe { animation: breathe 2.4s ease-in-out infinite; }
-
-    .codigo-input {
-      font-family: "JetBrains Mono", ui-monospace, monospace;
-      letter-spacing: .42em; text-transform: uppercase; text-align: center;
-      transition: border-color .2s, box-shadow .28s var(--ease);
-    }
-    .codigo-input:focus { box-shadow: 0 0 0 5px rgba(255, 147, 0, .16); }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation: none !important; transition: none !important; }
-    }
-  </style>
+  <script src="/tema.js"></script>
+  <link rel="stylesheet" href="/estilo.css">
 </head>
-<body class="font-body text-ink antialiased min-h-screen">
+<body class="font-body text-ink antialiased min-h-dvh flex flex-col">
 
-  <main id="app" class="min-h-screen">
+  <main id="app" class="flex-1">
 
     <!-- ============ INGRESO ============ -->
-    <section id="view-join" class="max-w-lg mx-auto px-4 py-10 md:py-16">
-      <header class="flex items-center gap-3 mb-8">
-        <svg viewBox="0 0 24 24" class="w-11 h-11 shrink-0" aria-hidden="true">
+    <section id="view-join" class="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-14">
+
+      <header class="flex items-center gap-3 mb-8 md:mb-12">
+        <svg viewBox="0 0 24 24" class="w-10 h-10 md:w-12 md:h-12 shrink-0" aria-hidden="true">
           <path fill="#FF9300" d="M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z"/>
           <path fill="#17122B" d="M12 7.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm0 1.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4z"/>
         </svg>
-        <div>
-          <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">Modo vigilado · Nivel secundario</p>
-          <h1 class="font-display font-bold text-2xl md:text-3xl text-ink">Evaluador Seguro</h1>
+        <div class="min-w-0 flex-1">
+          <p class="t-eyebrow text-accent-deep">Modo vigilado</p>
+          <h1 class="t-h1">Evaluador Seguro</h1>
         </div>
+        <a href="/docente" class="btn btn-ghost btn-sm hidden sm:inline-flex">Soy docente</a>
       </header>
 
-      <div class="bg-paper rounded-2xl border border-line overflow-hidden">
-        <div class="px-6 py-8 md:px-9">
-          <h2 class="font-display font-semibold text-xl mb-1">Ingresá al examen</h2>
-          <p class="text-sm text-muted mb-7">Pedile el código a tu profesor. Son 6 caracteres.</p>
+      <div class="grid lg:grid-cols-[minmax(0,1.15fr),minmax(0,1fr)] gap-5 lg:gap-8 items-start">
 
-          <form id="form-join" novalidate>
-            <label for="campo-codigo" class="block font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Código del examen</label>
-            <input id="campo-codigo" name="codigo" maxlength="6" autocomplete="off" autocapitalize="characters"
-                   spellcheck="false" inputmode="text" placeholder="ABC123"
-                   class="codigo-input w-full text-2xl md:text-3xl font-bold py-4 rounded-xl border-2 border-line bg-white focus:border-brand outline-none mb-6">
+        <!-- formulario -->
+        <div class="card card-lg rise overflow-hidden">
+          <div class="card-body sm:p-7">
+            <h2 class="t-h2 mb-1.5">Ingresá al examen</h2>
+            <p class="t-hint mb-6">Pedile el código a tu docente. Son 6 caracteres.</p>
 
-            <div class="grid gap-4 md:grid-cols-2 mb-6">
-              <div>
-                <label for="campo-nombre" class="block font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Nombre y apellido</label>
-                <input id="campo-nombre" name="nombre" maxlength="60" autocomplete="name"
-                       class="w-full px-3 py-2.5 rounded-lg border border-line bg-white focus:border-brand outline-none">
+            <form id="form-join" novalidate class="space-y-5">
+              <div class="field">
+                <label for="campo-codigo" class="t-label">Código del examen</label>
+                <input id="campo-codigo" name="codigo" maxlength="6" autocomplete="off" autocapitalize="characters"
+                       spellcheck="false" inputmode="text" placeholder="ABC123"
+                       aria-describedby="ayuda-codigo"
+                       class="input input-codigo">
+                <p id="ayuda-codigo" class="t-hint mt-2 text-center">Letras y números, sin espacios</p>
               </div>
-              <div>
-                <label for="campo-curso" class="block font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Curso <span class="normal-case tracking-normal">(opcional)</span></label>
-                <input id="campo-curso" name="curso" maxlength="40" placeholder="3.º B"
-                       class="w-full px-3 py-2.5 rounded-lg border border-line bg-white focus:border-brand outline-none">
+
+              <div class="grid sm:grid-cols-2 gap-4">
+                <div class="field">
+                  <label for="campo-nombre" class="t-label">Nombre y apellido</label>
+                  <input id="campo-nombre" name="nombre" maxlength="60" autocomplete="name"
+                         placeholder="Ana Pérez" class="input">
+                </div>
+                <div class="field">
+                  <label for="campo-curso" class="t-label">
+                    Curso <span class="font-normal t-muted">(opcional)</span>
+                  </label>
+                  <input id="campo-curso" name="curso" maxlength="40" placeholder="3.º B" class="input">
+                </div>
               </div>
-            </div>
 
-            <p id="error-join" class="hidden text-sm font-medium text-alert bg-alert-soft border border-alert/20 rounded-lg px-3 py-2 mb-4" role="alert"></p>
+              <p id="error-join" class="hidden chip chip-alert !flex w-full !rounded-xl px-3.5 py-2.5 text-sm" role="alert"></p>
 
-            <button id="btn-join" type="submit"
-                    class="lift w-full bg-brand hover:bg-brand-deep text-white font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
-              Entrar a la sala
-            </button>
-          </form>
-
-          <div class="mt-7 pt-6 border-t border-line">
-            <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-3">Antes de empezar</p>
-            <ul class="space-y-2 text-sm text-muted">
-              <li class="flex gap-2"><span class="text-brand font-bold">·</span><span>El examen se abre en <strong class="text-ink">pantalla completa</strong>.</span></li>
-              <li class="flex gap-2"><span class="text-brand font-bold">·</span><span>Cerrá cualquier otra pestaña o programa que no necesites.</span></li>
-              <li class="flex gap-2"><span class="text-brand font-bold">·</span><span>Si salís de la ventana, el sistema lo <strong class="text-ink">registra y avisa al docente</strong>.</span></li>
-              <li class="flex gap-2"><span class="text-brand font-bold">·</span><span>El tiempo lo controla el servidor: no se detiene si cerrás la página.</span></li>
-            </ul>
+              <button id="btn-join" type="submit" class="btn btn-primary btn-lg btn-block">
+                <span>Entrar a la sala</span>
+                <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 12h13M13 6l6 6-6 6"/>
+                </svg>
+              </button>
+            </form>
           </div>
         </div>
-      </div>
 
-      <p class="text-center text-xs text-muted mt-6">
-        ¿Sos docente? <a href="/docente" class="underline hover:text-ink">Entrá al panel</a>
-      </p>
+        <!-- contexto: aprovecha el espacio que antes quedaba vacío al costado -->
+        <aside class="card card-lg rise" style="--i:1">
+          <div class="card-body sm:p-7">
+            <h2 class="t-h3 mb-4">Antes de empezar</h2>
+            <ul class="space-y-4">
+              <li class="flex gap-3">
+                <span class="ordinal shrink-0 !bg-accent-soft !text-accent-deep">1</span>
+                <div class="min-w-0">
+                  <p class="font-semibold text-sm">Pantalla completa</p>
+                  <p class="t-hint">El examen se abre ocupando toda la pantalla.</p>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="ordinal shrink-0 !bg-accent-soft !text-accent-deep">2</span>
+                <div class="min-w-0">
+                  <p class="font-semibold text-sm">Cerrá lo que no uses</p>
+                  <p class="t-hint">Otras pestañas y programas, antes de entrar.</p>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="ordinal shrink-0 !bg-accent-soft !text-accent-deep">3</span>
+                <div class="min-w-0">
+                  <p class="font-semibold text-sm">Quedate en la ventana</p>
+                  <p class="t-hint">Si salís, queda registrado y tu docente lo ve.</p>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="ordinal shrink-0 !bg-accent-soft !text-accent-deep">4</span>
+                <div class="min-w-0">
+                  <p class="font-semibold text-sm">El reloj no se detiene</p>
+                  <p class="t-hint">Lo controla el servidor: cerrar la página no lo pausa.</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
     </section>
 
     <!-- ============ SALA DE ESPERA ============ -->
-    <section id="view-lobby" class="hidden max-w-2xl mx-auto px-4 py-10 md:py-16">
-      <div class="bg-paper rounded-2xl border border-line overflow-hidden">
-        <div class="px-6 py-8 md:px-10 text-center">
-          <div class="inline-flex items-center gap-2 bg-accent-soft text-accent-deep font-mono text-[11px] uppercase tracking-[0.18em] px-3 py-1.5 rounded-full mb-6">
-            <span class="w-2 h-2 rounded-full bg-accent breathe"></span> Sala de espera
-          </div>
-          <h2 id="lobby-titulo" class="font-display font-bold text-2xl mb-2">—</h2>
-          <p id="lobby-materia" class="text-sm text-muted mb-7">—</p>
+    <section id="view-lobby" class="hidden max-w-3xl mx-auto px-4 sm:px-6 py-8 md:py-14">
+      <div class="card card-lg overflow-hidden">
 
-          <div class="bg-canvas border border-line rounded-xl px-5 py-6 mb-7">
-            <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-muted mb-2">Esperando al docente</p>
-            <p class="text-muted text-sm leading-relaxed">
-              Ya estás dentro. El examen arranca cuando tu profesor lo indique.<br class="hidden md:block">
-              <strong class="text-ink">No cierres esta pestaña.</strong>
+        <div class="px-5 sm:px-8 pt-8 pb-6 text-center border-b border-line">
+          <span class="chip chip-accent mb-5">
+            <span class="w-1.5 h-1.5 rounded-full bg-accent-deep breathe"></span> Sala de espera
+          </span>
+          <h2 id="lobby-titulo" class="t-h1 mb-1.5">—</h2>
+          <p id="lobby-materia" class="t-hint">—</p>
+        </div>
+
+        <div class="card-body sm:p-7 space-y-6">
+
+          <div class="panel-inset px-5 py-5 text-center">
+            <div class="flex items-center justify-center gap-2 mb-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-accent breathe"></span>
+              <p class="t-eyebrow">Esperando al docente</p>
+            </div>
+            <p class="t-sm t-muted">
+              Ya estás dentro. El examen arranca cuando tu docente lo indique.
+              <strong class="text-ink block sm:inline">No cierres esta pestaña.</strong>
             </p>
           </div>
 
-          <div class="grid grid-cols-2 gap-3 mb-7 text-left">
-            <div class="bg-white border border-line rounded-xl px-4 py-3">
-              <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-muted mb-1">Tu nombre</p>
-              <p id="lobby-nombre" class="font-semibold text-sm truncate">—</p>
+          <dl class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div class="panel-inset px-4 py-3 min-w-0">
+              <dt class="stat-k mb-1">Tu nombre</dt>
+              <dd id="lobby-nombre" class="font-semibold text-sm truncate">—</dd>
             </div>
-            <div class="bg-white border border-line rounded-xl px-4 py-3">
-              <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-muted mb-1">Duración prevista</p>
-              <p id="lobby-tiempo" class="font-semibold text-sm font-mono">—</p>
+            <div class="panel-inset px-4 py-3 min-w-0">
+              <dt class="stat-k mb-1">Duración</dt>
+              <dd id="lobby-tiempo" class="font-semibold text-sm t-num">—</dd>
             </div>
-          </div>
+            <div class="panel-inset px-4 py-3 min-w-0 col-span-2 sm:col-span-1">
+              <dt class="stat-k mb-1">Código</dt>
+              <dd id="lobby-codigo" class="font-semibold text-sm t-num tracking-widest">—</dd>
+            </div>
+          </dl>
 
-          <div class="text-left">
-            <div class="flex items-baseline justify-between mb-3">
-              <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">En la sala</p>
-              <p id="lobby-conteo" class="font-mono text-sm font-bold text-brand">0</p>
+          <div>
+            <div class="flex items-baseline justify-between gap-3 mb-3">
+              <h3 class="t-h3">En la sala</h3>
+              <p id="lobby-conteo" class="t-num text-sm font-bold text-brand">0</p>
             </div>
             <ul id="lobby-lista" class="flex flex-wrap gap-2"></ul>
           </div>
@@ -222,125 +169,121 @@
 
     <!-- ============ EXAMEN ============ -->
     <section id="view-exam" class="hidden">
-      <div class="sticky top-0 z-40 bg-canvas/85 backdrop-blur border-b border-line">
-        <div class="max-w-3xl mx-auto px-4 py-3">
+      <div class="sticky top-0 z-40 bg-canvas/90 backdrop-blur border-b border-line">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 py-2.5 md:py-3">
           <div class="flex items-center gap-3">
-            <div id="vigil" class="vigil ok shrink-0" role="img" aria-label="Estado de vigilancia"></div>
+            <div id="vigil" class="vigil ok" role="img" aria-label="Estado de vigilancia"></div>
             <div class="min-w-0 flex-1">
-              <p id="exam-titulo" class="font-display font-semibold text-ink text-sm truncate">—</p>
-              <p id="chip-incidentes" class="font-mono text-[12px] font-medium text-muted">0 incidentes</p>
+              <p id="exam-titulo" class="font-display font-semibold text-sm md:text-base truncate leading-tight">—</p>
+              <p id="chip-incidentes" class="t-num text-xs text-muted">0 incidentes</p>
             </div>
             <div class="text-right shrink-0">
-              <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">Tiempo</p>
-              <p id="reloj" class="font-mono text-xl font-bold text-ink tabular-nums">--:--</p>
+              <p class="stat-k">Tiempo</p>
+              <p id="reloj" class="reloj text-xl md:text-2xl">--:--</p>
             </div>
           </div>
-          <div class="flex items-center gap-2 mt-3">
-            <div id="regla" class="flex-1 flex gap-1"></div>
-            <p id="progreso-texto" class="font-mono text-[11px] text-muted shrink-0">0/0</p>
+          <div class="flex items-center gap-3 mt-2.5">
+            <div id="regla" class="regla" aria-hidden="true"></div>
+            <p id="progreso-texto" class="t-num text-xs text-muted shrink-0">0/0</p>
           </div>
         </div>
       </div>
 
-      <div class="max-w-3xl mx-auto px-4 py-6 md:py-8">
-        <p id="exam-consigna" class="hidden bg-brand-soft border border-brand/20 text-ink text-sm rounded-xl px-4 py-3 mb-6 whitespace-pre-line"></p>
-        <div id="contenedor-preguntas" class="space-y-5"></div>
+      <div class="max-w-3xl mx-auto px-4 sm:px-6 py-6 md:py-8">
+        <p id="exam-consigna" class="hidden card px-4 py-3.5 mb-6 t-sm whitespace-pre-line border-l-4 border-l-brand"></p>
+        <div id="contenedor-preguntas" class="space-y-4 md:space-y-5"></div>
 
-        <div class="mt-8 flex flex-col sm:flex-row gap-3">
-          <button id="btn-entregar"
-                  class="lift flex-1 bg-brand hover:bg-brand-deep text-white font-semibold py-3.5 rounded-xl transition-colors">
-            Entregar examen
-          </button>
+        <div class="barra-acciones mt-8">
+          <button id="btn-entregar" class="btn btn-primary btn-lg btn-block">Entregar examen</button>
+          <p class="text-center t-hint mt-2.5">Tus respuestas se guardan solas mientras escribís.</p>
         </div>
-        <p class="text-center text-xs text-muted mt-4">Las respuestas se guardan solas a medida que escribís.</p>
       </div>
     </section>
 
     <!-- ============ ENTREGADO ============ -->
-    <section id="view-done" class="hidden max-w-lg mx-auto px-4 py-10 md:py-16">
-      <div class="bg-paper rounded-2xl border border-line overflow-hidden">
-        <div class="px-6 py-10 md:px-10 text-center">
-          <div class="w-14 h-14 rounded-full bg-ok-soft flex items-center justify-center mx-auto mb-5">
-            <svg viewBox="0 0 24 24" class="w-7 h-7" aria-hidden="true">
-              <path fill="none" stroke="#209B8A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5"
-                    stroke-dasharray="24" stroke-dashoffset="24" class="tilde-anim"/>
+    <section id="view-done" class="hidden max-w-lg mx-auto px-4 sm:px-6 py-8 md:py-14">
+      <div class="card card-lg overflow-hidden">
+        <div class="px-5 sm:px-8 py-9 text-center">
+          <div class="w-16 h-16 rounded-full bg-ok-soft grid place-items-center mx-auto mb-5">
+            <svg viewBox="0 0 24 24" class="w-8 h-8" aria-hidden="true">
+              <path fill="none" stroke="#209B8A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"
+                    d="m5 12.5 4.5 4.5L19 7.5" stroke-dasharray="24" stroke-dashoffset="24" class="tilde-anim"/>
             </svg>
           </div>
-          <h2 id="done-titulo" class="font-display font-bold text-2xl mb-2">Examen entregado</h2>
-          <p id="done-texto" class="text-sm text-muted mb-7">Tus respuestas quedaron guardadas. Ya podés cerrar la pestaña.</p>
+          <h2 id="done-titulo" class="t-h1 mb-2">Examen entregado</h2>
+          <p id="done-texto" class="t-sm t-muted mb-7">Tus respuestas quedaron guardadas.</p>
 
-          <dl id="done-resumen" class="text-left space-y-2 mb-7"></dl>
+          <dl id="done-resumen" class="panel-inset divide-y divide-line text-left mb-6"></dl>
 
-          <button id="btn-otro-examen"
-                  class="lift w-full border border-line hover:border-brand hover:bg-brand-soft font-semibold py-3 rounded-xl mb-4">
+          <button id="btn-otro-examen" class="btn btn-outline btn-md btn-block mb-4">
             Ingresar a otro examen
           </button>
-
-          <p class="text-xs text-muted">La corrección la publica tu docente.</p>
+          <p class="t-hint">La corrección la publica tu docente.</p>
         </div>
       </div>
     </section>
 
   </main>
 
+  <footer class="border-t border-line mt-10">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-5 flex flex-wrap items-center justify-between gap-3">
+      <p class="t-hint">Evaluador Seguro · examen en línea vigilado</p>
+      <a href="/docente" class="t-hint underline hover:text-ink">Panel docente</a>
+    </div>
+  </footer>
+
   <!-- ============ OVERLAY: ARRANQUE ============ -->
-  <div id="overlay-inicio" class="hidden fixed inset-0 z-[60] bg-ink/95 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="modal-in bg-paper rounded-2xl max-w-md w-full p-7 text-center shadow-2xl">
-      <div class="inline-flex items-center gap-2 bg-ok-soft text-ok font-mono text-[11px] uppercase tracking-[0.18em] px-3 py-1.5 rounded-full mb-5">
-        <span class="w-2 h-2 rounded-full bg-ok"></span> El examen comenzó
+  <div id="overlay-inicio" class="hidden overlay z-[60]">
+    <div class="modal-in sheet max-w-md">
+      <div class="p-6 sm:p-8 text-center">
+        <span class="chip chip-ok mb-5">
+          <span class="w-1.5 h-1.5 rounded-full bg-ok"></span> El examen comenzó
+        </span>
+        <h2 class="t-h2 mb-2">Tocá para empezar</h2>
+        <p class="t-sm t-muted mb-2">Vas a entrar en pantalla completa y se van a mostrar las preguntas.</p>
+        <p class="t-sm font-semibold text-alert mb-6">El reloj ya está corriendo.</p>
+        <button id="btn-arrancar" class="btn btn-primary btn-lg btn-block">Empezar el examen</button>
       </div>
-      <h2 class="font-display font-bold text-xl mb-2">Tocá para empezar</h2>
-      <p class="text-sm text-muted mb-2">Vas a entrar en pantalla completa y el examen se va a mostrar.</p>
-      <p class="text-sm font-semibold text-alert mb-6">El reloj ya está corriendo.</p>
-      <button id="btn-arrancar" class="lift w-full bg-brand hover:bg-brand-deep text-white font-semibold py-3.5 rounded-xl transition-colors">
-        Empezar el examen
-      </button>
     </div>
   </div>
 
   <!-- ============ MODAL: AVISO DE FOCO ============ -->
-  <div id="modal-aviso" class="hidden fixed inset-0 z-[65] bg-ink/85 backdrop-blur-sm flex items-center justify-center p-4"
-       role="alertdialog" aria-modal="true" aria-labelledby="aviso-titulo">
-    <div class="modal-in bg-paper rounded-2xl max-w-md w-full overflow-hidden shadow-2xl border-t-4 border-t-alert">
-      <div class="p-7">
-        <div class="w-12 h-12 rounded-full bg-alert-soft flex items-center justify-center mb-5">
+  <div id="modal-aviso" class="hidden overlay z-[65]" role="alertdialog" aria-modal="true" aria-labelledby="aviso-titulo">
+    <div class="modal-in sheet max-w-md border-t-4 border-t-alert overflow-hidden">
+      <div class="p-6 sm:p-7">
+        <div class="w-12 h-12 rounded-full bg-alert-soft grid place-items-center mb-5">
           <svg viewBox="0 0 24 24" class="w-6 h-6" aria-hidden="true">
             <path fill="#C52525" d="M12 2 1.5 20.5h21L12 2zm0 6.2 6.6 11.6H5.4L12 8.2zM11 11v4.2h2V11h-2zm0 5.4v1.8h2v-1.8h-2z"/>
           </svg>
         </div>
-        <h2 id="aviso-titulo" class="font-display font-bold text-xl mb-2">—</h2>
-        <p id="aviso-texto" class="text-sm text-muted mb-5">—</p>
-        <div id="aviso-detalle" class="bg-canvas border border-line rounded-xl px-4 py-3 flex items-baseline justify-between mb-3"></div>
-        <p id="aviso-conteo" class="font-mono text-[12px] text-muted mb-6">—</p>
-        <button id="btn-continuar-aviso" class="lift w-full bg-ink hover:bg-panel text-paper font-semibold py-3 rounded-xl transition-colors">
-          Volver al examen
-        </button>
+        <h2 id="aviso-titulo" class="t-h2 mb-2">—</h2>
+        <p id="aviso-texto" class="t-sm t-muted mb-5">—</p>
+        <div id="aviso-detalle" class="panel-inset px-4 py-3 flex items-baseline justify-between gap-3 mb-3"></div>
+        <p id="aviso-conteo" class="t-num text-xs text-muted mb-6">—</p>
+        <button id="btn-continuar-aviso" class="btn btn-dark btn-md btn-block">Volver al examen</button>
       </div>
     </div>
   </div>
 
   <!-- ============ MODAL: CONFIRMAR ENTREGA ============ -->
-  <div id="modal-entrega" class="hidden fixed inset-0 z-[65] bg-ink/85 backdrop-blur-sm flex items-center justify-center p-4"
-       role="dialog" aria-modal="true" aria-labelledby="entrega-titulo">
-    <div class="modal-in bg-paper rounded-2xl max-w-md w-full p-7 shadow-2xl">
-      <h2 id="entrega-titulo" class="font-display font-bold text-xl mb-2">¿Entregar el examen?</h2>
-      <p id="entrega-texto" class="text-sm text-muted mb-6">—</p>
-      <div class="flex flex-col sm:flex-row gap-3">
-        <button id="btn-cancelar-entrega" class="lift flex-1 border border-line hover:bg-line/40 font-semibold py-3 rounded-xl transition-colors">
-          Seguir respondiendo
-        </button>
-        <button id="btn-confirmar-entrega" class="lift flex-1 bg-brand hover:bg-brand-deep text-white font-semibold py-3 rounded-xl transition-colors">
-          Sí, entregar
-        </button>
+  <div id="modal-entrega" class="hidden overlay z-[65]" role="dialog" aria-modal="true" aria-labelledby="entrega-titulo">
+    <div class="modal-in sheet max-w-md">
+      <div class="p-6 sm:p-7">
+        <h2 id="entrega-titulo" class="t-h2 mb-2">¿Entregar el examen?</h2>
+        <p id="entrega-texto" class="t-sm t-muted mb-6">—</p>
+        <div class="flex flex-col-reverse sm:flex-row gap-3">
+          <button id="btn-cancelar-entrega" class="btn btn-outline btn-md sm:flex-1">Seguir respondiendo</button>
+          <button id="btn-confirmar-entrega" class="btn btn-primary btn-md sm:flex-1">Sí, entregar</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <div id="toast" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-[80] bg-ink text-paper text-sm font-medium px-4 py-2.5 rounded-full shadow-2xl ring-1 ring-white/10"></div>
+  <div id="toast" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-[90] bg-ink text-white text-sm font-medium px-4 py-2.5 rounded-full shadow-pop max-w-[calc(100vw-2rem)] text-center"></div>
 
   <noscript>
-    <div class="fixed inset-0 z-[90] bg-ink flex items-center justify-center p-6">
-      <p class="text-paper font-semibold text-center">Esta aplicación requiere JavaScript para funcionar.</p>
+    <div class="fixed inset-0 z-[95] bg-ink flex items-center justify-center p-6">
+      <p class="text-white font-semibold text-center">Esta aplicación requiere JavaScript para funcionar.</p>
     </div>
   </noscript>
 
@@ -435,6 +378,8 @@
     if (paramCodigo) $('campo-codigo').value = paramCodigo.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
 
     $('campo-codigo').addEventListener('input', (e) => {
+      e.target.removeAttribute('aria-invalid');
+      $('error-join').classList.add('hidden');
       e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
     });
 
@@ -447,8 +392,7 @@
       if (codigo.length !== 6) return mostrarErrorJoin('El código tiene 6 caracteres.', 'campo-codigo');
       if (!nombre) return mostrarErrorJoin('Escribí tu nombre y apellido.', 'campo-nombre');
 
-      $('btn-join').disabled = true;
-      $('btn-join').textContent = 'Entrando…';
+      $('btn-join').dataset.cargando = 'true';
       try {
         const datos = await api('/api/join', {
           method: 'POST',
@@ -459,8 +403,7 @@
       } catch (ex) {
         mostrarErrorJoin(ex.message, 'campo-codigo');
       } finally {
-        $('btn-join').disabled = false;
-        $('btn-join').textContent = 'Entrar a la sala';
+        delete $('btn-join').dataset.cargando;
       }
     });
 
@@ -471,7 +414,7 @@
       err.classList.remove('shake');
       void err.offsetWidth;
       err.classList.add('shake');
-      if (focoId) $(focoId).focus();
+      if (focoId) { $(focoId).setAttribute('aria-invalid', 'true'); $(focoId).focus(); }
     }
 
     // ── conexión en vivo ────────────────────────────────────────────
@@ -546,6 +489,7 @@
       if (firma === salaFirma) return;
       salaFirma = firma;
 
+      $('lobby-codigo').textContent = datos.run.code;
       $('lobby-conteo').textContent = sala.length + (sala.length === 1 ? ' alumno' : ' alumnos');
       const lista = $('lobby-lista');
       lista.textContent = '';
@@ -555,16 +499,17 @@
         yaEnSala.add(clave);
 
         const li = document.createElement('li');
-        li.className = 'inline-flex items-center gap-2 bg-white border border-line rounded-full pl-2 pr-3 py-1.5 text-sm shadow-sm'
+        li.className = 'inline-flex items-center gap-2 bg-paper border border-line rounded-full pl-1.5 pr-3 py-1 text-sm shadow-soft'
           + (reciente ? ' pop' : '');
         // Sólo escalonamos la tanda inicial; los que llegan después entran de a uno.
         if (reciente && primeraSala) li.style.setProperty('--i', i);
 
         const punto = document.createElement('span');
-        punto.className = 'w-2 h-2 rounded-full ' + (p.status === 'submitted' ? 'bg-muted' : 'bg-ok');
+        punto.className = 'w-6 h-6 rounded-full grid place-items-center text-[10px] font-bold shrink-0 ' + (p.status === 'submitted' ? 'bg-line text-muted' : 'bg-ok-soft text-ok-deep');
         const txt = document.createElement('span');
-        txt.className = 'font-medium';
+        txt.className = 'font-medium truncate max-w-[11rem]';
         txt.textContent = p.name + (p.course ? ' · ' + p.course : '');
+        punto.textContent = (p.name.trim()[0] || '?').toUpperCase();
         li.append(punto, txt);
         lista.appendChild(li);
       });
@@ -600,30 +545,30 @@
         regla.appendChild(seg);
 
         const card = document.createElement('article');
-        card.className = 'bg-paper rounded-2xl border border-line overflow-hidden rise';
+        card.className = 'card rise overflow-hidden';
         card.style.setProperty('--i', i);
         card.id = 'card-' + q.id;
 
         const head = document.createElement('header');
-        head.className = 'flex items-center justify-between gap-3 px-5 md:px-6 pt-5 pb-3 border-b border-line';
+        head.className = 'card-head !py-3';
         const izq = document.createElement('div');
-        izq.className = 'flex items-center gap-2.5 min-w-0';
+        izq.className = 'flex items-center gap-2.5 min-w-0 flex-1';
         const num = document.createElement('span');
-        num.className = 'font-mono text-[11px] font-bold text-brand bg-brand-soft px-2 py-1 rounded';
+        num.className = 'ordinal';
         num.textContent = String(i + 1).padStart(2, '0');
         const tipo = document.createElement('span');
-        tipo.className = 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted truncate';
+        tipo.className = 'chip chip-neutro';
         tipo.textContent = etiquetaTipo(q.type);
         izq.append(num, tipo);
         const pts = document.createElement('span');
-        pts.className = 'font-mono text-[11px] text-muted shrink-0';
+        pts.className = 't-num text-xs text-muted shrink-0';
         pts.textContent = dec(q.points) + ' pts';
         head.append(izq, pts);
 
         const cuerpo = document.createElement('div');
-        cuerpo.className = 'px-5 md:px-6 py-5';
+        cuerpo.className = 'card-body';
         const enunciado = document.createElement('p');
-        enunciado.className = 'font-medium leading-relaxed mb-4';
+        enunciado.className = 't-h3 font-medium leading-snug mb-4';
         enunciado.id = 'enun-' + q.id;
         enunciado.textContent = q.text;
         cuerpo.appendChild(enunciado);
@@ -648,18 +593,18 @@
       if (q.type === 'mc' || q.type === 'ms' || q.type === 'tf') {
         // El enunciado que está arriba hace de rótulo del grupo, sin repetirlo.
         const fs = document.createElement('fieldset');
-        fs.className = 'space-y-2';
+        fs.className = 'space-y-2.5';
         fs.setAttribute('role', 'group');
         fs.setAttribute('aria-labelledby', 'enun-' + q.id);
 
         const opciones = q.type === 'tf' ? ['Verdadero', 'Falso'] : q.options;
         opciones.forEach((texto, idx) => {
           const label = document.createElement('label');
-          label.className = 'opcion flex items-center gap-3 px-3.5 py-3 rounded-xl border border-line hover:border-brand cursor-pointer';
+          label.className = 'opcion';
           const input = document.createElement('input');
           input.type = q.type === 'ms' ? 'checkbox' : 'radio';
           input.name = 'q-' + q.id;
-          input.className = 'w-4 h-4 accent-[#243B7A] shrink-0';
+          input.className = '';
           input.value = String(idx);
 
           if (q.type === 'ms') input.checked = Array.isArray(val) && val.includes(idx);
@@ -679,7 +624,7 @@
           });
 
           const span = document.createElement('span');
-          span.className = 'text-sm';
+          span.className = 'opcion-texto';
           span.textContent = texto;
           label.append(input, span);
           fs.appendChild(label);
@@ -693,7 +638,7 @@
         input.maxLength = 300;
         input.value = val == null ? '' : String(val);
         input.placeholder = 'Escribí tu respuesta';
-        input.className = 'w-full px-3.5 py-3 rounded-xl border border-line bg-white focus:border-brand outline-none';
+        input.className = 'input';
         input.addEventListener('input', () => guardarRespuesta(q.id, input.value, true));
         return input;
       }
@@ -703,7 +648,7 @@
       ta.maxLength = 5000;
       ta.value = val == null ? '' : String(val);
       ta.placeholder = 'Desarrollá tu respuesta';
-      ta.className = 'w-full px-3.5 py-3 rounded-xl border border-line bg-white focus:border-brand outline-none resize-y';
+      ta.className = 'textarea';
       ta.addEventListener('input', () => guardarRespuesta(q.id, ta.value, true));
       return ta;
     }
@@ -770,7 +715,7 @@
     async function registrarIncidente(tipo, dur, at) {
       S.incidentes++;
       $('chip-incidentes').textContent = S.incidentes + (S.incidentes === 1 ? ' incidente' : ' incidentes');
-      $('chip-incidentes').className = 'font-mono text-[12px] font-medium text-alert';
+      $('chip-incidentes').className = 't-num text-xs font-semibold text-alert';
       const v = $('vigil');
       v.classList.remove('ok');
       v.classList.add('alert');
@@ -788,10 +733,10 @@
         : 'El atajo detectado quedó en el registro que ve tu docente.';
       $('aviso-detalle').textContent = '';
       const hora = document.createElement('span');
-      hora.className = 'font-mono text-sm font-bold text-ink';
+      hora.className = 't-num text-sm font-bold text-ink';
       hora.textContent = hms(at);
       const etiqueta = document.createElement('span');
-      etiqueta.className = 'font-mono text-[11px] text-muted';
+      etiqueta.className = 't-hint text-right';
       etiqueta.textContent = label;
       $('aviso-detalle').append(hora, etiqueta);
       $('aviso-conteo').textContent = 'Incidentes acumulados: ' + S.incidentes;
@@ -802,7 +747,7 @@
       const v = $('vigil');
       v.classList.remove('alert');
       v.classList.add('ok');
-      $('chip-incidentes').className = 'font-mono text-[12px] font-medium text-muted';
+      $('chip-incidentes').className = 't-num text-xs text-muted';
     });
 
     function notaPerdida() {
@@ -914,12 +859,12 @@
       dl.textContent = '';
       filas.forEach(([k, v]) => {
         const fila = document.createElement('div');
-        fila.className = 'flex items-baseline justify-between gap-3 border-b border-line pb-2';
+        fila.className = 'flex items-baseline justify-between gap-3 px-4 py-2.5';
         const dt = document.createElement('dt');
-        dt.className = 'font-mono text-[11px] uppercase tracking-[0.16em] text-muted';
+        dt.className = 'stat-k';
         dt.textContent = k;
         const dd = document.createElement('dd');
-        dd.className = 'font-semibold text-sm text-right';
+        dd.className = 'font-semibold text-sm text-right min-w-0 truncate';
         dd.textContent = v;
         fila.append(dt, dd);
         dl.appendChild(fila);

@@ -70,28 +70,44 @@ alumno.
 Vale aclarar qué **no** hace: es un disuasivo, no un candado. No detecta un segundo
 dispositivo, ni una máquina virtual, ni a alguien mirando por encima del hombro.
 
-## Identidad visual
+## Sistema visual
 
-Colores institucionales, cada uno con un rol fijo. Están definidos una sola vez, en
-el `tailwind.config` de cada página; para cambiar la paleta alcanza con tocar ahí.
+Las dos pantallas comparten `public/tema.js` (paleta y tipografías de Tailwind) y
+`public/estilo.css` (tokens y componentes). **Ahí se cambia todo**: no hay estilos
+sueltos duplicados entre archivos, que era lo que las hacía divergir.
 
-| Token         | Color                    | Rol                                          |
-| ------------- | ------------------------ | -------------------------------------------- |
-| `canvas`      | `#FFF4E5` naranja muy claro | fondo de página                           |
-| `paper`       | `#FFFFFF` blanco         | tarjetas, que se despegan por sombra cálida   |
-| `ink`         | `#17122B` violeta oscuro | texto principal y bloques oscuros de contraste |
-| `brand`       | `#243B7A` azul           | primario estructural, botones principales     |
-| `accent`      | `#FF9300` naranja        | destaques, código de la toma, sala de espera  |
-| `accent-deep` | `#E4510B` naranja rojizo | rótulos sobre fondo claro                     |
-| `ok`          | `#209B8A` verde azulado  | correcto, examen en curso, aprobado           |
-| `alert`       | `#C52525` rojo           | incidentes, acciones peligrosas               |
-| `plum`        | `#7D2048` bordó          | nota provisoria, respuesta sin corregir       |
+Colores institucionales, cada uno con un rol fijo:
 
-El fondo es plano: sin grilla, sin degradados, sin textura. Las superficies se separan
-con **un solo recurso, el borde de 1 px**; no hay sombras salvo un susurro en los
-elementos flotantes. El color aparece únicamente donde significa algo — un estado, una
-acción, un incidente — nunca como decoración. Lo oscuro quedó reservado para lo que
-flota por encima de la página: modales, avisos y botones primarios.
+| Token         | Color                      | Rol                                          |
+| ------------- | -------------------------- | -------------------------------------------- |
+| `canvas`      | `#FDF1E3` naranja muy claro | fondo de página                             |
+| `paper`       | `#FFFFFF` blanco           | tarjetas                                      |
+| `ink`         | `#17122B` violeta oscuro   | texto principal                               |
+| `brand`       | `#243B7A` azul             | primario estructural, botones principales     |
+| `accent`      | `#FF9300` naranja          | rellenos: puntos de estado, barra de progreso |
+| `accent-deep` | `#B34700` naranja quemado  | el mismo naranja, ya legible como texto       |
+| `ok`          | `#209B8A` verde azulado    | rellenos de correcto / en curso               |
+| `ok-ink`      | `#146356` verde oscuro     | ese verde como texto                          |
+| `alert`       | `#C52525` rojo             | incidentes, acciones peligrosas               |
+| `plum`        | `#7D2048` bordó            | nota provisoria, respuesta sin corregir       |
+
+Algunos colores vienen en dos tonos porque **el institucional puro no siempre alcanza
+para texto**: el naranja da 3,4:1 y el verde 2,9:1 sobre fondo claro, por debajo del
+mínimo legible. El tono vivo se usa para rellenos y el oscuro para letras.
+
+Reglas del sistema:
+
+- **Superficies**: se separan con un borde de 1 px, no con sombras. Las sombras quedan
+  para lo que flota (modales, toast) y para el `hover` de lo que es clicable.
+- **Tipografía**: escala fluida con `clamp()`, sin saltos entre breakpoints. El mono en
+  versalitas quedó sólo para datos — horas, códigos, métricas — y ya no para cada
+  rótulo de campo.
+- **Color**: aparece donde significa algo (un estado, una acción, un incidente), nunca
+  como decoración.
+- **Componentes**: `.btn` con variantes y tamaños, `.card`, `.input`, `.chip`, `.stat`,
+  `.opcion`, `.skel`. Todo lo que se dibuja desde JavaScript usa estas clases.
+- **Responsive**: el layout cambia de forma, no sólo de tamaño. La tabla de alumnos se
+  vuelve tarjeta apilada en teléfono y los modales suben como hoja desde abajo.
 
 Sobre las animaciones: las listas que el servidor reenvía enteras (la sala, la tabla
 de alumnos, el editor) sólo se redibujan si algo cambió de verdad. Sin esa guarda, cada
@@ -106,8 +122,10 @@ server/
   db.js       esquema SQLite
   examen.js   validación de preguntas, autocorrección y cálculo de nota
 public/
-  index.html  vista del alumno
+  index.html   vista del alumno
   docente.html panel del docente
+  tema.js      paleta y tipografías (config de Tailwind), compartida
+  estilo.css   tokens, componentes y animaciones, compartidos
 ```
 
 Sin dependencias de npm: usa `node:http` y `node:sqlite`, que vienen con Node 24.
