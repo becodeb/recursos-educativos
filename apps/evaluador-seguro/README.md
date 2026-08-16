@@ -15,7 +15,11 @@ la vez. Al terminar ve las respuestas ya autocorregidas, puede cambiar cualquier
 corrección a mano y consultar el registro de actividad de cada alumno.
 
 **El alumno** entra a `/`, escribe el código (o abre el link, que ya lo trae cargado),
-pone su nombre y espera. No ve ninguna pregunta hasta que el docente arranca.
+pone su nombre y espera. No ve ninguna pregunta hasta que el docente arranca. Cuando
+entrega, la pantalla de confirmación le ofrece **ingresar a otro examen**; y si vuelve
+a abrir la página más tarde, cae directo en el ingreso de código en lugar de quedar
+trabado en la confirmación anterior. Salir sólo suelta la sesión del navegador: las
+respuestas entregadas siguen en el servidor y el docente las sigue viendo.
 
 ## Levantarlo
 

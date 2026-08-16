@@ -388,6 +388,12 @@ async function rutasApi(req, res, url) {
     });
   }
 
+  // Cierra la sesión del alumno para que pueda ingresar otro código. El registro
+  // del alumno y sus respuestas quedan intactos: el docente los sigue viendo.
+  if (p === '/api/student/leave' && m === 'POST') {
+    return json(res, 200, { ok: true }, { 'Set-Cookie': cookie('es_alumno', '', 0) });
+  }
+
   if (p === '/api/student/state') {
     const a = alumnoDe(req);
     // Es el sondeo que hace la página al cargar: "no hay sesión" es una respuesta

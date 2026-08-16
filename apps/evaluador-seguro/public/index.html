@@ -271,6 +271,11 @@
 
           <dl id="done-resumen" class="text-left space-y-2 mb-7"></dl>
 
+          <button id="btn-otro-examen"
+                  class="lift w-full border border-line hover:border-brand hover:bg-brand-soft font-semibold py-3 rounded-xl mb-4">
+            Ingresar a otro examen
+          </button>
+
           <p class="text-xs text-muted">La corrección la publica tu docente.</p>
         </div>
       </div>
@@ -927,18 +932,44 @@
     const contarRespondidas = () => S.preguntas.filter(respondida).length;
 
     // ── retomar sesión al recargar ──────────────────────────────────
+    /** Suelta la sesión de esta toma y vuelve al ingreso, listo para otro código. */
+    async function salirDeLaToma() {
+      await api('/api/student/leave', { method: 'POST' }).catch(() => {});
+      // Recargamos en vez de limpiar el estado a mano: así no queda nada de la
+      // toma anterior (respuestas, preguntas, incidentes, stream) dando vueltas.
+      location.href = '/';
+    }
+    $('btn-otro-examen').addEventListener('click', () => {
+      $('btn-otro-examen').disabled = true;
+      salirDeLaToma();
+    });
+
     (async function retomar() {
       let datos = null;
       try {
         datos = await api('/api/student/state');
       } catch { /* sin conexión: cae al ingreso normal */ }
-      if (datos && datos.run) {
-        aplicarEstado(datos);
-        conectar();
-      } else {
+
+      if (!datos || !datos.run) {
         show('join');
         $('campo-codigo').focus();
+        return;
       }
+
+      // Si la toma anterior ya está cerrada para este alumno, no lo dejamos
+      // encerrado en la pantalla de entrega: soltamos la sesión y lo devolvemos
+      // al ingreso para que pueda rendir otro examen.
+      const terminado = datos.student.status === 'submitted' || datos.run.status === 'ended';
+      if (terminado) {
+        await api('/api/student/leave', { method: 'POST' }).catch(() => {});
+        show('join');
+        $('campo-codigo').focus();
+        toast('Ya entregaste ese examen. Podés ingresar con un código nuevo.');
+        return;
+      }
+
+      aplicarEstado(datos);
+      conectar();
     })();
   </script>
 </body>
