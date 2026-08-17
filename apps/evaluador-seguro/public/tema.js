@@ -5,13 +5,14 @@ tailwind.config = {
   theme: {
     extend: {
       colors: {
-        canvas: '#D2D0D9',   // fondo de página
+        canvas: '#AFC4E8',   // fondo de página (base del degradado)
+        inset: '#E8ECF8',    // superficies hundidas dentro de las tarjetas
         paper: '#FFFFFF',    // tarjetas
         ink: '#17122B',      // texto principal
         ink2: '#4B2D68',     // texto secundario (violeta institucional)
-        line: '#C9C6D1',     // bordes
-        line2: '#B0ACBB',    // bordes de campos e interactivos
-        muted: '#565261',    // texto auxiliar
+        line: '#BFC7DC',     // bordes
+        line2: '#A3ADCA',    // bordes de campos e interactivos
+        muted: '#474154',    // texto auxiliar
         purple: '#4B2D68',   // cabecera del panel docente
         panel: '#241A3F',    // superficies oscuras (toast, avisos)
         brand: { DEFAULT: '#243B7A', deep: '#16264F', soft: '#DCE3F2' },

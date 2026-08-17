@@ -80,7 +80,9 @@ Colores institucionales, cada uno con un rol fijo:
 
 | Token         | Color                     | Rol                                          |
 | ------------- | ------------------------- | -------------------------------------------- |
-| `canvas`      | `#D2D0D9` gris medio      | fondo de página                               |
+| `canvas`      | `#AFC4E8` azul claro      | base del degradado de la página               |
+| `canvas-2`    | `#B9ACD6` lavanda         | el otro extremo del degradado                 |
+| `inset`       | `#E8ECF8` azul muy claro  | superficies hundidas dentro de las tarjetas   |
 | `paper`       | `#FFFFFF` blanco          | tarjetas                                      |
 | `ink`         | `#17122B` violeta oscuro  | texto principal                               |
 | `purple`      | `#4B2D68` violeta         | cabecera del panel docente, texto secundario  |
@@ -97,16 +99,23 @@ Varios colores vienen en dos tonos porque **el institucional puro no alcanza par
 texto**: sobre fondo claro el naranja da 3,7:1 y el verde 2,9:1, por debajo del mínimo
 legible. El tono vivo se usa para rellenos y el oscuro para letras.
 
-El fondo es un **gris medio neutro**, con un matiz violáceo mínimo para que dialogue
-con el violeta institucional en vez de chocar como gris frío puro. Sobre el naranja
-claro que había antes la tarjeta blanca no se despegaba (1,09:1); contra este gris
-llega a 1,53:1 y los elementos se distinguen. El naranja quedó donde rinde —acentos,
-chips, el código de la toma— y no como fondo.
+El fondo es un **degradado muy sutil** de azul claro a lavanda, en 155°. Los dos
+extremos están cerca en luminancia, así que se lee como un fondo con profundidad y no
+como una difuminación marcada. La tarjeta blanca se despega entre **1,77:1 y 2,11:1**
+según el tramo — bastante más que el 1,09:1 del crema original.
+
+Dos consecuencias de tener degradado, que conviene tener presentes al tocar colores:
+
+- **Todo lo que va sobre la página se audita contra `canvas-2`**, el extremo oscuro. Es
+  el caso peor; si pasa ahí, pasa en todo el degradado.
+- **`inset` existe por esto**: las superficies hundidas dentro de una tarjeta (pie de
+  tarjeta, caja del código, control de pestañas) no pueden usar el color de la página,
+  porque ese color es ahora una escala. Usan un tono claro fijo de la misma familia.
 
 Reglas del sistema:
 
-- **Nada translúcido**: ni fondos con alfa ni desenfoques. Todos los colores son lisos.
-  La única excepción es el velo de los modales, que sí tiene que dejar ver el fondo.
+- **Sin transparencias ni desenfoques**: los colores son lisos. Las dos excepciones son
+  el degradado del fondo y el velo de los modales, que tiene que dejar ver la página.
 - **Superficies**: se separan con un borde de 1 px y una sombra corta. Las sombras
   grandes quedan para lo que flota (modales, toast) y para el `hover` de lo clicable.
 - **Tipografía**: escala fluida con `clamp()`, sin saltos entre breakpoints. El mono en

@@ -43,7 +43,7 @@
           <path fill="#17122B" d="M12 7.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm0 1.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4z"/>
         </svg>
         <div>
-          <p class="t-eyebrow text-accent-deep">Panel docente</p>
+          <p class="t-eyebrow">Panel docente</p>
           <h1 class="t-h1">Evaluador Seguro</h1>
         </div>
       </header>
@@ -198,7 +198,7 @@
       <!-- panel de código: sólo mientras el examen no terminó -->
       <div id="run-panel-codigo" class="card card-lg overflow-hidden mb-5">
         <div class="grid md:grid-cols-[minmax(0,auto),minmax(0,1fr)]">
-          <div class="bg-canvas border-b md:border-b-0 md:border-r border-line px-6 py-6 text-center">
+          <div class="bg-inset border-b md:border-b-0 md:border-r border-line px-6 py-6 text-center">
             <p class="t-eyebrow mb-2">Código del examen</p>
             <p id="run-codigo" class="codigo-grande">------</p>
           </div>
@@ -267,7 +267,7 @@
         </button>
       </header>
       <div id="det-cuerpo" class="sheet-cuerpo px-5 sm:px-6 py-6 space-y-6 flex-1"></div>
-      <footer class="px-5 sm:px-6 py-4 border-t border-line flex flex-wrap gap-3 justify-end shrink-0 bg-canvas">
+      <footer class="px-5 sm:px-6 py-4 border-t border-line flex flex-wrap gap-3 justify-end shrink-0 bg-inset">
         <button id="btn-informe-alumno" class="btn btn-outline btn-sm">Copiar informe</button>
         <button id="btn-cerrar-alumno-2" class="btn btn-dark btn-sm">Cerrar</button>
       </footer>
@@ -730,7 +730,7 @@
         if (editorAnimar === -2) card.style.setProperty('--i', i);
 
         // cabecera
-        const head = el('header', 'card-head !py-2.5 bg-canvas');
+        const head = el('header', 'card-head !py-2.5 bg-inset');
         head.appendChild(el('span', 'ordinal', two(i + 1)));
         head.appendChild(el('span', 'chip chip-neutro', NOMBRE_TIPO[q.type]));
 
@@ -1325,7 +1325,7 @@
         const d = a.correccion.detalle.find((x) => x.id === q.id);
         const card = el('article', 'card overflow-hidden');
 
-        const head = el('header', 'card-head !px-4 !py-2.5 bg-canvas');
+        const head = el('header', 'card-head !px-4 !py-2.5 bg-inset');
         head.append(
           el('span', 'ordinal', two(i + 1)),
           el('span', 'chip chip-neutro', NOMBRE_TIPO[q.type]),

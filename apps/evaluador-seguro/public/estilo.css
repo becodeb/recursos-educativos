@@ -8,13 +8,15 @@
    ========================================================================== */
 
 :root {
-  --canvas: #D2D0D9;
+  --canvas: #AFC4E8;      /* base del degradado de la página */
+  --canvas-2: #B9ACD6;    /* el otro extremo, apenas más violeta */
+  --inset: #E8ECF8;       /* superficies hundidas dentro de las tarjetas */
   --paper: #FFFFFF;
   --ink: #17122B;
   --ink-2: #4B2D68;      /* violeta institucional, usado como texto secundario */
-  --muted: #565261;
-  --line: #C9C6D1;
-  --line-2: #B0ACBB;
+  --muted: #474154;
+  --line: #BFC7DC;
+  --line-2: #A3ADCA;
   --purple: #4B2D68;
   --panel: #241A3F;
 
@@ -41,7 +43,7 @@
   --r-xl: 1.25rem;
   --r-2xl: 1.5rem;
 
-  --sh-1: 0 1px 2px rgba(28, 24, 38, .10), 0 3px 8px -4px rgba(28, 24, 38, .16);
+  --sh-1: 0 1px 2px rgba(35, 40, 80, .10), 0 3px 8px -4px rgba(28, 24, 38, .16);
   --sh-2: 0 2px 4px rgba(28, 24, 38, .08), 0 10px 24px -10px rgba(28, 24, 38, .22);
   --sh-3: 0 4px 8px rgba(28, 24, 38, .10), 0 24px 56px -14px rgba(28, 24, 38, .34);
 
@@ -55,6 +57,8 @@ html { -webkit-text-size-adjust: 100%; }
 
 body {
   background-color: var(--canvas);
+  background-image: linear-gradient(155deg, var(--canvas) 0%, var(--canvas-2) 100%);
+  background-attachment: fixed;
   color: var(--ink);
   font-size: .9375rem;          /* 15px: el 14px de antes quedaba chico para leer consignas */
   line-height: 1.6;
@@ -73,7 +77,7 @@ body {
 * { scrollbar-color: var(--line-2) transparent; scrollbar-width: thin; }
 *::-webkit-scrollbar { width: 10px; height: 10px; }
 *::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
-*::-webkit-scrollbar-thumb:hover { background: #9A96A6; background-clip: content-box; }
+*::-webkit-scrollbar-thumb:hover { background: #8892B4; background-clip: content-box; }
 
 /* ── tipografía ────────────────────────────────────────────────────────── */
 
@@ -142,7 +146,7 @@ body {
   padding: 1rem 1.25rem; border-bottom: 1px solid var(--line);
 }
 .card-body { padding: 1.25rem; }
-.card-foot { padding: .875rem 1.25rem; border-top: 1px solid var(--line); background: var(--canvas); }
+.card-foot { padding: .875rem 1.25rem; border-top: 1px solid var(--line); background: var(--inset); }
 @media (min-width: 768px) {
   .card-head { padding: 1.125rem 1.5rem; }
   .card-body { padding: 1.5rem; }
@@ -150,7 +154,7 @@ body {
 }
 
 .panel-inset {
-  background: var(--canvas);
+  background: var(--inset);
   border: 1px solid var(--line-2);
   border-radius: var(--r-lg);
 }
@@ -191,7 +195,7 @@ body {
 .btn-outline:not(:disabled):hover { border-color: var(--brand); background: var(--brand-soft); color: var(--brand-deep); }
 
 .btn-ghost { background: transparent; color: var(--muted); }
-.btn-ghost:not(:disabled):hover { background: var(--canvas); color: var(--ink); border-color: var(--line); }
+.btn-ghost:not(:disabled):hover { background: var(--inset); color: var(--ink); border-color: var(--line); }
 
 .btn-ghost-danger { background: transparent; color: var(--alert-deep); }
 .btn-ghost-danger:not(:disabled):hover { background: var(--alert-soft); color: var(--alert-deep); }
@@ -239,9 +243,9 @@ body {
 .input[aria-invalid="true"], .textarea[aria-invalid="true"] {
   border-color: var(--alert); box-shadow: 0 0 0 3px rgba(197, 37, 37, .11);
 }
-.input:disabled, .textarea:disabled { background: var(--canvas); color: var(--muted); cursor: not-allowed; }
+.input:disabled, .textarea:disabled { background: var(--inset); color: var(--muted); cursor: not-allowed; }
 
-.input-lectura { background: var(--canvas); color: var(--ink-2); }
+.input-lectura { background: var(--inset); color: var(--ink-2); }
 
 /* Campo de código: el dato más importante de la pantalla del alumno. */
 .input-codigo {
@@ -334,7 +338,7 @@ body {
 /* ── carga ─────────────────────────────────────────────────────────────── */
 
 .skel {
-  background: linear-gradient(90deg, #C6C3CE 25%, #E4E2EA 37%, #C6C3CE 63%);
+  background: linear-gradient(90deg, #C9D3E9 25%, #E6EBF6 37%, #C9D3E9 63%);
   background-size: 400% 100%;
   animation: brillo 1.5s ease infinite;
   border-radius: var(--r-sm);
@@ -451,7 +455,7 @@ body {
 
 .segmented {
   display: inline-flex; gap: .25rem; padding: .25rem;
-  background: var(--canvas); border: 1px solid var(--line-2);
+  background: var(--inset); border: 1px solid var(--line-2);
   border-radius: var(--r-md);
 }
 .segmented button {
