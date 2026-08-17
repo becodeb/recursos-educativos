@@ -80,7 +80,7 @@ Colores institucionales, cada uno con un rol fijo:
 
 | Token         | Color                     | Rol                                          |
 | ------------- | ------------------------- | -------------------------------------------- |
-| `canvas`      | `#EACFA8` arena           | fondo de página                               |
+| `canvas`      | `#D2D0D9` gris medio      | fondo de página                               |
 | `paper`       | `#FFFFFF` blanco          | tarjetas                                      |
 | `ink`         | `#17122B` violeta oscuro  | texto principal                               |
 | `purple`      | `#4B2D68` violeta         | cabecera del panel docente, texto secundario  |
@@ -97,8 +97,11 @@ Varios colores vienen en dos tonos porque **el institucional puro no alcanza par
 texto**: sobre fondo claro el naranja da 3,7:1 y el verde 2,9:1, por debajo del mínimo
 legible. El tono vivo se usa para rellenos y el oscuro para letras.
 
-El fondo es **arena, no naranja lavado**: sobre un crema muy claro la tarjeta blanca no
-se despegaba (1,09:1). Con este tono llega a 1,5:1 y los elementos se distinguen.
+El fondo es un **gris medio neutro**, con un matiz violáceo mínimo para que dialogue
+con el violeta institucional en vez de chocar como gris frío puro. Sobre el naranja
+claro que había antes la tarjeta blanca no se despegaba (1,09:1); contra este gris
+llega a 1,53:1 y los elementos se distinguen. El naranja quedó donde rinde —acentos,
+chips, el código de la toma— y no como fondo.
 
 Reglas del sistema:
 
