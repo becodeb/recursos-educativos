@@ -18,14 +18,14 @@
 
   <!-- Cabecera persistente: identidad a la izquierda, sesión a la derecha.
        Se oculta en el ingreso, donde la marca ya aparece en la tarjeta. -->
-  <header id="barra-superior" class="hidden sticky top-0 z-40 bg-canvas/90 backdrop-blur border-b border-line">
+  <header id="barra-superior" class="hidden sticky top-0 z-40 barra-marca">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 md:h-16 flex items-center gap-3">
       <svg viewBox="0 0 24 24" class="w-8 h-8 shrink-0" aria-hidden="true">
         <path fill="#FF9300" d="M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z"/>
         <path fill="#17122B" d="M12 7.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm0 1.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4z"/>
       </svg>
       <div class="min-w-0">
-        <p class="font-display font-bold text-[15px] leading-none">Evaluador Seguro</p>
+        <p class="font-display font-bold text-[15px] leading-none text-white">Evaluador Seguro</p>
         <p class="t-eyebrow leading-none mt-1 hidden sm:block">Panel docente</p>
       </div>
       <nav id="miga" class="hidden md:flex items-center gap-1.5 ml-3 min-w-0" aria-label="Ubicación"></nav>
@@ -267,7 +267,7 @@
         </button>
       </header>
       <div id="det-cuerpo" class="sheet-cuerpo px-5 sm:px-6 py-6 space-y-6 flex-1"></div>
-      <footer class="px-5 sm:px-6 py-4 border-t border-line flex flex-wrap gap-3 justify-end shrink-0 bg-canvas/60">
+      <footer class="px-5 sm:px-6 py-4 border-t border-line flex flex-wrap gap-3 justify-end shrink-0 bg-canvas">
         <button id="btn-informe-alumno" class="btn btn-outline btn-sm">Copiar informe</button>
         <button id="btn-cerrar-alumno-2" class="btn btn-dark btn-sm">Cerrar</button>
       </footer>
@@ -730,7 +730,7 @@
         if (editorAnimar === -2) card.style.setProperty('--i', i);
 
         // cabecera
-        const head = el('header', 'card-head !py-2.5 bg-canvas/60');
+        const head = el('header', 'card-head !py-2.5 bg-canvas');
         head.appendChild(el('span', 'ordinal', two(i + 1)));
         head.appendChild(el('span', 'chip chip-neutro', NOMBRE_TIPO[q.type]));
 
@@ -1234,7 +1234,7 @@
           const nota = el('div', 'stat md:text-right md:w-20');
           nota.appendChild(el('p', 'stat-k', a.correccion.provisional ? 'Provisoria' : 'Nota'));
           nota.appendChild(el('p', 'stat-v ' +
-            (a.correccion.provisional ? 'text-plum' : a.correccion.nota >= 6 ? 'text-ok-ink' : 'text-alert'),
+            (a.correccion.provisional ? 'text-plum' : a.correccion.nota >= 6 ? 'text-ok-ink' : 'text-alert-deep'),
             dec(a.correccion.nota)));
           metricas.appendChild(nota);
         }
@@ -1305,9 +1305,9 @@
       resumen.append(
         bloque(a.correccion.provisional ? 'Nota provisoria' : 'Nota',
           dec(a.correccion.nota) + ' / 10',
-          a.correccion.provisional ? 'text-plum' : a.correccion.nota >= 6 ? 'text-ok-ink' : 'text-alert'),
+          a.correccion.provisional ? 'text-plum' : a.correccion.nota >= 6 ? 'text-ok-ink' : 'text-alert-deep'),
         bloque('Puntaje', dec(a.correccion.obtenido) + ' / ' + dec(a.correccion.total)),
-        bloque('Incidentes', String(a.incidents.length), a.incidents.length ? 'text-alert' : 'text-ink')
+        bloque('Incidentes', String(a.incidents.length), a.incidents.length ? 'text-alert-deep' : 'text-ink')
       );
       cuerpo.appendChild(resumen);
 
@@ -1325,7 +1325,7 @@
         const d = a.correccion.detalle.find((x) => x.id === q.id);
         const card = el('article', 'card overflow-hidden');
 
-        const head = el('header', 'card-head !px-4 !py-2.5 bg-canvas/60');
+        const head = el('header', 'card-head !px-4 !py-2.5 bg-canvas');
         head.append(
           el('span', 'ordinal', two(i + 1)),
           el('span', 'chip chip-neutro', NOMBRE_TIPO[q.type]),

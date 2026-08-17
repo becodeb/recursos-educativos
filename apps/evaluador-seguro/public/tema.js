@@ -5,19 +5,20 @@ tailwind.config = {
   theme: {
     extend: {
       colors: {
-        canvas: '#FDF1E3',   // fondo de página
+        canvas: '#EACFA8',   // fondo de página
         paper: '#FFFFFF',    // tarjetas
         ink: '#17122B',      // texto principal
-        ink2: '#3D3450',     // texto secundario fuerte
-        line: '#EFE0CC',     // bordes
-        line2: '#E1CDB2',    // bordes de campos e interactivos
-        muted: '#746453',    // texto auxiliar
+        ink2: '#4B2D68',     // texto secundario (violeta institucional)
+        line: '#DCC29E',     // bordes
+        line2: '#C2A374',    // bordes de campos e interactivos
+        muted: '#64543F',    // texto auxiliar
+        purple: '#4B2D68',   // cabecera del panel docente
         panel: '#241A3F',    // superficies oscuras (toast, avisos)
-        brand: { DEFAULT: '#243B7A', deep: '#16264F', soft: '#E8ECF6' },
-        accent: { DEFAULT: '#FF9300', deep: '#B34700', soft: '#FFF0DA' },
-        ok: { DEFAULT: '#209B8A', deep: '#17796B', ink: '#146356', soft: '#DDF2EE' },
-        alert: { DEFAULT: '#C52525', deep: '#8E1919', soft: '#FAE6E6' },
-        plum: { DEFAULT: '#7D2048', deep: '#5A1434', soft: '#F7E6EC' },
+        brand: { DEFAULT: '#243B7A', deep: '#16264F', soft: '#DCE3F2' },
+        accent: { DEFAULT: '#FF9300', deep: '#8F3600', urgente: '#E4510B', soft: '#FFE8C6' },
+        ok: { DEFAULT: '#209B8A', deep: '#17796B', ink: '#146356', soft: '#C9EAE3' },
+        alert: { DEFAULT: '#C52525', deep: '#8E1919', soft: '#F7D6D6' },
+        plum: { DEFAULT: '#7D2048', deep: '#5A1434', soft: '#F2D9E1' },
       },
       fontFamily: {
         display: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],

@@ -78,27 +78,34 @@ sueltos duplicados entre archivos, que era lo que las hacía divergir.
 
 Colores institucionales, cada uno con un rol fijo:
 
-| Token         | Color                      | Rol                                          |
-| ------------- | -------------------------- | -------------------------------------------- |
-| `canvas`      | `#FDF1E3` naranja muy claro | fondo de página                             |
-| `paper`       | `#FFFFFF` blanco           | tarjetas                                      |
-| `ink`         | `#17122B` violeta oscuro   | texto principal                               |
-| `brand`       | `#243B7A` azul             | primario estructural, botones principales     |
-| `accent`      | `#FF9300` naranja          | rellenos: puntos de estado, barra de progreso |
-| `accent-deep` | `#B34700` naranja quemado  | el mismo naranja, ya legible como texto       |
-| `ok`          | `#209B8A` verde azulado    | rellenos de correcto / en curso               |
-| `ok-ink`      | `#146356` verde oscuro     | ese verde como texto                          |
-| `alert`       | `#C52525` rojo             | incidentes, acciones peligrosas               |
-| `plum`        | `#7D2048` bordó            | nota provisoria, respuesta sin corregir       |
+| Token         | Color                     | Rol                                          |
+| ------------- | ------------------------- | -------------------------------------------- |
+| `canvas`      | `#EACFA8` arena           | fondo de página                               |
+| `paper`       | `#FFFFFF` blanco          | tarjetas                                      |
+| `ink`         | `#17122B` violeta oscuro  | texto principal                               |
+| `purple`      | `#4B2D68` violeta         | cabecera del panel docente, texto secundario  |
+| `brand`       | `#243B7A` azul            | primario estructural, botones principales     |
+| `accent`      | `#FF9300` naranja         | rellenos: puntos de estado, barra de progreso |
+| `accent-deep` | `#8F3600` naranja quemado | el mismo naranja, ya legible como texto       |
+| `accent-urgente` | `#E4510B` naranja rojizo | reloj a punto de vencer                     |
+| `ok`          | `#209B8A` verde azulado   | rellenos de correcto / en curso               |
+| `ok-ink`      | `#146356` verde oscuro    | ese verde como texto                          |
+| `alert`       | `#C52525` rojo            | incidentes, acciones peligrosas               |
+| `plum`        | `#7D2048` bordó           | nota provisoria, respuesta sin corregir       |
 
-Algunos colores vienen en dos tonos porque **el institucional puro no siempre alcanza
-para texto**: el naranja da 3,4:1 y el verde 2,9:1 sobre fondo claro, por debajo del
-mínimo legible. El tono vivo se usa para rellenos y el oscuro para letras.
+Varios colores vienen en dos tonos porque **el institucional puro no alcanza para
+texto**: sobre fondo claro el naranja da 3,7:1 y el verde 2,9:1, por debajo del mínimo
+legible. El tono vivo se usa para rellenos y el oscuro para letras.
+
+El fondo es **arena, no naranja lavado**: sobre un crema muy claro la tarjeta blanca no
+se despegaba (1,09:1). Con este tono llega a 1,5:1 y los elementos se distinguen.
 
 Reglas del sistema:
 
-- **Superficies**: se separan con un borde de 1 px, no con sombras. Las sombras quedan
-  para lo que flota (modales, toast) y para el `hover` de lo que es clicable.
+- **Nada translúcido**: ni fondos con alfa ni desenfoques. Todos los colores son lisos.
+  La única excepción es el velo de los modales, que sí tiene que dejar ver el fondo.
+- **Superficies**: se separan con un borde de 1 px y una sombra corta. Las sombras
+  grandes quedan para lo que flota (modales, toast) y para el `hover` de lo clicable.
 - **Tipografía**: escala fluida con `clamp()`, sin saltos entre breakpoints. El mono en
   versalitas quedó sólo para datos — horas, códigos, métricas — y ya no para cada
   rótulo de campo.

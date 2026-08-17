@@ -169,7 +169,7 @@
 
     <!-- ============ EXAMEN ============ -->
     <section id="view-exam" class="hidden">
-      <div class="sticky top-0 z-40 bg-canvas/90 backdrop-blur border-b border-line">
+      <div class="sticky top-0 z-40 barra-examen">
         <div class="max-w-3xl mx-auto px-4 sm:px-6 py-2.5 md:py-3">
           <div class="flex items-center gap-3">
             <div id="vigil" class="vigil ok" role="img" aria-label="Estado de vigilancia"></div>
@@ -505,7 +505,7 @@
         if (reciente && primeraSala) li.style.setProperty('--i', i);
 
         const punto = document.createElement('span');
-        punto.className = 'w-6 h-6 rounded-full grid place-items-center text-[10px] font-bold shrink-0 ' + (p.status === 'submitted' ? 'bg-line text-muted' : 'bg-ok-soft text-ok-deep');
+        punto.className = 'w-6 h-6 rounded-full grid place-items-center text-[10px] font-bold shrink-0 ' + (p.status === 'submitted' ? 'bg-line text-muted' : 'bg-ok-soft text-ok-ink');
         const txt = document.createElement('span');
         txt.className = 'font-medium truncate max-w-[11rem]';
         txt.textContent = p.name + (p.course ? ' · ' + p.course : '');
