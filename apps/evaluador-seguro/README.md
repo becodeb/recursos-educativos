@@ -125,6 +125,10 @@ Reglas del sistema:
   como decoración.
 - **Componentes**: `.btn` con variantes y tamaños, `.card`, `.input`, `.chip`, `.stat`,
   `.opcion`, `.skel`. Todo lo que se dibuja desde JavaScript usa estas clases.
+- **Una sola columna**: todo se apila de arriba hacia abajo, centrado, con el mismo
+  ancho máximo en las cuatro vistas. Nada de una cosa a la izquierda y otra a la
+  derecha; las únicas divisiones en columnas son grillas de elementos iguales
+  (pares de campos, métricas, botones de tipo de pregunta).
 - **Responsive**: el layout cambia de forma, no sólo de tamaño. La tabla de alumnos se
   vuelve tarjeta apilada en teléfono y los modales suben como hoja desde abajo.
 
