@@ -1,3 +1,9 @@
 videos/
 *.mp4
 _test.html
+
+# base de datos local de evaluador-seguro
+apps/evaluador-seguro/data/
+*.db
+*.db-wal
+*.db-shm

@@ -1,4 +1,4 @@
 services:
   evaluador-seguro:
     ports:
-      - "8081:80"
+      - "8081:8080"

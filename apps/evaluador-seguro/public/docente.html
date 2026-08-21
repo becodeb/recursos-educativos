@@ -1,0 +1,1585 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Panel docente de Evaluador Seguro: armá exámenes, tomalos en vivo y corregí con el registro de auditoría a la vista.">
+  <title>Evaluador Seguro · Panel docente</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23FF9300' d='M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z'/%3E%3Ccircle cx='12' cy='11' r='3' fill='%2317122B'/%3E%3Ccircle cx='12' cy='11' r='1.3' fill='%23FF9300'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/tema.js"></script>
+  <link rel="stylesheet" href="/estilo.css">
+</head>
+<body class="font-body text-ink antialiased min-h-dvh flex flex-col">
+
+  <!-- Cabecera persistente: identidad a la izquierda, sesión a la derecha.
+       Se oculta en el ingreso, donde la marca ya aparece en la tarjeta. -->
+  <header id="barra-superior" class="hidden sticky top-0 z-40 barra-marca">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 h-14 md:h-16 flex items-center gap-3">
+      <svg viewBox="0 0 24 24" class="w-8 h-8 shrink-0" aria-hidden="true">
+        <path fill="#FF9300" d="M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z"/>
+        <path fill="#17122B" d="M12 7.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm0 1.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4z"/>
+      </svg>
+      <div class="min-w-0">
+        <p class="font-display font-bold text-[15px] leading-none text-white">Evaluador Seguro</p>
+        <p class="t-eyebrow leading-none mt-1 hidden sm:block">Panel docente</p>
+      </div>
+      <nav id="miga" class="hidden md:flex items-center gap-1.5 ml-3 min-w-0" aria-label="Ubicación"></nav>
+      <button id="btn-logout" class="btn btn-ghost btn-sm ml-auto shrink-0">Salir</button>
+    </div>
+  </header>
+
+  <main id="app" class="flex-1">
+
+    <!-- ============ LOGIN ============ -->
+    <section id="view-login" class="hidden max-w-md mx-auto px-4 sm:px-6 py-14 md:py-24">
+      <header class="flex items-center gap-3 mb-8">
+        <svg viewBox="0 0 24 24" class="w-12 h-12 shrink-0" aria-hidden="true">
+          <path fill="#FF9300" d="M12 2.5 19 5.2v6.1c0 4.6-3 8.3-7 10.2-4-1.9-7-5.6-7-10.2V5.2L12 2.5z"/>
+          <path fill="#17122B" d="M12 7.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm0 1.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4z"/>
+        </svg>
+        <div>
+          <p class="t-eyebrow">Panel docente</p>
+          <h1 class="t-h1">Evaluador Seguro</h1>
+        </div>
+      </header>
+
+      <div class="card card-lg rise">
+        <div class="card-body sm:p-7">
+          <h2 class="t-h2 mb-1.5">Ingreso</h2>
+          <p class="t-hint mb-6">Escribí la clave docente para entrar al panel.</p>
+          <form id="form-login" novalidate class="space-y-4">
+            <div class="field">
+              <label for="campo-clave" class="t-label">Clave</label>
+              <input id="campo-clave" type="password" autocomplete="current-password" placeholder="••••••••" class="input">
+            </div>
+            <p id="error-login" class="hidden chip chip-alert !flex w-full !rounded-xl px-3.5 py-2.5 text-sm" role="alert"></p>
+            <button type="submit" class="btn btn-primary btn-lg btn-block">Entrar</button>
+          </form>
+        </div>
+      </div>
+
+      <p class="text-center t-hint mt-6">
+        ¿Sos alumno? <a href="/" class="underline hover:text-ink">Ingresá con tu código</a>
+      </p>
+    </section>
+
+    <!-- ============ ESCRITORIO ============ -->
+    <section id="view-dash" class="hidden max-w-3xl mx-auto px-4 sm:px-6 py-7 md:py-10">
+
+      <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+        <div class="min-w-0">
+          <h1 class="t-display mb-1">Tus exámenes</h1>
+          <p class="t-hint max-w-prose">Armá un examen una vez y tomalo todas las veces que quieras.</p>
+        </div>
+        <button id="btn-nuevo-examen" class="btn btn-primary btn-md shrink-0">
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.6"
+               stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          Crear examen
+        </button>
+      </div>
+
+      <!-- resumen: da presencia a la sección y contexto de un vistazo -->
+      <div id="dash-resumen" class="space-y-4 mb-6"></div>
+
+      <div class="segmented mb-5" role="tablist" aria-label="Secciones del panel">
+        <button data-tab="examenes" role="tab" aria-selected="true" class="tab-bt">Mis exámenes</button>
+        <button data-tab="tomas" role="tab" aria-selected="false" class="tab-bt">Tomas</button>
+      </div>
+
+      <div id="tab-examenes" role="tabpanel">
+        <div id="lista-examenes" class="space-y-4"></div>
+      </div>
+
+      <div id="tab-tomas" class="hidden" role="tabpanel">
+        <p class="t-hint mb-4 max-w-prose">
+          Cada vez que iniciás un examen se crea una toma, con su propio código y sus propios resultados.
+        </p>
+        <div id="lista-tomas" class="space-y-3"></div>
+      </div>
+    </section>
+
+    <!-- ============ EDITOR ============ -->
+    <section id="view-editor" class="hidden max-w-3xl mx-auto px-4 sm:px-6 py-7 md:py-10">
+
+      <div class="flex items-center gap-3 mb-6">
+        <button id="btn-volver-editor" class="btn btn-ghost btn-icono shrink-0" aria-label="Volver al panel">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <div class="min-w-0">
+          <h1 id="editor-titulo-vista" class="t-h1">Nuevo examen</h1>
+          <p class="t-hint">Los cambios se guardan cuando tocás «Guardar».</p>
+        </div>
+      </div>
+
+      <div class="card card-lg mb-5">
+        <div class="card-body sm:p-7">
+          <h2 class="t-h3 mb-4">Datos del examen</h2>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div class="field sm:col-span-2">
+              <label for="ed-title" class="t-label">Título</label>
+              <input id="ed-title" maxlength="120" placeholder="Evaluación integradora · Unidad 3" class="input">
+            </div>
+            <div class="field">
+              <label for="ed-subject" class="t-label">Materia</label>
+              <input id="ed-subject" maxlength="60" placeholder="Matemática" class="input">
+            </div>
+            <div class="field">
+              <label for="ed-time" class="t-label">Tiempo (minutos)</label>
+              <input id="ed-time" type="number" min="1" max="360" value="30" class="input t-num">
+            </div>
+            <div class="field sm:col-span-2">
+              <label for="ed-instructions" class="t-label">
+                Consigna general <span class="font-normal t-muted">(opcional)</span>
+              </label>
+              <textarea id="ed-instructions" rows="2" maxlength="800"
+                        placeholder="Leé con atención. No se permite el uso de calculadora."
+                        class="textarea"></textarea>
+              <p class="t-hint mt-1.5">Se muestra arriba de todo, antes de la primera pregunta.</p>
+            </div>
+          </div>
+        </div>
+        <div class="card-foot flex items-center justify-between gap-3">
+          <span class="t-label">Puntaje total</span>
+          <span id="ed-puntaje" class="t-num font-bold text-brand">0 pts</span>
+        </div>
+      </div>
+
+      <div class="flex items-baseline justify-between gap-3 mb-3">
+        <h2 class="t-h3">Preguntas</h2>
+        <span id="ed-conteo" class="t-hint t-num">0</span>
+      </div>
+
+      <div id="ed-preguntas" class="space-y-4 mb-5"></div>
+
+      <div class="card p-4 sm:p-5 mb-5">
+        <p class="t-label mb-3">Agregar pregunta</p>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+          <button data-add="mc" class="add-bt">Opción múltiple</button>
+          <button data-add="ms" class="add-bt">Varias correctas</button>
+          <button data-add="tf" class="add-bt">Verdadero / Falso</button>
+          <button data-add="sa" class="add-bt">Respuesta corta</button>
+          <button data-add="long" class="add-bt">Desarrollo</button>
+        </div>
+      </div>
+
+      <p id="error-editor" class="hidden chip chip-alert !flex w-full !rounded-xl px-3.5 py-2.5 text-sm mb-4" role="alert"></p>
+
+      <div class="barra-acciones">
+        <div class="flex flex-col-reverse sm:flex-row gap-3">
+          <button id="btn-cancelar-editor" class="btn btn-outline btn-lg sm:w-40">Cancelar</button>
+          <button id="btn-guardar-examen" class="btn btn-primary btn-lg sm:flex-1">Guardar examen</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TOMA (sala / vivo / resultados) ============ -->
+    <section id="view-run" class="hidden max-w-3xl mx-auto px-4 sm:px-6 py-7 md:py-10">
+
+      <div class="flex items-start gap-3 mb-5">
+        <button id="btn-volver-run" class="btn btn-ghost btn-icono shrink-0 mt-0.5" aria-label="Volver al panel">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2.5 flex-wrap mb-1">
+            <h1 id="run-titulo" class="t-h1 min-w-0">—</h1>
+            <span id="run-estado" class="chip chip-neutro shrink-0">—</span>
+          </div>
+          <p id="run-materia" class="t-hint">—</p>
+        </div>
+      </div>
+
+      <!-- panel de código: sólo mientras el examen no terminó -->
+      <div id="run-panel-codigo" class="card card-lg overflow-hidden mb-5">
+        <div>
+          <div class="bg-inset border-b border-line px-6 py-7 text-center">
+            <p class="t-eyebrow mb-2">Código del examen</p>
+            <p id="run-codigo" class="codigo-grande">------</p>
+          </div>
+          <div class="p-5 sm:p-6 flex flex-col justify-center">
+            <label for="run-link" class="t-label mb-2">Link directo para los alumnos</label>
+            <div class="flex gap-2">
+              <input id="run-link" readonly class="input input-lectura t-num !text-xs min-w-0">
+              <button id="btn-copiar-link" class="btn btn-dark btn-md shrink-0">Copiar</button>
+            </div>
+            <p class="t-hint mt-2.5">Pasales el link o dictales el código. Entran a la sala de espera y esperan tu señal.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- controles: cambian según el estado de la toma -->
+      <div id="run-controles" class="card p-5 md:p-6 mb-6"></div>
+
+      <div class="flex flex-wrap items-baseline justify-between gap-3 mb-3">
+        <div class="flex items-baseline gap-2.5 min-w-0">
+          <h2 id="run-subtitulo-alumnos" class="t-h2">Alumnos</h2>
+          <p id="run-conteo" class="t-hint t-num">0</p>
+        </div>
+        <button id="btn-informe" class="btn btn-outline btn-sm hidden">
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/>
+          </svg>
+          Descargar informe
+        </button>
+      </div>
+
+      <div id="run-alumnos" class="space-y-2.5"></div>
+
+      <div id="run-vacio" class="hidden vacio">
+        <span class="vacio-icono">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0112 0M17 11h4M19 9v4"/>
+          </svg>
+        </span>
+        <p class="t-h3">Todavía no entró nadie</p>
+        <p class="t-hint max-w-xs">Compartí el código o el link. Los vas a ver aparecer acá sin recargar.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="border-t border-line mt-10">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-5 flex flex-col items-center gap-1.5 text-center">
+      <p class="t-hint">Evaluador Seguro · panel docente</p>
+      <a href="/" class="t-hint underline hover:text-ink">Vista de alumno</a>
+    </div>
+  </footer>
+
+  <!-- ============ MODAL: DETALLE DE ALUMNO ============ -->
+  <div id="modal-alumno" class="hidden overlay z-[70] !items-stretch sm:!items-center !p-0 sm:!p-4 overflow-y-auto">
+    <div class="modal-in sheet max-w-3xl mx-auto my-0 sm:my-auto !max-h-none sm:!max-h-[calc(100dvh-2rem)] !rounded-none sm:!rounded-2xl">
+      <header class="flex items-start justify-between gap-4 px-5 sm:px-6 py-4 border-b border-line shrink-0">
+        <div class="min-w-0">
+          <h2 id="det-nombre" class="t-h2 truncate">—</h2>
+          <p id="det-meta" class="t-hint">—</p>
+        </div>
+        <button id="btn-cerrar-alumno" class="btn btn-ghost btn-icono shrink-0" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </header>
+      <div id="det-cuerpo" class="sheet-cuerpo px-5 sm:px-6 py-6 space-y-6 flex-1"></div>
+      <footer class="px-5 sm:px-6 py-4 border-t border-line flex flex-wrap gap-3 justify-end shrink-0 bg-inset">
+        <button id="btn-informe-alumno" class="btn btn-outline btn-sm">Copiar informe</button>
+        <button id="btn-cerrar-alumno-2" class="btn btn-dark btn-sm">Cerrar</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: CONFIRMAR ============ -->
+  <div id="modal-confirm" class="hidden overlay z-[75]">
+    <div class="modal-in sheet max-w-md">
+      <div class="p-6 sm:p-7">
+        <h2 id="confirm-titulo" class="t-h2 mb-2">—</h2>
+        <p id="confirm-texto" class="t-sm t-muted mb-6">—</p>
+        <div class="flex flex-col-reverse sm:flex-row gap-3">
+          <button id="btn-confirm-no" class="btn btn-outline btn-md sm:flex-1">Cancelar</button>
+          <button id="btn-confirm-si" class="btn btn-danger btn-md sm:flex-1">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-[90] bg-ink text-white text-sm font-medium px-4 py-2.5 rounded-full shadow-pop max-w-[calc(100vw-2rem)] text-center"></div>
+
+  <noscript>
+    <div class="fixed inset-0 z-[95] bg-ink flex items-center justify-center p-6">
+      <p class="text-white font-semibold text-center">Esta aplicación requiere JavaScript para funcionar.</p>
+    </div>
+  </noscript>
+
+  <script>
+    'use strict';
+
+    // ── utilidades ──────────────────────────────────────────────────
+    const $ = (id) => document.getElementById(id);
+    const two = (n) => String(n).padStart(2, '0');
+    const dec = (n) => (Math.round(n * 10) / 10).toFixed(1).replace('.', ',');
+    const hms = (ts) => { const d = new Date(ts); return two(d.getHours()) + ':' + two(d.getMinutes()) + ':' + two(d.getSeconds()); };
+    const fecha = (ts) => {
+      const d = new Date(ts);
+      return two(d.getDate()) + '/' + two(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + two(d.getHours()) + ':' + two(d.getMinutes());
+    };
+    const dur = (ms) => (ms < 1000 ? '—' : dec(ms / 1000) + ' s');
+
+    function el(tag, cls, txt) {
+      const n = document.createElement(tag);
+      if (cls) n.className = cls;
+      if (txt != null) n.textContent = txt;
+      return n;
+    }
+
+    const TIPOS_EVENTO = {
+      'cambio-de-pestana': 'Cambio de pestaña / ventana oculta',
+      'ventana-sin-foco': 'Ventana sin foco',
+      'atajo-f12': 'Atajo detectado (F12)',
+      'atajo-copiar-pegar': 'Atajo detectado (Ctrl+C / Ctrl+V)',
+      'salida-pantalla-completa': 'Salida de pantalla completa',
+      'cierre-pestana': 'Cierre de pestaña · sesión interrumpida',
+    };
+    const NOMBRE_TIPO = {
+      mc: 'Opción múltiple', ms: 'Varias correctas', tf: 'Verdadero o falso',
+      sa: 'Respuesta corta', long: 'Desarrollo',
+    };
+    const MOTIVO = { manual: 'entregó', tiempo: 'se acabó el tiempo', docente: 'cerrado por el docente' };
+
+    /** Vuelve a disparar una animación CSS sobre un elemento que ya existe. */
+    function reanimar(nodo, clase) {
+      if (!nodo) return;
+      nodo.classList.remove(clase);
+      void nodo.offsetWidth;
+      nodo.classList.add(clase);
+    }
+
+    let toastTimeout = null;
+    function toast(msg) {
+      const t = $('toast');
+      t.textContent = msg;
+      t.classList.remove('hidden');
+      reanimar(t, 'toast-in');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => t.classList.add('hidden'), 2800);
+    }
+
+    async function api(ruta, opciones = {}) {
+      const res = await fetch(ruta, {
+        method: opciones.method || 'GET',
+        headers: opciones.body ? { 'Content-Type': 'application/json' } : undefined,
+        body: opciones.body ? JSON.stringify(opciones.body) : undefined,
+        credentials: 'same-origin',
+      });
+      let datos = {};
+      try { datos = await res.json(); } catch { /* respuesta sin cuerpo */ }
+      if (res.status === 401 && !ruta.includes('/login')) {
+        mostrarLogin();
+        throw new Error('Se cerró la sesión. Volvé a entrar.');
+      }
+      if (!res.ok || datos.ok === false) throw new Error(datos.error || 'No se pudo completar la operación.');
+      return datos;
+    }
+
+    const RUTA = { dash: [], editor: ['Examen'], run: ['Toma'] };
+    let vistaActual = null;
+
+    /** Ubica al docente: la cabecera desaparece en el ingreso y la miga dice dónde está. */
+    function pintarUbicacion(view, detalle) {
+      $('barra-superior').classList.toggle('hidden', view === 'login');
+      const miga = $('miga');
+      miga.textContent = '';
+      const tramos = RUTA[view] || [];
+      if (!tramos.length && !detalle) return;
+      const inicio = el('button', 'btn btn-ghost btn-xs', 'Panel');
+      inicio.addEventListener('click', abrirEscritorio);
+      miga.appendChild(inicio);
+      [...tramos, detalle].filter(Boolean).forEach((t, i, arr) => {
+        miga.appendChild(el('span', 'miga-sep', '/'));
+        miga.appendChild(el('span', 't-xs truncate max-w-[16rem]' + (i === arr.length - 1 ? ' miga-actual' : ' t-muted'), t));
+      });
+    }
+
+    function show(view, detalle) {
+      ['login', 'dash', 'editor', 'run'].forEach((v) => $('view-' + v).classList.toggle('hidden', v !== view));
+      pintarUbicacion(view, detalle);
+      if (view !== vistaActual) {
+        vistaActual = view;
+        reanimar($('view-' + view), 'view-in');
+      }
+      window.scrollTo(0, 0);
+    }
+
+    // Confirmación reutilizable, resuelta con promesa.
+    let confirmarResolver = null;
+    function confirmar(titulo, texto, etiqueta) {
+      $('confirm-titulo').textContent = titulo;
+      $('confirm-texto').textContent = texto;
+      $('btn-confirm-si').textContent = etiqueta || 'Confirmar';
+      $('modal-confirm').classList.remove('hidden');
+      reanimar($('modal-confirm'), 'backdrop-in');
+      reanimar($('modal-confirm').querySelector('.modal-in'), 'modal-in');
+      $('btn-confirm-si').focus();
+      return new Promise((resolve) => { confirmarResolver = resolve; });
+    }
+    function cerrarConfirm(valor) {
+      $('modal-confirm').classList.add('hidden');
+      if (confirmarResolver) { confirmarResolver(valor); confirmarResolver = null; }
+    }
+    $('btn-confirm-no').addEventListener('click', () => cerrarConfirm(false));
+    $('btn-confirm-si').addEventListener('click', () => cerrarConfirm(true));
+
+    // ── estado ──────────────────────────────────────────────────────
+    const S = {
+      examenes: [],
+      tomas: [],
+      editando: null,      // { id|null, questions: [...] }
+      run: null,           // foto de la toma abierta
+      fuente: null,        // EventSource
+      alumnoAbierto: null,
+      desfase: 0,
+      relojId: null,
+      tab: 'examenes',
+    };
+    // Memoria de lo ya dibujado, para animar sólo las novedades.
+    const alumnosVistos = new Set();
+    const incidentesVistos = new Map();
+    let codigoMostrado = null;
+    let alumnosFirma = null;
+    const ahoraServidor = () => Date.now() + S.desfase;
+
+    // ── login ───────────────────────────────────────────────────────
+    function mostrarLogin() {
+      cerrarStream();
+      show('login');
+      $('campo-clave').value = '';
+      $('campo-clave').focus();
+    }
+
+    $('form-login').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const err = $('error-login');
+      err.classList.add('hidden');
+      try {
+        await api('/api/teacher/login', { method: 'POST', body: { password: $('campo-clave').value } });
+        await abrirEscritorio();
+      } catch (ex) {
+        err.textContent = ex.message;
+        err.classList.remove('hidden');
+        err.classList.remove('shake');
+        void err.offsetWidth;
+        err.classList.add('shake');
+      }
+    });
+
+    $('btn-logout').addEventListener('click', async () => {
+      await api('/api/teacher/logout', { method: 'POST' }).catch(() => {});
+      mostrarLogin();
+    });
+
+    // ── escritorio ──────────────────────────────────────────────────
+    async function abrirEscritorio() {
+      cerrarStream();
+      show('dash');
+      pintarTabs();
+      esqueletos();
+      await Promise.all([cargarExamenes(), cargarTomas()]);
+      pintarResumen();
+    }
+
+    /** Marcas de carga: la pantalla no aparece vacía mientras viajan los datos. */
+    function esqueletos() {
+      $('dash-resumen').textContent = '';
+      const barra = el('div', 'card px-5 py-4 md:px-6 md:py-5 stat-grid');
+      for (let i = 0; i < 4; i++) {
+        const bloque = el('div', 'stat');
+        bloque.append(el('div', 'skel h-2.5 w-16 mb-2'), el('div', 'skel h-6 w-12'));
+        barra.appendChild(bloque);
+      }
+      $('dash-resumen').appendChild(barra);
+
+      const cont = $('lista-examenes');
+      cont.textContent = '';
+      for (let i = 0; i < 3; i++) {
+        const c = el('div', 'card overflow-hidden');
+        const cuerpo = el('div', 'p-5 space-y-3');
+        cuerpo.append(
+          el('div', 'skel h-2.5 w-20'),
+          el('div', 'skel h-5 w-3/4'),
+          el('div', 'skel h-3 w-1/2'),
+          el('div', 'skel h-6 w-2/3')
+        );
+        const pie = el('div', 'card-foot flex gap-2');
+        pie.append(el('div', 'skel h-8 w-24'), el('div', 'skel h-8 w-16'));
+        c.append(cuerpo, pie);
+        cont.appendChild(c);
+      }
+    }
+
+    /** Estado general del curso, y un atajo si quedó una toma abierta. */
+    function pintarResumen() {
+      const cont = $('dash-resumen');
+      cont.textContent = '';
+      const tomas = S.tomas || [];
+
+      // Retomar una toma abierta sin tener que buscarla en la pestaña de tomas.
+      const activa = tomas.find((r) => r.status === 'running') || tomas.find((r) => r.status === 'lobby');
+      if (activa) {
+        const aviso = el('button', 'card card-link w-full text-left px-5 py-4 flex flex-wrap items-center gap-x-4 gap-y-3 border-l-4 !border-l-ok');
+        aviso.addEventListener('click', () => abrirToma(activa.id));
+        const izq = el('div', 'min-w-0 flex-1');
+        izq.append(
+          el('p', 't-h3 truncate', activa.title),
+          el('p', 't-hint', activa.status === 'running'
+            ? activa.alumnos + ' rindiendo ahora mismo'
+            : activa.alumnos + (activa.alumnos === 1 ? ' alumno esperando en la sala' : ' alumnos esperando en la sala'))
+        );
+        aviso.append(chipEstado(activa.status), izq,
+          el('span', 'codigo-grande !text-lg shrink-0', activa.code),
+          el('span', 'btn btn-primary btn-sm shrink-0 pointer-events-none', 'Abrir'));
+        cont.appendChild(aviso);
+      }
+
+      const cerradas = tomas.filter((r) => r.status === 'ended');
+      const evaluados = cerradas.reduce((a, r) => a + r.alumnos, 0);
+      const incidentes = tomas.reduce((a, r) => a + r.incidentes, 0);
+
+      const barra = el('div', 'card px-5 py-4 md:px-6 md:py-5 stat-grid');
+      const dato = (k, v, cls) => {
+        const d = el('div', 'stat');
+        d.append(el('p', 'stat-k', k), el('p', 'stat-v ' + (cls || ''), v));
+        return d;
+      };
+      barra.append(
+        dato('Exámenes', String(S.examenes.length)),
+        dato('Tomas', String(tomas.length)),
+        dato('Alumnos evaluados', String(evaluados)),
+        dato('Incidentes', String(incidentes), incidentes ? 'text-alert' : '')
+      );
+      cont.appendChild(barra);
+    }
+
+    function pintarTabs() {
+      document.querySelectorAll('.tab-bt').forEach((b) => {
+        const activa = b.dataset.tab === S.tab;
+        b.className = 'tab-bt';
+        b.setAttribute('aria-selected', String(activa));
+      });
+      $('tab-examenes').classList.toggle('hidden', S.tab !== 'examenes');
+      $('tab-tomas').classList.toggle('hidden', S.tab !== 'tomas');
+    }
+    document.querySelectorAll('.tab-bt').forEach((b) => {
+      b.addEventListener('click', () => { S.tab = b.dataset.tab; pintarTabs(); });
+    });
+
+    async function cargarExamenes() {
+      const datos = await api('/api/exams');
+      S.examenes = datos.exams;
+      const cont = $('lista-examenes');
+      cont.textContent = '';
+
+      if (!S.examenes.length) {
+        const vacio = el('div', 'vacio');
+        vacio.append(
+          el('p', 't-h3', 'Todavía no creaste ningún examen'),
+          el('p', 't-hint max-w-xs', 'Tocá «Crear examen» para armar el primero. Después lo vas a poder tomar todas las veces que quieras.')
+        );
+        cont.appendChild(vacio);
+        return;
+      }
+
+      S.examenes.forEach((ex, i) => {
+        const card = el('article', 'card rise overflow-hidden flex flex-col');
+        card.style.setProperty('--i', i);
+        const cuerpo = el('div', 'p-5 flex-1 min-w-0');
+        if (ex.subject) cuerpo.appendChild(el('p', 't-eyebrow text-accent-deep mb-1.5', ex.subject));
+        cuerpo.appendChild(el('h3', 'font-display font-bold text-lg leading-snug mb-3', ex.title));
+
+        // Datos duros primero, y debajo de qué está hecho el examen: sin abrirlo
+        // ya se sabe si es todo opción múltiple o si tiene desarrollo para corregir.
+        const datos2 = el('div', 'flex flex-wrap items-center gap-x-4 gap-y-1 t-num text-xs text-muted mb-3');
+        datos2.append(
+          el('span', null, ex.questions.length + (ex.questions.length === 1 ? ' pregunta' : ' preguntas')),
+          el('span', null, dec(ex.puntajeTotal) + ' pts'),
+          el('span', null, Math.round(ex.timeLimit / 60) + ' min')
+        );
+        cuerpo.appendChild(datos2);
+
+        const porTipo = new Map();
+        ex.questions.forEach((q) => porTipo.set(q.type, (porTipo.get(q.type) || 0) + 1));
+        const tipos = el('div', 'flex flex-wrap gap-1.5');
+        [...porTipo].forEach(([tipo, n]) => {
+          tipos.appendChild(el('span', 'chip ' + (tipo === 'long' ? 'chip-plum' : 'chip-neutro'),
+            n + ' · ' + NOMBRE_TIPO[tipo]));
+        });
+        cuerpo.appendChild(tipos);
+
+        if (ex.tomas) {
+          cuerpo.appendChild(el('p', 't-hint mt-3',
+            ex.tomas + (ex.tomas === 1 ? ' toma tomada' : ' tomas tomadas')
+            + (ex.ultimaToma ? ' · última el ' + fecha(ex.ultimaToma) : '')));
+        }
+
+        const pie = el('div', 'card-foot flex flex-wrap items-center gap-2');
+        const iniciar = el('button', 'btn btn-primary btn-sm', 'Iniciar toma');
+        iniciar.addEventListener('click', () => nuevaToma(ex));
+        const editar = el('button', 'btn btn-outline btn-sm', 'Editar');
+        editar.addEventListener('click', () => abrirEditor(ex));
+        const duplicar = el('button', 'btn btn-outline btn-sm', 'Duplicar');
+        duplicar.addEventListener('click', async () => {
+          try { await api('/api/exams/' + ex.id + '/duplicate', { method: 'POST' }); await cargarExamenes(); toast('Examen duplicado'); }
+          catch (e2) { toast(e2.message); }
+        });
+        const borrar = el('button', 'btn btn-ghost-danger btn-sm ml-auto', 'Eliminar');
+        borrar.addEventListener('click', async () => {
+          const ok = await confirmar('¿Eliminar el examen?', `«${ex.title}» va a desaparecer de tu lista. Las tomas ya rendidas y sus resultados se conservan.`, 'Eliminar');
+          if (!ok) return;
+          try { await api('/api/exams/' + ex.id, { method: 'DELETE' }); await cargarExamenes(); toast('Examen eliminado'); }
+          catch (e2) { toast(e2.message); }
+        });
+        pie.append(iniciar, editar, duplicar, borrar);
+
+        card.append(cuerpo, pie);
+        cont.appendChild(card);
+      });
+    }
+
+    async function cargarTomas() {
+      const datos = await api('/api/runs');
+      S.tomas = datos.runs;
+      const cont = $('lista-tomas');
+      cont.textContent = '';
+
+      if (!datos.runs.length) {
+        cont.appendChild(el('p', 'vacio t-hint',
+          'Cuando inicies un examen, la toma aparece acá.'));
+        return;
+      }
+
+      datos.runs.forEach((r, i) => {
+        const fila = el('button', 'card card-link rise w-full text-left px-4 sm:px-5 py-4 flex flex-wrap items-center gap-x-4 gap-y-2.5');
+        fila.style.setProperty('--i', i);
+        fila.addEventListener('click', () => abrirToma(r.id));
+
+        fila.appendChild(el('span', 'codigo-grande !text-xl shrink-0', r.code));
+
+        const medio = el('div', 'min-w-0 flex-1');
+        medio.append(
+          el('p', 'font-semibold truncate', r.title),
+          el('p', 't-hint t-num', fecha(r.createdAt))
+        );
+        fila.appendChild(medio);
+
+        const nums = el('div', 'flex items-center gap-4 t-num text-xs text-muted shrink-0');
+        nums.append(
+          el('span', null, r.alumnos + ' alum.'),
+          el('span', null, r.entregados + ' entreg.'),
+          el('span', r.incidentes ? 'text-alert font-bold' : null, r.incidentes + ' inc.')
+        );
+        fila.appendChild(nums);
+        fila.appendChild(chipEstado(r.status));
+        cont.appendChild(fila);
+      });
+    }
+
+    function chipEstado(status) {
+      const mapa = {
+        lobby: ['Sala de espera', 'chip-accent chip-punto'],
+        running: ['En curso', 'chip-ok chip-punto'],
+        ended: ['Cerrada', 'chip-neutro'],
+      };
+      const [texto, cls] = mapa[status] || ['—', 'chip-neutro'];
+      return el('span', 'chip shrink-0 ' + cls, texto);
+    }
+
+    $('btn-nuevo-examen').addEventListener('click', () => abrirEditor(null));
+
+    // ── editor de exámenes ──────────────────────────────────────────
+    function nuevaPregunta(tipo) {
+      const base = { type: tipo, text: '', points: 1 };
+      if (tipo === 'mc') return { ...base, options: ['', ''], correct: 0 };
+      if (tipo === 'ms') return { ...base, options: ['', ''], correct: [] };
+      if (tipo === 'tf') return { ...base, correct: true };
+      if (tipo === 'sa') return { ...base, accepted: [''] };
+      return base;
+    }
+
+    // El editor se redibuja entero con cada cambio, así que sólo animamos cuando
+    // hay algo nuevo que mostrar: -2 = todo (al abrir), -1 = nada, n = sólo esa.
+    let editorAnimar = -1;
+
+    function abrirEditor(examen) {
+      editorAnimar = -2;
+      S.editando = examen
+        ? { id: examen.id, questions: JSON.parse(JSON.stringify(examen.questions)) }
+        : { id: null, questions: [nuevaPregunta('mc')] };
+      $('editor-titulo-vista').textContent = examen ? 'Editar examen' : 'Nuevo examen';
+      $('ed-title').value = examen ? examen.title : '';
+      $('ed-subject').value = examen ? examen.subject : '';
+      $('ed-instructions').value = examen ? examen.instructions : '';
+      $('ed-time').value = examen ? Math.round(examen.timeLimit / 60) : 30;
+      $('error-editor').classList.add('hidden');
+      renderEditor();
+      show('editor', examen ? examen.title : 'Nuevo');
+    }
+
+    document.querySelectorAll('[data-add]').forEach((b) => {
+      b.className = 'add-bt';
+      b.addEventListener('click', () => {
+        S.editando.questions.push(nuevaPregunta(b.dataset.add));
+        editorAnimar = S.editando.questions.length - 1;
+        renderEditor();
+        const tarjetas = $('ed-preguntas').children;
+        if (tarjetas.length) tarjetas[tarjetas.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    });
+
+    function renderEditor() {
+      const cont = $('ed-preguntas');
+      cont.textContent = '';
+      const qs = S.editando.questions;
+
+      qs.forEach((q, i) => {
+        const anima = editorAnimar === -2 ? ' rise' : editorAnimar === i ? ' pop' : '';
+        const card = el('article', 'card overflow-hidden' + anima);
+        if (editorAnimar === -2) card.style.setProperty('--i', i);
+
+        // cabecera
+        const head = el('header', 'card-head !py-2.5 bg-inset');
+        head.appendChild(el('span', 'ordinal', two(i + 1)));
+        head.appendChild(el('span', 'chip chip-neutro', NOMBRE_TIPO[q.type]));
+
+        const acciones = el('div', 'ml-auto flex items-center gap-1');
+        const mkBt = (txt, aria, fn, extra) => {
+          const b = el('button', 'btn btn-outline btn-icono ' + (extra || ''), txt);
+          b.setAttribute('aria-label', aria);
+          b.addEventListener('click', fn);
+          return b;
+        };
+        acciones.append(
+          mkBt('↑', 'Subir pregunta', () => { if (i > 0) { [qs[i - 1], qs[i]] = [qs[i], qs[i - 1]]; renderEditor(); } }),
+          mkBt('↓', 'Bajar pregunta', () => { if (i < qs.length - 1) { [qs[i + 1], qs[i]] = [qs[i], qs[i + 1]]; renderEditor(); } }),
+          mkBt('⧉', 'Duplicar pregunta', () => { qs.splice(i + 1, 0, JSON.parse(JSON.stringify(q))); renderEditor(); }),
+          mkBt('×', 'Eliminar pregunta', () => { qs.splice(i, 1); renderEditor(); }, 'text-alert hover:bg-alert-soft')
+        );
+        head.appendChild(acciones);
+
+        // cuerpo
+        const cuerpo = el('div', 'card-body space-y-4');
+
+        const enunciado = el('textarea', 'textarea');
+        enunciado.rows = 2;
+        enunciado.maxLength = 600;
+        enunciado.placeholder = 'Escribí el enunciado de la pregunta';
+        enunciado.value = q.text;
+        enunciado.addEventListener('input', () => { q.text = enunciado.value; });
+        cuerpo.appendChild(enunciado);
+
+        cuerpo.appendChild(camposDe(q));
+
+        // puntaje
+        const fila = el('div', 'flex items-center gap-3 pt-3.5 border-t border-line');
+        fila.appendChild(el('label', 't-label', 'Puntaje'));
+        const pts = el('input', 'input t-num !w-24 !py-2');
+        pts.type = 'number';
+        pts.min = '0.5';
+        pts.step = '0.5';
+        pts.value = q.points;
+        pts.addEventListener('input', () => { q.points = Number(pts.value); actualizarPuntaje(); });
+        fila.appendChild(pts);
+        cuerpo.appendChild(fila);
+
+        card.append(head, cuerpo);
+        cont.appendChild(card);
+      });
+
+      if (!qs.length) {
+        cont.appendChild(el('p', 'vacio t-hint',
+          'Agregá la primera pregunta con los botones de abajo.'));
+      }
+      editorAnimar = -1;
+      $('ed-conteo').textContent = qs.length + (qs.length === 1 ? ' pregunta' : ' preguntas');
+      actualizarPuntaje();
+    }
+
+    function actualizarPuntaje() {
+      const total = S.editando.questions.reduce((a, q) => a + (Number(q.points) || 0), 0);
+      $('ed-puntaje').textContent = dec(total) + ' pts';
+    }
+
+    function camposDe(q) {
+      // Verdadero / Falso
+      if (q.type === 'tf') {
+        const wrap = el('div', 'flex gap-2');
+        [['Verdadero', true], ['Falso', false]].forEach(([txt, val]) => {
+          const label = el('label', 'opcion opcion-clave flex-1');
+          const input = el('input');
+          input.type = 'radio';
+          input.name = 'tf-' + Math.random().toString(36).slice(2);
+          input.className = '';
+          input.checked = q.correct === val;
+          input.addEventListener('change', () => { q.correct = val; renderEditor(); });
+          label.append(input, el('span', 'opcion-texto font-medium', txt));
+          wrap.appendChild(label);
+        });
+        const nota = el('div');
+        nota.append(wrap, el('p', 't-hint mt-2', 'Marcá cuál es la respuesta correcta.'));
+        return nota;
+      }
+
+      // Respuesta corta: lista de respuestas aceptadas
+      if (q.type === 'sa') {
+        const wrap = el('div');
+        wrap.appendChild(el('p', 't-label mb-2', 'Respuestas aceptadas'));
+        wrap.appendChild(el('p', 't-hint mb-2.5', 'No distingue mayúsculas ni tildes. Sumá las variantes que darías por buenas.'));
+        const lista = el('div', 'space-y-2');
+        q.accepted.forEach((a, k) => {
+          const fila = el('div', 'flex gap-2');
+          const input = el('input', 'input !py-2.5 flex-1 min-w-0');
+          input.maxLength = 120;
+          input.value = a;
+          input.placeholder = 'fotosíntesis';
+          input.addEventListener('input', () => { q.accepted[k] = input.value; });
+          fila.appendChild(input);
+          if (q.accepted.length > 1) {
+            const quitar = el('button', 'btn btn-outline btn-icono shrink-0 !text-alert', '×');
+            quitar.setAttribute('aria-label', 'Quitar respuesta aceptada');
+            quitar.addEventListener('click', () => { q.accepted.splice(k, 1); renderEditor(); });
+            fila.appendChild(quitar);
+          }
+          lista.appendChild(fila);
+        });
+        wrap.appendChild(lista);
+        const sumar = el('button', 'btn btn-ghost btn-sm mt-2 !text-brand', '+ Agregar otra variante aceptada');
+        sumar.addEventListener('click', () => { q.accepted.push(''); renderEditor(); });
+        wrap.appendChild(sumar);
+        return wrap;
+      }
+
+      // Desarrollo
+      if (q.type === 'long') {
+        return el('p', 'panel-inset t-sm t-muted px-3.5 py-3',
+          'Las preguntas de desarrollo no se autocorrigen: las vas a corregir vos, una por una, en la pantalla de resultados.');
+      }
+
+      // Opción múltiple (una o varias correctas)
+      const wrap = el('div');
+      wrap.appendChild(el('p', 't-label mb-2', 'Opciones'));
+      wrap.appendChild(el('p', 't-hint mb-2.5', q.type === 'ms' ? 'Marcá todas las que sean correctas.' : 'Marcá cuál es la correcta.'));
+      const grupo = 'op-' + Math.random().toString(36).slice(2);
+      const lista = el('div', 'space-y-2');
+
+      q.options.forEach((op, k) => {
+        const esCorrecta = q.type === 'ms' ? q.correct.includes(k) : q.correct === k;
+        const fila = el('div', 'opcion opcion-clave !px-2.5 !py-1.5');
+
+        const marca = el('input');
+        marca.type = q.type === 'ms' ? 'checkbox' : 'radio';
+        marca.name = grupo;
+        marca.className = 'shrink-0';
+        marca.checked = esCorrecta;
+        marca.setAttribute('aria-label', 'Marcar la opción ' + (k + 1) + ' como correcta');
+        marca.addEventListener('change', () => {
+          if (q.type === 'ms') {
+            const set = new Set(q.correct);
+            if (marca.checked) set.add(k); else set.delete(k);
+            q.correct = [...set].sort((a, b) => a - b);
+          } else {
+            q.correct = k;
+          }
+          renderEditor();
+        });
+
+        const input = el('input', 'flex-1 min-w-0 px-2 py-1.5 rounded-lg border border-transparent bg-transparent text-sm outline-none focus:bg-paper focus:border-line2');
+        input.maxLength = 240;
+        input.value = op;
+        input.placeholder = 'Opción ' + (k + 1);
+        input.addEventListener('input', () => { q.options[k] = input.value; });
+
+        fila.append(marca, input);
+
+        if (q.options.length > 2) {
+          const quitar = el('button', 'btn btn-ghost-danger btn-icono shrink-0', '×');
+          quitar.setAttribute('aria-label', 'Quitar opción');
+          quitar.addEventListener('click', () => {
+            q.options.splice(k, 1);
+            if (q.type === 'ms') q.correct = q.correct.filter((c) => c !== k).map((c) => (c > k ? c - 1 : c));
+            else if (q.correct === k) q.correct = 0;
+            else if (q.correct > k) q.correct--;
+            renderEditor();
+          });
+          fila.appendChild(quitar);
+        }
+        lista.appendChild(fila);
+      });
+
+      wrap.appendChild(lista);
+      if (q.options.length < 8) {
+        const sumar = el('button', 'btn btn-ghost btn-sm mt-2 !text-brand', '+ Agregar opción');
+        sumar.addEventListener('click', () => { q.options.push(''); renderEditor(); });
+        wrap.appendChild(sumar);
+      }
+      return wrap;
+    }
+
+    $('btn-guardar-examen').addEventListener('click', guardarExamen);
+    $('btn-cancelar-editor').addEventListener('click', abrirEscritorio);
+    $('btn-volver-editor').addEventListener('click', abrirEscritorio);
+
+    async function guardarExamen() {
+      const err = $('error-editor');
+      err.classList.add('hidden');
+      const cuerpo = {
+        title: $('ed-title').value.trim(),
+        subject: $('ed-subject').value.trim(),
+        instructions: $('ed-instructions').value.trim(),
+        timeLimit: Math.round(Number($('ed-time').value) * 60),
+        questions: S.editando.questions,
+      };
+      try {
+        if (S.editando.id) await api('/api/exams/' + S.editando.id, { method: 'PUT', body: cuerpo });
+        else await api('/api/exams', { method: 'POST', body: cuerpo });
+        toast('Examen guardado');
+        await abrirEscritorio();
+      } catch (ex) {
+        err.textContent = ex.message;
+        err.classList.remove('hidden');
+        err.classList.remove('shake');
+        void err.offsetWidth;
+        err.classList.add('shake');
+        err.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    // ── tomas ───────────────────────────────────────────────────────
+    async function nuevaToma(examen) {
+      try {
+        const datos = await api('/api/exams/' + examen.id + '/runs', { method: 'POST', body: { timeLimit: examen.timeLimit } });
+        await abrirToma(datos.run.id);
+      } catch (ex) {
+        toast(ex.message);
+      }
+    }
+
+    function cerrarStream() {
+      if (S.fuente) { S.fuente.close(); S.fuente = null; }
+      if (S.relojId) { clearInterval(S.relojId); S.relojId = null; }
+    }
+
+    async function abrirToma(runId) {
+      cerrarStream();
+      alumnosVistos.clear();
+      incidentesVistos.clear();
+      codigoMostrado = null;
+      alumnosFirma = null;
+      try {
+        const foto = await api('/api/runs/' + runId);
+        aplicarFoto(foto);
+        show('run', foto.run.title);
+        const fuente = new EventSource('/api/runs/' + runId + '/stream');
+        S.fuente = fuente;
+        fuente.addEventListener('estado', (ev) => {
+          try { aplicarFoto(JSON.parse(ev.data)); } catch { /* payload corrupto */ }
+        });
+        fuente.addEventListener('incidente', (ev) => {
+          try {
+            const d = JSON.parse(ev.data);
+            toast('⚠ ' + d.name + ' · ' + (TIPOS_EVENTO[d.incident.type] || 'evento'));
+          } catch { /* payload corrupto */ }
+        });
+        S.relojId = setInterval(pintarRelojToma, 500);
+      } catch (ex) {
+        toast(ex.message);
+      }
+    }
+
+    $('btn-volver-run').addEventListener('click', abrirEscritorio);
+
+    function aplicarFoto(foto) {
+      if (!foto || !foto.run) return;
+      S.run = foto;
+      if (typeof foto.now === 'number') S.desfase = foto.now - Date.now();
+      renderToma();
+      if (S.alumnoAbierto) {
+        const alumno = foto.alumnos.find((a) => a.id === S.alumnoAbierto);
+        if (alumno) renderDetalleAlumno(alumno);
+        else cerrarDetalle();
+      }
+    }
+
+    function renderToma() {
+      const { run, alumnos } = S.run;
+
+      $('run-titulo').textContent = run.title;
+      $('run-materia').textContent = (run.subject || 'Examen') + ' · ' + fecha(run.createdAt);
+      const estado = $('run-estado');
+      const chip = chipEstado(run.status);
+      estado.className = chip.className.replace('shrink-0 ', '') + ' shrink-0';
+      estado.textContent = chip.textContent;
+
+      $('run-panel-codigo').classList.toggle('hidden', run.status === 'ended');
+      $('run-codigo').textContent = run.code;
+      $('run-link').value = location.origin + '/?c=' + run.code;
+      if (codigoMostrado !== run.code) {
+        codigoMostrado = run.code;
+        reanimar($('run-codigo'), 'codigo-in');
+      }
+
+      renderControles();
+
+      const entregados = alumnos.filter((a) => a.status === 'submitted').length;
+      $('run-subtitulo-alumnos').textContent = run.status === 'ended' ? 'Resultados' : 'Alumnos';
+      $('run-conteo').textContent = run.status === 'lobby'
+        ? alumnos.length + ' en la sala'
+        : entregados + ' / ' + alumnos.length + ' entregados';
+      $('btn-informe').classList.toggle('hidden', run.status !== 'ended' || !alumnos.length);
+      $('run-vacio').classList.toggle('hidden', alumnos.length > 0);
+
+      renderAlumnos();
+    }
+
+    function renderControles() {
+      const cont = $('run-controles');
+      cont.textContent = '';
+      const { run, alumnos } = S.run;
+
+      if (run.status === 'lobby') {
+        const fila = el('div', 'flex flex-wrap items-end gap-4 gap-y-5');
+        const campo = el('div');
+        campo.appendChild(el('label', 't-label block mb-1.5', 'Tiempo máximo (minutos)'));
+        const input = el('input', 'input t-num !w-28');
+        input.type = 'number';
+        input.min = '1';
+        input.max = '360';
+        input.value = Math.round(run.timeLimit / 60);
+        input.id = 'run-minutos';
+        campo.appendChild(input);
+        fila.appendChild(campo);
+
+        const info = el('div', 'flex-1 min-w-[12rem] pb-0.5');
+        info.append(
+          el('p', 't-h3', alumnos.length ? alumnos.length + (alumnos.length === 1 ? ' alumno esperando' : ' alumnos esperando') : 'Todavía no entró nadie'),
+          el('p', 't-hint', 'Cuando inicies, el reloj arranca para todos a la vez.')
+        );
+        fila.appendChild(info);
+
+        const iniciar = el('button', 'btn btn-ok btn-lg', 'Iniciar examen');
+        iniciar.disabled = alumnos.length === 0;
+        iniciar.addEventListener('click', async () => {
+          const minutos = Number($('run-minutos').value);
+          const ok = await confirmar('¿Iniciar el examen?',
+            `Arranca para ${alumnos.length} ${alumnos.length === 1 ? 'alumno' : 'alumnos'} con ${minutos} minutos de tiempo. Los que entren después van a tener el tiempo que quede.`,
+            'Iniciar');
+          if (!ok) return;
+          try { await api('/api/runs/' + run.id + '/start', { method: 'POST', body: { timeLimit: Math.round(minutos * 60) } }); }
+          catch (ex) { toast(ex.message); }
+        });
+        fila.appendChild(iniciar);
+
+        const cancelar = el('button', 'btn btn-ghost-danger btn-sm', 'Descartar toma');
+        cancelar.addEventListener('click', async () => {
+          const ok = await confirmar('¿Descartar esta toma?', 'Se anula el código y los alumnos que ya entraron quedan afuera.', 'Descartar');
+          if (!ok) return;
+          try { await api('/api/runs/' + run.id, { method: 'DELETE' }); await abrirEscritorio(); toast('Toma descartada'); }
+          catch (ex) { toast(ex.message); }
+        });
+        fila.appendChild(cancelar);
+
+        cont.appendChild(fila);
+        return;
+      }
+
+      if (run.status === 'running') {
+        const fila = el('div', 'flex flex-wrap items-center gap-4 gap-y-5');
+        const reloj = el('div');
+        reloj.appendChild(el('p', 'stat-k mb-0.5', 'Tiempo restante'));
+        const t = el('p', 'reloj text-3xl md:text-4xl', '--:--');
+        t.id = 'run-reloj';
+        reloj.appendChild(t);
+        fila.appendChild(reloj);
+
+        const ajustes = el('div', 'flex items-center gap-2');
+        [['−5 min', -5], ['+5 min', 5], ['+10 min', 10]].forEach(([txt, min]) => {
+          const b = el('button', 'btn btn-outline btn-sm t-num', txt);
+          b.addEventListener('click', async () => {
+            try { await api('/api/runs/' + run.id + '/extend', { method: 'POST', body: { minutes: min } }); toast('Tiempo ajustado'); }
+            catch (ex) { toast(ex.message); }
+          });
+          ajustes.appendChild(b);
+        });
+        fila.appendChild(ajustes);
+
+        const entregados = alumnos.filter((a) => a.status === 'submitted').length;
+        const resumen = el('div', 'flex-1 min-w-[10rem]');
+        resumen.append(
+          el('p', 't-h3', entregados + ' de ' + alumnos.length + ' ya entregaron'),
+          el('p', 't-hint', 'El examen se cierra solo cuando se acaba el tiempo.')
+        );
+        fila.appendChild(resumen);
+
+        const terminar = el('button', 'btn btn-danger btn-md', 'Finalizar ahora');
+        terminar.addEventListener('click', async () => {
+          const pendientes = alumnos.length - entregados;
+          const ok = await confirmar('¿Finalizar el examen?',
+            pendientes > 0
+              ? `${pendientes} ${pendientes === 1 ? 'alumno todavía está respondiendo' : 'alumnos todavía están respondiendo'}. Se guarda lo que hayan escrito hasta ahora.`
+              : 'Todos entregaron. Se cierra la toma y pasás a los resultados.',
+            'Finalizar');
+          if (!ok) return;
+          try { await api('/api/runs/' + run.id + '/end', { method: 'POST' }); }
+          catch (ex) { toast(ex.message); }
+        });
+        fila.appendChild(terminar);
+
+        cont.appendChild(fila);
+        pintarRelojToma();
+        return;
+      }
+
+      // cerrada
+      const notas = alumnos.map((a) => a.correccion.nota);
+      const promedio = notas.length ? notas.reduce((a, b) => a + b, 0) / notas.length : 0;
+      const aprobados = notas.filter((n) => n >= 6).length;
+      const incidentes = alumnos.reduce((a, b) => a + b.incidents.length, 0);
+      const pendientes = alumnos.filter((a) => a.correccion.provisional).length;
+
+      const grid = el('div', 'stat-grid');
+      const dato = (etiqueta, valor, cls) => {
+        const d = el('div');
+        d.append(
+          el('p', 'stat-k', etiqueta),
+          el('p', 'stat-v ' + (cls || ''), valor)
+        );
+        return d;
+      };
+      grid.append(
+        dato('Promedio', dec(promedio)),
+        dato('Aprobados', aprobados + '/' + alumnos.length, aprobados === alumnos.length ? 'text-ok-ink' : 'text-ink'),
+        dato('Incidentes', String(incidentes), incidentes ? 'text-alert' : 'text-ink'),
+        dato('Sin corregir', String(pendientes), pendientes ? 'text-plum' : 'text-ink')
+      );
+      cont.appendChild(grid);
+
+      if (pendientes) {
+        cont.appendChild(el('p', 't-sm text-plum mt-4 pt-4 border-t border-line',
+          'Hay respuestas de desarrollo sin corregir. Las notas con el rótulo «provisoria» todavía no son definitivas.'));
+      }
+    }
+
+    function pintarRelojToma() {
+      const t = $('run-reloj');
+      if (!t || !S.run || !S.run.run.endsAt) return;
+      const restante = Math.max(0, Math.round((S.run.run.endsAt - ahoraServidor()) / 1000));
+      t.textContent = two(Math.floor(restante / 60)) + ':' + two(restante % 60);
+      t.classList.toggle('timer-urgent', restante <= 60);
+    }
+
+    function renderAlumnos() {
+      const { run, alumnos } = S.run;
+      const total = S.run.questions.length;
+
+      // El servidor reenvía la foto completa ante cualquier cambio. Si nada de lo
+      // que se ve cambió, no redibujamos: evita el parpadeo y no corta las
+      // animaciones de los que acaban de entrar.
+      const firma = run.status + '::' + alumnos.map((a) => [
+        a.id, a.status, a.submitReason, a.tarde, a.correccion.respondidas,
+        a.correccion.nota, a.correccion.provisional, a.incidents.length,
+      ].join('|')).join('~');
+      if (firma === alumnosFirma) return;
+      alumnosFirma = firma;
+
+      const cont = $('run-alumnos');
+      cont.textContent = '';
+
+      const ordenados = run.status === 'ended'
+        ? [...alumnos].sort((a, b) => b.correccion.nota - a.correccion.nota || a.name.localeCompare(b.name, 'es'))
+        : alumnos;
+
+      ordenados.forEach((a) => {
+        // La lista se redibuja con cada evento del servidor: animamos sólo lo que
+        // cambió, para no tener toda la tabla saltando cada vez.
+        const reciente = !alumnosVistos.has(a.id);
+        alumnosVistos.add(a.id);
+        const incidentesPrevios = incidentesVistos.get(a.id);
+        incidentesVistos.set(a.id, a.incidents.length);
+        const saltoIncidente = incidentesPrevios !== undefined && a.incidents.length > incidentesPrevios;
+
+        // En teléfono la fila se apila (identidad arriba, métricas abajo); en
+        // escritorio es una tabla. Lo resuelve la grilla de .fila-alumno.
+        const fila = el('div', 'card fila-alumno'
+          + (reciente ? ' pop' : '') + (saltoIncidente ? ' destello' : ''));
+
+        const punto = el('span', 'fa-punto w-2.5 h-2.5 rounded-full ' +
+          (a.status === 'submitted' ? 'bg-muted' : a.status === 'active' ? 'bg-ok' : 'bg-accent breathe'));
+        punto.title = a.status === 'submitted' ? 'Entregado' : a.status === 'active' ? 'Respondiendo' : 'Esperando';
+        fila.appendChild(punto);
+
+        const ident = el('div', 'fa-ident min-w-0');
+        const nombre = el('p', 'font-semibold truncate', a.name);
+        ident.appendChild(nombre);
+        const sub = el('p', 't-hint truncate');
+        const partes = [];
+        if (a.course) partes.push(a.course);
+        if (run.status === 'lobby') partes.push('entró ' + hms(a.joinedAt));
+        else if (a.status === 'submitted') partes.push((MOTIVO[a.submitReason] || 'entregó') + ' ' + hms(a.submittedAt));
+        else partes.push('respondiendo');
+        if (a.tarde) partes.push('ingreso tardío');
+        sub.textContent = partes.join(' · ');
+        ident.appendChild(sub);
+        fila.appendChild(ident);
+
+        const metricas = el('div', 'fa-metricas');
+        if (run.status !== 'lobby') {
+          const prog = el('div', 'stat md:text-right');
+          prog.append(
+            el('p', 'stat-k', 'Respondió'),
+            el('p', 'stat-v stat-v-sm', a.correccion.respondidas + '/' + total)
+          );
+          metricas.appendChild(prog);
+
+          const inc = el('div', 'stat md:text-right md:w-16');
+          inc.append(
+            el('p', 'stat-k', 'Incidentes'),
+            el('p', 'stat-v stat-v-sm ' + (a.incidents.length ? 'text-alert' : 'text-muted'), String(a.incidents.length))
+          );
+          metricas.appendChild(inc);
+        }
+
+        if (run.status === 'ended') {
+          const nota = el('div', 'stat md:text-right md:w-20');
+          nota.appendChild(el('p', 'stat-k', a.correccion.provisional ? 'Provisoria' : 'Nota'));
+          nota.appendChild(el('p', 'stat-v ' +
+            (a.correccion.provisional ? 'text-plum' : a.correccion.nota >= 6 ? 'text-ok-ink' : 'text-alert-deep'),
+            dec(a.correccion.nota)));
+          metricas.appendChild(nota);
+        }
+        if (metricas.childElementCount) fila.appendChild(metricas);
+
+        if (run.status !== 'lobby') {
+          const ver = el('button', 'fa-accion btn btn-outline btn-sm',
+            run.status === 'ended' ? 'Corregir' : 'Ver');
+          ver.setAttribute('aria-label', (run.status === 'ended' ? 'Corregir a ' : 'Ver a ') + a.name);
+          ver.addEventListener('click', () => abrirDetalle(a.id));
+          fila.appendChild(ver);
+        } else {
+          const sacar = el('button', 'fa-accion btn btn-ghost-danger btn-sm', 'Quitar');
+          sacar.addEventListener('click', async () => {
+            const ok = await confirmar('¿Sacar a este alumno de la sala?', `${a.name} va a poder volver a entrar con el código.`, 'Sacar');
+            if (!ok) return;
+            try { await api('/api/runs/' + run.id + '/students/' + a.id, { method: 'DELETE' }); }
+            catch (ex) { toast(ex.message); }
+          });
+          fila.appendChild(sacar);
+        }
+
+        cont.appendChild(fila);
+      });
+    }
+
+    // ── detalle / corrección de un alumno ───────────────────────────
+    function abrirDetalle(id) {
+      S.alumnoAbierto = id;
+      const alumno = S.run.alumnos.find((a) => a.id === id);
+      if (!alumno) return;
+      renderDetalleAlumno(alumno);
+      $('modal-alumno').classList.remove('hidden');
+      reanimar($('modal-alumno'), 'backdrop-in');
+      reanimar($('modal-alumno').querySelector('.modal-in'), 'modal-in');
+      document.body.classList.add('overflow-hidden');
+    }
+    function cerrarDetalle() {
+      S.alumnoAbierto = null;
+      $('modal-alumno').classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+    $('btn-cerrar-alumno').addEventListener('click', cerrarDetalle);
+    $('btn-cerrar-alumno-2').addEventListener('click', cerrarDetalle);
+
+    function renderDetalleAlumno(a) {
+      const { questions, run } = S.run;
+      $('det-nombre').textContent = a.name;
+      const meta = [a.course || 'sin curso'];
+      if (a.status === 'submitted') meta.push((MOTIVO[a.submitReason] || 'entregó') + ' ' + hms(a.submittedAt));
+      else meta.push('respondiendo');
+      if (a.tarde) meta.push('ingreso tardío');
+      $('det-meta').textContent = meta.join(' · ');
+
+      const cuerpo = $('det-cuerpo');
+      cuerpo.textContent = '';
+
+      // resumen de nota
+      const resumen = el('div', 'panel-inset grid grid-cols-3 gap-4 px-5 py-4');
+      const bloque = (etiqueta, valor, cls) => {
+        const d = el('div');
+        d.append(
+          el('p', 'stat-k', etiqueta),
+          el('p', 'stat-v ' + (cls || ''), valor)
+        );
+        return d;
+      };
+      resumen.append(
+        bloque(a.correccion.provisional ? 'Nota provisoria' : 'Nota',
+          dec(a.correccion.nota) + ' / 10',
+          a.correccion.provisional ? 'text-plum' : a.correccion.nota >= 6 ? 'text-ok-ink' : 'text-alert-deep'),
+        bloque('Puntaje', dec(a.correccion.obtenido) + ' / ' + dec(a.correccion.total)),
+        bloque('Incidentes', String(a.incidents.length), a.incidents.length ? 'text-alert-deep' : 'text-ink')
+      );
+      cuerpo.appendChild(resumen);
+
+      if (a.correccion.provisional) {
+        cuerpo.appendChild(el('p', 'chip chip-plum !flex !rounded-xl px-4 py-3 text-sm !whitespace-normal',
+          'Quedan respuestas sin corregir. Marcá cada una como correcta o incorrecta para cerrar la nota.'));
+      }
+
+      // respuestas
+      const seccion = el('section');
+      seccion.appendChild(el('h3', 'font-display font-semibold mb-3', 'Respuestas'));
+      const lista = el('div', 'space-y-3');
+
+      questions.forEach((q, i) => {
+        const d = a.correccion.detalle.find((x) => x.id === q.id);
+        const card = el('article', 'card overflow-hidden');
+
+        const head = el('header', 'card-head !px-4 !py-2.5 bg-inset');
+        head.append(
+          el('span', 'ordinal', two(i + 1)),
+          el('span', 'chip chip-neutro', NOMBRE_TIPO[q.type]),
+          el('span', 't-num text-xs text-muted ml-auto', dec(q.points) + ' pts')
+        );
+        const marca = el('span', 'chip ' +
+          (d.ok === true ? 'chip-ok' : d.ok === false ? 'chip-alert' : 'chip-plum'),
+          d.ok === true ? 'Correcta' : d.ok === false ? 'Incorrecta' : 'Sin corregir');
+        head.appendChild(marca);
+        card.appendChild(head);
+
+        const body = el('div', 'px-4 py-4 space-y-3');
+        body.appendChild(el('p', 't-body font-medium leading-snug', q.text));
+
+        const resp = el('div', 'panel-inset px-3.5 py-2.5');
+        resp.appendChild(el('p', 'stat-k mb-1', 'Respondió'));
+        const texto = textoRespuesta(q, a.answers[q.id]);
+        resp.appendChild(el('p', 't-sm whitespace-pre-wrap ' + (texto === '(sin responder)' ? 'text-muted italic' : 'font-medium'), texto));
+        body.appendChild(resp);
+
+        const esperada = textoEsperado(q);
+        if (esperada) {
+          const exp = el('p', 't-hint');
+          exp.textContent = 'Esperada: ' + esperada;
+          body.appendChild(exp);
+        }
+
+        // corrección manual
+        if (run.status === 'ended' || q.type === 'long') {
+          const acciones = el('div', 'flex flex-wrap items-center gap-2 pt-1.5 border-t border-line mt-1');
+          acciones.appendChild(el('span', 't-label mr-1', 'Corrección'));
+          const opciones = [
+            ['Correcta', true, 'btn-ok'],
+            ['Incorrecta', false, 'btn-danger'],
+          ];
+          opciones.forEach(([txt, valor, activo]) => {
+            const puesto = d.override === valor;
+            const b = el('button', 'btn btn-xs ' + (puesto ? activo : 'btn-outline !text-muted'), txt);
+            b.addEventListener('click', () => aplicarOverride(a.id, q.id, puesto ? null : valor));
+            acciones.appendChild(b);
+          });
+          if (d.override !== null && d.auto !== null) {
+            const auto = el('button', 'btn btn-ghost btn-xs', 'Volver al automático');
+            auto.addEventListener('click', () => aplicarOverride(a.id, q.id, null));
+            acciones.appendChild(auto);
+          }
+          if (d.override !== null) {
+            acciones.appendChild(el('span', 'chip chip-plum !text-[11px] !py-0.5', 'ajustada a mano'));
+          }
+          body.appendChild(acciones);
+        }
+
+        card.appendChild(body);
+        lista.appendChild(card);
+      });
+      seccion.appendChild(lista);
+      cuerpo.appendChild(seccion);
+
+      // auditoría
+      const audit = el('section');
+      const cab = el('div', 'flex items-baseline justify-between gap-3 mb-3');
+      cab.append(
+        el('h3', 'font-display font-semibold', 'Registro de actividad'),
+        el('span', 't-num text-xs ' + (a.incidents.length ? 'text-alert font-bold' : 'text-muted'),
+          a.incidents.length + (a.incidents.length === 1 ? ' evento' : ' eventos'))
+      );
+      audit.appendChild(cab);
+
+      if (!a.incidents.length) {
+        audit.appendChild(el('p', 'chip chip-ok !flex !rounded-xl px-4 py-3 text-sm !whitespace-normal',
+          'Sin eventos. El alumno no salió de la ventana del examen en ningún momento.'));
+      } else {
+        const tabla = el('div', 'card overflow-hidden divide-y divide-line');
+        a.incidents.forEach((inc) => {
+          const fila = el('div', 'flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2.5');
+          fila.append(
+            el('span', 't-num text-sm font-bold shrink-0', hms(inc.at)),
+            el('span', 't-sm flex-1 min-w-[10rem]', TIPOS_EVENTO[inc.type] || 'Evento de foco'),
+            el('span', 't-hint t-num shrink-0', dur(inc.dur))
+          );
+          tabla.appendChild(fila);
+        });
+        audit.appendChild(tabla);
+
+        const totalFuera = a.incidents.reduce((s, i2) => s + i2.dur, 0);
+        if (totalFuera >= 1000) {
+          audit.appendChild(el('p', 't-hint t-num mt-2',
+            'Tiempo total fuera de la ventana: ' + dur(totalFuera)));
+        }
+      }
+      cuerpo.appendChild(audit);
+    }
+
+    function textoRespuesta(q, val) {
+      if (val === undefined || val === null || (Array.isArray(val) && !val.length) ||
+          (typeof val === 'string' && !val.trim())) return '(sin responder)';
+      if (q.type === 'mc') return q.options[Number(val)] ?? '(opción inválida)';
+      if (q.type === 'tf') return val === true || val === 'true' ? 'Verdadero' : 'Falso';
+      if (q.type === 'ms') return val.map((k) => q.options[k]).filter(Boolean).join(' · ');
+      return String(val);
+    }
+
+    function textoEsperado(q) {
+      if (q.type === 'mc') return q.options[q.correct];
+      if (q.type === 'tf') return q.correct ? 'Verdadero' : 'Falso';
+      if (q.type === 'ms') return q.correct.map((k) => q.options[k]).join(' · ');
+      if (q.type === 'sa') return q.accepted.join(' / ');
+      return null;
+    }
+
+    async function aplicarOverride(alumnoId, qid, valor) {
+      try {
+        await api('/api/runs/' + S.run.run.id + '/students/' + alumnoId + '/override', {
+          method: 'POST', body: { questionId: qid, value: valor },
+        });
+      } catch (ex) {
+        toast(ex.message);
+      }
+    }
+
+    // ── informes ────────────────────────────────────────────────────
+    function informeAlumno(a) {
+      const { questions, run } = S.run;
+      const L = [];
+      L.push('EVALUADOR SEGURO · INFORME DE EXAMEN');
+      L.push('='.repeat(52));
+      L.push('Examen: ' + run.title + (run.subject ? ' (' + run.subject + ')' : ''));
+      L.push('Código de toma: ' + run.code);
+      L.push('Alumno: ' + a.name + (a.course ? ' · ' + a.course : ''));
+      L.push('Ingresó: ' + fecha(a.joinedAt) + (a.tarde ? '  [ingreso tardío]' : ''));
+      if (a.submittedAt) L.push('Cerró: ' + fecha(a.submittedAt) + ' (' + (MOTIVO[a.submitReason] || 'entregó') + ')');
+      L.push('');
+      L.push('NOTA: ' + dec(a.correccion.nota) + ' / 10' + (a.correccion.provisional ? '  [PROVISORIA · faltan correcciones]' : ''));
+      L.push('Puntaje: ' + dec(a.correccion.obtenido) + ' de ' + dec(a.correccion.total));
+      L.push('');
+      L.push('-'.repeat(52));
+      L.push('RESPUESTAS');
+      L.push('-'.repeat(52));
+      questions.forEach((q, i) => {
+        const d = a.correccion.detalle.find((x) => x.id === q.id);
+        const marca = d.ok === true ? '[OK]' : d.ok === false ? '[X ]' : '[? ]';
+        L.push('');
+        L.push(marca + ' ' + two(i + 1) + '. ' + q.text + '  (' + dec(q.points) + ' pts · ' + NOMBRE_TIPO[q.type] + ')');
+        L.push('     Respondió: ' + textoRespuesta(q, a.answers[q.id]));
+        const esperada = textoEsperado(q);
+        if (esperada) L.push('     Esperada:  ' + esperada);
+        if (d.override !== null) L.push('     · corrección ajustada a mano por el docente');
+      });
+      L.push('');
+      L.push('-'.repeat(52));
+      L.push('REGISTRO DE ACTIVIDAD · ' + a.incidents.length + (a.incidents.length === 1 ? ' evento' : ' eventos'));
+      L.push('-'.repeat(52));
+      if (!a.incidents.length) {
+        L.push('Sin eventos registrados.');
+      } else {
+        a.incidents.forEach((inc) => {
+          L.push(hms(inc.at) + '  ' + (TIPOS_EVENTO[inc.type] || inc.type).padEnd(38) + dur(inc.dur));
+        });
+        const total = a.incidents.reduce((s, i2) => s + i2.dur, 0);
+        if (total >= 1000) L.push('Tiempo total fuera de la ventana: ' + dur(total));
+      }
+      L.push('');
+      L.push('Generado el ' + fecha(Date.now()) + ' · Evaluador Seguro');
+      return L.join('\n');
+    }
+
+    $('btn-informe-alumno').addEventListener('click', async () => {
+      const a = S.run.alumnos.find((x) => x.id === S.alumnoAbierto);
+      if (!a) return;
+      try {
+        await navigator.clipboard.writeText(informeAlumno(a));
+        toast('Informe copiado al portapapeles');
+      } catch {
+        toast('Tu navegador no dejó copiar. Probá descargar el informe completo.');
+      }
+    });
+
+    $('btn-informe').addEventListener('click', () => {
+      const { run, alumnos } = S.run;
+      const partes = [informeToma(), ...alumnos.map((a) => informeAlumno(a))];
+      descargar('informe-' + run.code + '.txt', partes.join('\n\n' + '#'.repeat(52) + '\n\n'));
+    });
+
+    function informeToma() {
+      const { run, alumnos } = S.run;
+      const notas = alumnos.map((a) => a.correccion.nota);
+      const promedio = notas.length ? notas.reduce((a, b) => a + b, 0) / notas.length : 0;
+      const L = [];
+      L.push('EVALUADOR SEGURO · RESUMEN DE LA TOMA');
+      L.push('='.repeat(52));
+      L.push('Examen: ' + run.title + (run.subject ? ' (' + run.subject + ')' : ''));
+      L.push('Código: ' + run.code);
+      L.push('Inicio: ' + (run.startedAt ? fecha(run.startedAt) : '—'));
+      L.push('Cierre: ' + (run.endedAt ? fecha(run.endedAt) : '—'));
+      L.push('Duración prevista: ' + Math.round(run.timeLimit / 60) + ' min');
+      L.push('');
+      L.push('Alumnos: ' + alumnos.length + ' · Promedio: ' + dec(promedio) +
+        ' · Aprobados: ' + notas.filter((n) => n >= 6).length);
+      L.push('');
+      L.push('NOTA   INC.  ALUMNO');
+      alumnos
+        .slice()
+        .sort((a, b) => b.correccion.nota - a.correccion.nota || a.name.localeCompare(b.name, 'es'))
+        .forEach((a) => {
+          L.push(
+            (dec(a.correccion.nota) + (a.correccion.provisional ? '*' : ' ')).padEnd(7) +
+            String(a.incidents.length).padEnd(6) +
+            a.name + (a.course ? ' · ' + a.course : '')
+          );
+        });
+      L.push('');
+      L.push('* nota provisoria: quedan respuestas sin corregir.');
+      return L.join('\n');
+    }
+
+    function descargar(nombre, texto) {
+      const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = nombre;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    $('btn-copiar-link').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText($('run-link').value);
+        toast('Link copiado');
+      } catch {
+        $('run-link').select();
+        toast('Copialo con Ctrl+C');
+      }
+    });
+
+    // ── atajos ──────────────────────────────────────────────────────
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      if (!$('modal-confirm').classList.contains('hidden')) return cerrarConfirm(false);
+      if (!$('modal-alumno').classList.contains('hidden')) return cerrarDetalle();
+    });
+
+    // ── arranque ────────────────────────────────────────────────────
+    (async function iniciar() {
+      try {
+        const datos = await api('/api/teacher/me');
+        if (datos.ok) await abrirEscritorio();
+        else mostrarLogin();
+      } catch {
+        mostrarLogin();
+      }
+    })();
+  </script>
+</body>
+</html>
